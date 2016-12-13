@@ -16,7 +16,7 @@ A robust backup solution for Docker volumes with duplicity
 ```sh
 docker run -d \
   -v /my/awsome/volume:/volumes/my-awsome-volume \
-  -e -e GS_ACCESS_KEY_ID=gs-access-key-id \
+  -e GS_ACCESS_KEY_ID=gs-access-key-id \
   -e GS_SECRET_ACCESS_KEY=gs-secret-access-key \
   -e TARGET_URL=gs://my-google-bucket \
   jamrizzi/dockplicity:latest
