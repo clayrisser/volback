@@ -1,7 +1,7 @@
 # dockplicity _Alpha_
 A robust backup solution for Docker volumes with duplicity
 
-[jamrizzi/dockplicity:latest](https://hub.docker.com/r/jamrizzi/dockplicity/)
+### [jamrizzi/dockplicity:latest](https://hub.docker.com/r/jamrizzi/dockplicity/)
 
 ## Features
 * Automatic backups
