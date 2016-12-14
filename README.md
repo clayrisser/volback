@@ -80,6 +80,7 @@ If you do not specify a restore volume, you will have to force the restore.
 
 * __RESTORE_VOLUME=myvolumename__ - if set, restores a single volume instead of restoring all volumes
 * __FORCE=false__ - forces the restore to write over existing volumes
+* __RESTORE_TIME=now__ - restore backup from specified time (format as time)
 
 ## Time Formats
 _Dockplicity uses the same time format as duplicity.  The following infomations was taken from [http://duplicity.nongnu.org/duplicity.1.html](http://duplicity.nongnu.org/duplicity.1.html)._
