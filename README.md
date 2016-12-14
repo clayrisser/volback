@@ -19,7 +19,7 @@ A robust backup solution for Docker volumes with duplicity
 This action backups volumes automatically. The container runs in the background as a daemon.
 ```sh
 docker run -d \
-  -v /my/awsome/volume:/volumes/my-awsome-volume \
+  -v /my-awsome-volume:/volumes/my-awsome-volume \
   -e GS_ACCESS_KEY_ID=gs-access-key-id \
   -e GS_SECRET_ACCESS_KEY=gs-secret-access-key \
   -e TARGET_URL="gs://my-google-bucket" \
@@ -30,7 +30,7 @@ docker run -d \
 This action runs a singe backup. The container will exit after it is finished running the backup.
 ```sh
 docker run -rm \
-  -v /my/awsome/volume:/volumes/my-awsome-volume \
+  -v /my-awsome-volume:/volumes/my-awsome-volume \
   -e ACTION=backup \
   -e GS_ACCESS_KEY_ID=gs-access-key-id \
   -e GS_SECRET_ACCESS_KEY=gs-secret-access-key \
@@ -42,7 +42,7 @@ docker run -rm \
 This action restores a backup. The container will exit after it is finished running the restore.
 ```sh
 docker run -rm \
-  -v /my/awsome/volume:/volumes/my-awsome-volume \
+  -v /my-awsome-volume:/volumes/my-awsome-volume \
   -e ACTION=restore \
   -e RESTORE_VOLUME=my-awesome-volume \
   -e GS_ACCESS_KEY_ID=gs-access-key-id \
