@@ -57,9 +57,9 @@ docker run -rm \
 __The following options depend on the action specified.__
 
 #### Cron
-* __CRON_SCHEDULE="0 0 0 * * &ast;"__ - The frequency backups run
+* __CRON_SCHEDULE="0 0 0 &ast; &ast; &ast;"__ - The frequency backups run
   * Note that this cron schedule is based on seconds, not minutes.
-  * It is strongly advised not to set the cron lower than "0 * * * * &ast;"
+  * It is strongly advised not to set the cron lower than "0 &ast; &ast; &ast; &ast; &ast;"
 
 #### Cron or Backup
 * __PASSPHRASE=hellodocker__ - The passphrase used to encrypt your backups
