@@ -13,7 +13,9 @@ ENV FULL_IF_OLDER_THAN=1Y
 ENV ALLOW_SOURCE_MISMATCH=true
 
 RUN apt-get update
-RUN apt-get install -y duplicity python-boto gsutil libwww-perl curl
+RUN apt-get install -y duplicity python-setuptools python-dev build-essential gsutil libwww-perl curl
+RUN pip install dropbox
+RUN pip install boto
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
 
 VOLUME /volumes
