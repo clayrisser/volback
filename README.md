@@ -29,7 +29,7 @@ docker run -d \
 ## Backup
 This action runs a singe backup. The container will exit after it is finished running the backup.
 ```sh
-docker run -rm \
+docker run --rm \
   -v /my-awsome-volume:/volumes/my-awsome-volume \
   -e ACTION=backup \
   -e GS_ACCESS_KEY_ID=gs-access-key-id \
@@ -41,7 +41,7 @@ docker run -rm \
 ## Restore
 This action restores a backup. The container will exit after it is finished running the restore.
 ```sh
-docker run -rm \
+docker run --rm \
   -v /my-awsome-volume:/volumes/my-awsome-volume \
   -e ACTION=restore \
   -e RESTORE_VOLUME=my-awesome-volume \
