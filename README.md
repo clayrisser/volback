@@ -1,4 +1,4 @@
-# dockplicity _Alpha_
+# dockplicity _Beta_
 A robust backup solution for Docker volumes with duplicity
 
 ### [jamrizzi/dockplicity:latest](https://hub.docker.com/r/jamrizzi/dockplicity/)
