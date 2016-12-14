@@ -43,6 +43,7 @@ This action restores a backup. The container will exit after it is finished runn
 docker run -rm \
   -v /my/awsome/volume:/volumes/my-awsome-volume \
   -e ACTION=restore \
+  -e RESTORE_VOLUME=my-awesome-volume \
   -e GS_ACCESS_KEY_ID=gs-access-key-id \
   -e GS_SECRET_ACCESS_KEY=gs-secret-access-key \
   -e TARGET_URL=gs://my-google-bucket \
@@ -50,6 +51,7 @@ docker run -rm \
 ```
 
 ## Options
+Mount all volumes you want backed up to the BACKUP_DIR/your-volume-name directory. Dockplicity assumes the name of the folders in the BACKUP_DIR are the volume names.
 * __ACTION=cron__ - action to take when run (cron | backup | restore)
 * __TARGET_URL="gs://my_google_bucket"__ - used to reference where backups will be stored
 * __BACKUP_DIR=/volumes__ - the directory of volumes that will be backed up
@@ -73,6 +75,8 @@ __The following options depend on the action specified.__
 * __ALLOW_SOURCE_MISMATCH=false__ - don't abort attempts using the same target url to back up different volumes
 
 #### Restore
+If you do not specify a restore volume, you will have to force the restore.
+
 * __RESTORE_VOLUME=myvolumename__ - if set, restores a single volume instead of restoring all volumes
 * __FORCE=false__ - forces the restore to write over existing volumes
 
