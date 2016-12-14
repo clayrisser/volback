@@ -11,6 +11,7 @@ A robust backup solution for Docker volumes with duplicity
 * Backup encryption
 * Two dozen supported backup stores
 * Backup diffing
+* Works with docker volume drivers
 
 ## Actions
 
