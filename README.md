@@ -50,28 +50,31 @@ docker run -rm \
 ```
 
 ## Options
-* __ACTION=cron__ - Action to take when run (cron|backup|restore)
-* __TARGET_URL="gs://my_google_bucket"__ - Used to reference where backups will be stored
-* __BACKUP_DIR=/volumes__ - The directory of volumes that will be backed up
+* __ACTION=cron__ - action to take when run (cron|backup|restore)
+* __TARGET_URL="gs://my_google_bucket"__ - used to reference where backups will be stored
+* __BACKUP_DIR=/volumes__ - the directory of volumes that will be backed up
 
 __The following options depend on the action specified.__
 
 #### Cron
-* __CRON_SCHEDULE="0 0 0 &ast; &ast; &ast;"__ - The frequency backups run
+* __CRON_SCHEDULE="0 0 0 &ast; &ast; &ast;"__ - the frequency backups run
   * Note that this cron schedule is based on seconds, not minutes.
   * It is strongly advised not to set the cron lower than "0 &ast; &ast; &ast; &ast; &ast;"
+  
+#### Backup
+* __BACKUP_TYPE=incr__ - type of backup (full|incr)
 
 #### Cron or Backup
-* __PASSPHRASE=hellodocker__ - The passphrase used to encrypt your backups
-* __MAX_TIME=1Y__ - The maximum amount of time backups are kept (format as time)
-* __FULL_MAX_COUNT=3__ - The maximum number of full backups kept
-* __INCR_MAX_COUNT=30__ - The maximum number of incremental backups kept
-* __FULL_IF_OLDER_THAN=1Y__ - Run a full backup if older than time (format as time)
-* __ALLOW_SOURCE_MISMATCH=false__ - Don't abort attempts using the same target url to back up different volumes
+* __PASSPHRASE=hellodocker__ - the passphrase used to encrypt your backups
+* __MAX_TIME=1Y__ - the maximum amount of time backups are kept (format as time)
+* __FULL_MAX_COUNT=3__ - the maximum number of full backups kept
+* __INCR_MAX_COUNT=30__ - the maximum number of incremental backups kept
+* __FULL_IF_OLDER_THAN=1Y__ - run a full backup if older than time (format as time)
+* __ALLOW_SOURCE_MISMATCH=false__ - don't abort attempts using the same target url to back up different volumes
 
 #### Restore
-* __RESTORE_VOLUME=myvolumename__ - If set, restores a single volume instead of restoring all volumes
-* __FORCE=false__ - Forces the restore to write over existing volumes
+* __RESTORE_VOLUME=myvolumename__ - if set, restores a single volume instead of restoring all volumes
+* __FORCE=false__ - forces the restore to write over existing volumes
 
 ## Time Formats
 _Dockplicity uses the same time format as duplicity.  The following infomations was taken from [http://duplicity.nongnu.org/duplicity.1.html](http://duplicity.nongnu.org/duplicity.1.html)._
