@@ -50,9 +50,9 @@ docker run -rm \
 ```
 
 ## Options
-* ACTION=cron - Action to take when run (cron|backup|restore)
-* TARGET_URL="gs://my_google_bucket" - Used to reference where backups will be stored
-* BACKUP_DIR=/volumes - The directory of volumes that will be backed up
+* __ACTION=cron__ - Action to take when run (cron|backup|restore)
+* __TARGET_URL="gs://my_google_bucket"__ - Used to reference where backups will be stored
+* __BACKUP_DIR=/volumes__ - The directory of volumes that will be backed up
 
 __The following options depend on the action specified.__
 
