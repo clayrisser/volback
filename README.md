@@ -57,20 +57,21 @@ docker run -rm \
 __The following options depend on the action specified.__
 
 #### Cron
-* CRON_SCHEDULE="0 0 0 * * &ast;" - The frequency backups run
-  * Note that this cron schedule is based on seconds, not minutes. It is strongly advised not to set the cron lower than "0 * * * * &ast;"
+* __CRON_SCHEDULE="0 0 0 * * &ast;"__ - The frequency backups run
+  * Note that this cron schedule is based on seconds, not minutes.
+  * It is strongly advised not to set the cron lower than "0 * * * * &ast;"
 
 #### Cron or Backup
-* PASSPHRASE=hellodocker - The passphrase used to encrypt your backups
-* MAX_TIME=1Y - The maximum amount of time backups are kept (format as time)
-* FULL_MAX_COUNT=3 - The maximum number of full backups kept
-* INCR_MAX_COUNT=30 - The maximum number of incremental backups kept
-* FULL_IF_OLDER_THAN=1Y - Run a full backup if older than time (format as time)
-* ALLOW_SOURCE_MISMATCH=false - Don't abort attempts using the same target url to back up different volumes
+* __PASSPHRASE=hellodocker__ - The passphrase used to encrypt your backups
+* __MAX_TIME=1Y__ - The maximum amount of time backups are kept (format as time)
+* __FULL_MAX_COUNT=3__ - The maximum number of full backups kept
+* __INCR_MAX_COUNT=30__ - The maximum number of incremental backups kept
+* __FULL_IF_OLDER_THAN=1Y__ - Run a full backup if older than time (format as time)
+* __ALLOW_SOURCE_MISMATCH=false__ - Don't abort attempts using the same target url to back up different volumes
 
 #### Restore
-* RESTORE_VOLUME=myvolumename - If set, restores a single volume instead of restoring all volumes
-* FORCE=false - Forces the restore to write over existing volumes
+* __RESTORE_VOLUME=myvolumename__ - If set, restores a single volume instead of restoring all volumes
+* __FORCE=false__ - Forces the restore to write over existing volumes
 
 ## Time Formats
 _Dockplicity uses the same time format as duplicity.  The following infomations was taken from [http://duplicity.nongnu.org/duplicity.1.html](http://duplicity.nongnu.org/duplicity.1.html)._
@@ -91,16 +92,16 @@ This is the backup store used in all of the dockplicity examples. To use this ba
 1. Enable interoperable access - [https://code.google.com/apis/console#:storage](https://code.google.com/apis/console#:storage)
 2. Create access keys: [https://code.google.com/apis/console#:storage:legacy](https://code.google.com/apis/console#:storage:legacy)
 3. Set the following environment variables
-* GS_ACCESS_KEY_ID=gs-access-key-id
-* GS_SECRET_ACCESS_KEY=gs-secret-access-key
-* TARGET_URL="gs://my-google-bucket"
+* __GS_ACCESS_KEY_ID=gs-access-key-id__
+* __GS_SECRET_ACCESS_KEY=gs-secret-access-key__
+* __TARGET_URL="gs://my-google-bucket"__
 
 ### DropBox
 1. Create Dropbox API application - [https://www.dropbox.com/developers/apps/create](https://www.dropbox.com/developers/apps/create)
 Then visit app settings and just use ’Generated access token’ under OAuth2 section.
 2. Set the following environment variables.
-* DPBX_ACCESS_TOKEN=dpbx-access-token
-* TARGET_URL="dpbx:///some_dir"
+* __DPBX_ACCESS_TOKEN=dpbx-access-token__
+* __TARGET_URL="dpbx:///some_dir"__
 
 * Note that all files will be synced to all connected computers. You may prefer to use a separate Dropbox account specially for the backups, and not connect any computers to that account. Alternatively, you can configure selective sync on all computers to avoid syncing of backup files.
 
