@@ -37,6 +37,7 @@ docker run --rm \
   -e TARGET_URL="gs://my-google-bucket" \
   jamrizzi/dockplicity:latest
 ```
+You may need to set ALLOW_SOURCE_MISMATCH to "true" if you have previously backed up information to the same bucket.
 
 ## Restore
 This action restores a backup. The container will exit after it is finished running the restore.

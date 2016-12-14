@@ -10,7 +10,7 @@ ENV INCR_MAX_COUNT=144
 ENV MAX_TIME=6M
 ENV RESTORE_TIME=now
 ENV FULL_IF_OLDER_THAN=2W
-ENV ALLOW_SOURCE_MISMATCH=true
+ENV ALLOW_SOURCE_MISMATCH=false
 
 RUN apt-get update
 RUN apt-get install -y duplicity python-pip gsutil libwww-perl curl
