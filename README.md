@@ -58,7 +58,7 @@ __The following options depend on the action specified.__
 
 #### Cron
 * CRON_SCHEDULE="0 0 0 * * &ast;" - The frequency backups run
-Note that this cron schedule is based on seconds, not minutes. It is strongly advised not to set the cron lower than "0 * * * * &ast;"
+  * Note that this cron schedule is based on seconds, not minutes. It is strongly advised not to set the cron lower than "0 * * * * &ast;"
 
 #### Cron or Backup
 * PASSPHRASE=hellodocker - The passphrase used to encrypt your backups
