@@ -69,10 +69,10 @@ __The following options depend on the action specified.__
 
 #### Cron or Backup
 * __PASSPHRASE=hellodocker__ - the passphrase used to encrypt your backups
-* __MAX_TIME=1Y__ - the maximum amount of time backups are kept (format as time)
-* __FULL_MAX_COUNT=3__ - the maximum number of full backups kept
-* __INCR_MAX_COUNT=30__ - the maximum number of incremental backups kept
-* __FULL_IF_OLDER_THAN=1Y__ - run a full backup if older than time (format as time)
+* __MAX_TIME=6M__ - the maximum amount of time backups are kept (format as time)
+* __FULL_MAX_COUNT=12__ - the maximum number of full backups kept
+* __INCR_MAX_COUNT=144__ - the maximum number of incremental backups kept
+* __FULL_IF_OLDER_THAN=2W__ - run a full backup if older than time (format as time)
 * __ALLOW_SOURCE_MISMATCH=false__ - don't abort attempts using the same target url to back up different volumes
 
 #### Restore
