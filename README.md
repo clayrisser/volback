@@ -50,7 +50,7 @@ docker run -rm \
 ```
 
 ## Options
-* __ACTION=cron__ - action to take when run (cron|backup|restore)
+* __ACTION=cron__ - action to take when run (cron | backup | restore)
 * __TARGET_URL="gs://my_google_bucket"__ - used to reference where backups will be stored
 * __BACKUP_DIR=/volumes__ - the directory of volumes that will be backed up
 
@@ -62,7 +62,7 @@ __The following options depend on the action specified.__
   * It is strongly advised not to set the cron lower than "0 &ast; &ast; &ast; &ast; &ast;"
   
 #### Backup
-* __BACKUP_TYPE=incr__ - type of backup (full|incr)
+* __BACKUP_TYPE=incr__ - type of backup (full | incr)
 
 #### Cron or Backup
 * __PASSPHRASE=hellodocker__ - the passphrase used to encrypt your backups
