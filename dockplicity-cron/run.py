@@ -21,9 +21,9 @@ def get_options():
     }
 
 def backup_volumes(options):
-    containers = get_containers_to_backup(options)
+    containers = get_containers_to_backup()
     volumes = {}
-    environement = {
+    environment = {
         'PASSPHRASE': options['passphrase'],
         'BACKUP_TYPE': options['backup_type'],
         'TARGET_URL': options['target_url'],
@@ -32,12 +32,21 @@ def backup_volumes(options):
         'REMOVE_OLDER_THAN': options['remove_older_than'],
         'FULL_IF_OLDER_THAN': options['full_if_older_than']
     }
+    if 'GS_ACCESS_KEY_ID' in os.environ:
+        environment['GS_ACCESS_KEY_ID'] = os.environ['GS_ACCESS_KEY_ID']
+    if 'GS_SECRET_ACCESS_KEY' in os.environ:
+        environment['GS_SECRET_ACCESS_KEY'] = os.environ['GS_SECRET_ACCESS_KEY']
     for container in containers:
         volumes = dict(volumes.items() + get_volumes_to_backup(container, options).items())
     if len(volumes) > 0:
+#        return {
+#            'image': 'jamrizzi/dockplicity-backup',
+#            'volume_driver': options['volume_driver'],
+#            'volumes': volumes,
+#            'environment': environment
+#        }
         return client.containers.run(
             image='jamrizzi/dockplicity-backup',
-            command='ls /volumes',
             volume_driver=options['volume_driver'],
             volumes=volumes,
             environment=environment
@@ -45,13 +54,10 @@ def backup_volumes(options):
     else:
         return 'No volumes to back up'
 
-def get_containers_to_backup(options):
+def get_containers_to_backup():
     containers = client.containers.list()
     containers_to_backup = list()
     for container in containers:
-        volume_driver = container.attrs['HostConfig']['VolumeDriver'] if 'VolumeDriver' in container.attrs['HostConfig'] : 'local'
-        if options['volume_driver'] != volume_driver:
-            continue
         labels = container.attrs['Config']['Labels']
         for label in labels.iteritems():
             if label[0] == 'dockplicity' and label[1] == 'true':
@@ -67,12 +73,12 @@ def get_volumes_to_backup(container, options):
             name = label[1]
     for mount in container.attrs['Mounts']:
         source = mount['Source']
-        driver = mount['Driver'] if 'Driver' in mount else 'local'
+        volume_driver = mount['Driver'] if 'Driver' in mount else 'local'
         if len(source) >= 15 and source[:15] == '/var/lib/docker':
             continue
         if len(source) >= 15 and source[:15] == '/var/run/docker':
             continue
-        if driver != options['volume_driver']:
+        if volume_driver != options['volume_driver']:
             continue
         destination = '/volumes/' + name + '/' + mount['Source']
         destination = destination.replace('//', '/')

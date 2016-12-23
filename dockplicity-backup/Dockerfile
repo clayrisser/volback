@@ -21,4 +21,4 @@ VOLUME /volumes
 ADD ./backup.py /scripts/backup.py
 RUN chmod -R 700 /scripts
 
-CMD bash /scripts/run.sh
+CMD python /scripts/backup.py

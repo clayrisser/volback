@@ -4,6 +4,9 @@ CWD := $(shell readlink -en $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LI
 .PHONY: all
 all: fetch_dependancies build push
 
+.PHONY: dockplicity_cron
+dockplicity_cron: fetch_dependancies build_dockplicity_cron push_dockplicity_cron
+
 
 ## BUILD ##
 .PHONY: build

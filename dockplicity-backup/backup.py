@@ -23,8 +23,7 @@ def backup(options):
     allow_source_mismatch = ''
     if (options['allow_source_mismatch']):
         allow_source_mismatch = '--allow-source-mismatch '
-    os.system('echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + ') | duplicity ' + options['backup_type'] + ' ' + allow_source_mismatch + '--full-if-older-than ' + options['full_if_older_than'] + ' ' + options['backup_dir'] + ' ' + options['target_url'])
-    clean();
+    os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + ') | duplicity ' + options['backup_type'] + ' ' + allow_source_mismatch + '--full-if-older-than ' + options['full_if_older_than'] + ' ' + options['backup_dir'] + ' ' + options['target_url'])
 
 def clean(options):
     os.system('''

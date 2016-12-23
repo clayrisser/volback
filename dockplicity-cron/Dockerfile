@@ -15,10 +15,10 @@ RUN apt-get update
 RUN apt-get install -y python python-pip curl
 RUN pip install docker
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
+RUN touch /var/log/cron.log
 
-ADD ./cron.py /scripts/cron.py
+ADD ./cron.sh /scripts/cron.sh
+ADD ./run.py /scripts/run.py
 RUN chmod -R 700 /scripts
 
-CMD touch /var/log/cron.log \
-    go-cron "$CRON_SCHEDULE" python /scripts/cron.py >> /var/log/cron.log \
-    tail -f /var/log/cron.log
+CMD go-cron "$CRON_SCHEDULE" bash /scripts/cron.sh
