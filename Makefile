@@ -4,33 +4,49 @@ CWD := $(shell readlink -en $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LI
 .PHONY: all
 all: fetch_dependancies build push
 
+.PHONY: dockplicity_backup
+dockplicity_backup: fetch_dependancies build_dockplicity_backup push_dockplicity_backup
+
+.PHONY: dockplicity_restore
+dockplicity_restore: fetch_dependancies build_dockplicity_restore push_dockplicity_restore
+
 .PHONY: dockplicity_cron
 dockplicity_cron: fetch_dependancies build_dockplicity_cron push_dockplicity_cron
 
 
 ## BUILD ##
 .PHONY: build
-build: build_dockplicity_backup build_dockplicity_cron
+build: build_dockplicity_backup build_dockplicity_cron build_dockplicity_restore
 
 .PHONY: build_dockplicity_backup
 build_dockplicity_backup:
 	docker build -t jamrizzi/dockplicity-backup:latest -f $(CWD)/dockplicity-backup/Dockerfile $(CWD)/dockplicity-backup
-	$(info built dockplicity backup)
+	$(info built dockplicity-backup)
+
+.PHONY: build_dockplicity_restore
+build_dockplicity_restore:
+	docker build -t jamrizzi/dockplicity-restore:latest -f $(CWD)/dockplicity-restore/Dockerfile $(CWD)/dockplicity-restore
+	$(info built dockplicity-restore)
 
 .PHONY: build_dockplicity_cron
 build_dockplicity_cron:
 	docker build -t jamrizzi/dockplicity-cron:latest -f $(CWD)/dockplicity-cron/Dockerfile $(CWD)/dockplicity-cron
-	$(info built dockplicity cron)
+	$(info built dockplicity-cron)
 
 
 ## PUSH ##
 .PHONY: push
-push: push_dockplicity_backup push_dockplicity_cron
+push: push_dockplicity_backup push_dockplicity_restore push_dockplicity_cron
 
 .PHONY: push_dockplicity_backup
 push_dockplicity_backup:
 	docker push jamrizzi/dockplicity-backup:latest
 	$(info pushed dockplicity backup)
+
+.PHONY: push_dockplicity_restore
+push_dockplicity_restore:
+	docker push jamrizzi/dockplicity-restore:latest
+	$(info pushed dockplicity-restore)
 
 .PHONY: push_dockplicity_cron
 push_dockplicity_cron:
@@ -41,6 +57,8 @@ push_dockplicity_cron:
 ## CLEAN ##
 .PHONY: clean
 clean:
+	docker stop $(docker ps -a -q)
+	docker rm -f $(docker ps -a -q)
 	$(info cleaned)
 
 
