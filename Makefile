@@ -10,13 +10,13 @@ dockplicity_backup: fetch_dependancies build_dockplicity_backup push_dockplicity
 .PHONY: dockplicity_restore
 dockplicity_restore: fetch_dependancies build_dockplicity_restore push_dockplicity_restore
 
-.PHONY: dockplicity_cron
-dockplicity_cron: fetch_dependancies build_dockplicity_cron push_dockplicity_cron
+.PHONY: dockplicity
+dockplicity: fetch_dependancies build_dockplicity push_dockplicity
 
 
 ## BUILD ##
 .PHONY: build
-build: build_dockplicity_backup build_dockplicity_cron build_dockplicity_restore
+build: build_dockplicity_backup build_dockplicity_restore build_dockplicity
 
 .PHONY: build_dockplicity_backup
 build_dockplicity_backup:
@@ -28,15 +28,15 @@ build_dockplicity_restore:
 	docker build -t jamrizzi/dockplicity-restore:latest -f $(CWD)/dockplicity-restore/Dockerfile $(CWD)/dockplicity-restore
 	$(info built dockplicity-restore)
 
-.PHONY: build_dockplicity_cron
-build_dockplicity_cron:
-	docker build -t jamrizzi/dockplicity-cron:latest -f $(CWD)/dockplicity-cron/Dockerfile $(CWD)/dockplicity-cron
-	$(info built dockplicity-cron)
+.PHONY: build_dockplicity
+build_dockplicity:
+	docker build -t jamrizzi/dockplicity:latest -f $(CWD)/dockplicity/Dockerfile $(CWD)/dockplicity
+	$(info built dockplicity)
 
 
 ## PUSH ##
 .PHONY: push
-push: push_dockplicity_backup push_dockplicity_restore push_dockplicity_cron
+push: push_dockplicity_backup push_dockplicity_restore push_dockplicity
 
 .PHONY: push_dockplicity_backup
 push_dockplicity_backup:
@@ -48,10 +48,10 @@ push_dockplicity_restore:
 	docker push jamrizzi/dockplicity-restore:latest
 	$(info pushed dockplicity-restore)
 
-.PHONY: push_dockplicity_cron
-push_dockplicity_cron:
-	docker push jamrizzi/dockplicity-cron:latest
-	$(info pushed dockplicity cron)
+.PHONY: push_dockplicity
+push_dockplicity:
+	docker push jamrizzi/dockplicity:latest
+	$(info pushed dockplicity)
 
 
 ## CLEAN ##

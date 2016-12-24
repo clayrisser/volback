@@ -11,14 +11,15 @@ ENV REMOVE_OLDER_THAN=6M
 ENV FULL_IF_OLDER_THAN=2W
 ENV ALLOW_SOURCE_MISMATCH=true
 
+RUN mkdir /docker
 RUN apt-get update
 RUN apt-get install -y python python-pip curl
 RUN pip install docker
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
-RUN touch /var/log/cron.log
+RUN touch /docker/cron.log
 
-ADD ./cron.sh /scripts/cron.sh
-ADD ./run.py /scripts/run.py
-RUN chmod -R 700 /scripts
+ADD ./cron.sh /docker/cron.sh
+ADD ./src /docker/src
+RUN chmod -R 700 /docker
 
-CMD go-cron "$CRON_SCHEDULE" bash /scripts/cron.sh
+CMD go-cron "$CRON_SCHEDULE" bash /docker/cron.sh
