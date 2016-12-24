@@ -5,7 +5,7 @@ ENV TARGET_URL=gs://my_google_bucket
 ENV BACKUP_DIR=/volumes
 ENV ALLOW_SOURCE_MISMATCH=true
 ENV RESTORE_TIME=now
-ENV RESTORE_VOLUMES=""
+ENV RESTORE_VOLUME=""
 ENV FORCE=false
 
 RUN apt-get update

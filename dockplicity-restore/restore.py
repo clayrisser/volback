@@ -18,7 +18,7 @@ def get_options():
     }
 
 def restore(options):
-    restore_volumes = ''
+    restore_volume = ''
     force = ''
     backup_dir = options['backup_dir']
     if (options['restore_volume']):
@@ -26,6 +26,6 @@ def restore(options):
         backup_dir = (options['backup_dir'] + '/' + options['restore_volume']).replace('//', '/')
     if (options['force']):
         force = '--force '
-    os.system('(echo ' + options['passphrase'] + ') | duplicity restore ' + restore_volumes + '--time ' + options['restore_time'] + ' ' + options['target_url'] + ' ' + backup_dir)
+    os.system('(echo ' + options['passphrase'] + ') | duplicity restore ' + restore_volume + force + '--time ' + options['restore_time'] + ' ' + options['target_url'] + ' ' + backup_dir)
 
 main()

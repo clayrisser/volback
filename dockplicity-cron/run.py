@@ -39,12 +39,6 @@ def backup_volumes(options):
     for container in containers:
         volumes = dict(volumes.items() + get_volumes_to_backup(container, options).items())
     if len(volumes) > 0:
-#        return {
-#            'image': 'jamrizzi/dockplicity-backup',
-#            'volume_driver': options['volume_driver'],
-#            'volumes': volumes,
-#            'environment': environment
-#        }
         return client.containers.run(
             image='jamrizzi/dockplicity-backup',
             volume_driver=options['volume_driver'],
