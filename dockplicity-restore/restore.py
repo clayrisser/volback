@@ -22,7 +22,10 @@ def restore(options):
     force = ''
     backup_dir = options['backup_dir']
     if (options['restore_volume']):
-        restore_volume = '--file-to-restore ' + options['restore_volume'] + ' '
+        file_to_restore = options['restore_volume']
+        if file_to_restore[0] == '/':
+            file_to_restore = file_to_restore[1:]
+        restore_volume = '--file-to-restore ' + file_to_restore + ' '
         backup_dir = (options['backup_dir'] + '/' + options['restore_volume']).replace('//', '/')
     if (options['force']):
         force = '--force '
