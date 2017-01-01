@@ -57,8 +57,9 @@ push_dockplicity:
 ## CLEAN ##
 .PHONY: clean
 clean:
-	docker stop $(docker ps -a -q)
-	docker rm -f $(docker ps -a -q)
+	@rm -rf dockplicity-backup/backup/*.pyc
+#	docker stop $(docker ps -a -q)
+#	docker rm -f $(docker ps -a -q)
 	$(info cleaned)
 
 

@@ -1,9 +1,12 @@
 import socket
 import os
+from backup.Config import Config
+from backup.Backup import Backup
 
 def main():
     options = get_options()
-    backup(options)
+    data_type = get_data_type(options)
+    backup(options, data_type)
     clean(options)
 
 def get_options():
@@ -17,13 +20,32 @@ def get_options():
         'remove_older_than': os.environ['REMOVE_OLDER_THAN'] if 'REMOVE_OLDER_THAN' in os.environ else '6M',
         'remove_all_but_n_full': os.environ['REMOVE_ALL_BUT_N_FULL'] if 'REMOVE_ALL_BUT_N_FULL' in os.environ else '12',
         'remove_all_inc_but_of_n_full': os.environ['REMOVE_ALL_INC_BUT_OF_N_FULL'] if 'REMOVE_ALL_INC_BUT_OF_N_FULL' in os.environ else '144'
+        'data_type': os.environ['DATA_TYPE'] if 'DATA_TYPE' in os.environ else 'raw'
     }
 
-def backup(options):
-    allow_source_mismatch = ''
-    if (options['allow_source_mismatch']):
-        allow_source_mismatch = '--allow-source-mismatch '
-    os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + ') | duplicity ' + options['backup_type'] + ' ' + allow_source_mismatch + '--full-if-older-than ' + options['full_if_older_than'] + ' ' + options['backup_dir'] + ' ' + options['target_url'])
+def get_data_types(options):
+    if options['data_type'] != 'raw':
+        try:
+            configService = Config("config/*.yml")
+        except Exception as e:
+            logger.error("Can't load settings or syntax errors : %s", e.message)
+            logger.error(traceback.format_exc())
+            sys.exit(1)
+        config = configService.getConfig()
+        return config[options['data_type']]
+    else:
+        return 'raw'
+
+def backup(options, data_type):
+    if data_type == 'raw':
+        allow_source_mismatch = ''
+        if (options['allow_source_mismatch']):
+            allow_source_mismatch = '--allow-source-mismatch '
+        os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + ') | duplicity ' + options['backup_type'] + ' ' + allow_source_mismatch + '--full-if-older-than ' + options['full_if_older_than'] + ' ' + options['backup_dir'] + ' ' + options['target_url'])
+    else:
+        backupService = Backup()
+        dump = backupService.searchDump('/dump', data_type)
+        backupService.runDump(dump)
 
 def clean(options):
     os.system('''

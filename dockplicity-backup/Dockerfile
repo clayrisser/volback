@@ -9,11 +9,13 @@ ENV REMOVE_ALL_INC_BUT_OF_N_FULL=144
 ENV REMOVE_OLDER_THAN=6M
 ENV FULL_IF_OLDER_THAN=2W
 ENV ALLOW_SOURCE_MISMATCH=true
+ENV DATA_TYPE=raw
 
 RUN apt-get update
 RUN apt-get install -y duplicity python-pip gsutil libwww-perl curl
 RUN pip install boto
 RUN pip install dropbox
+RUN pip install pyyaml
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
 
 VOLUME /volumes
