@@ -1,7 +1,6 @@
 mariadb:
-  regex: "mariadb"
   image: "mariadb:latest"
-  commands:
-    - "sh -c 'mysqldump -h %ip% -u %env_MYSQL_USER% %env_MYSQL_DATABASE% > %target_dir%/%env_MYSQL_DATABASE%.dump'"
-  environment:
-    - MYSQL_PWD:%env_MYSQL_PASSWORD%
+  backup-file: "backup.sql"
+  data-location: "/var/lib/mysql"
+  backup: "mysqldump --user=<DATABASE_USER> --password=<DATABASE_PASSWORD> --all-databases > %DUMP%"
+  restore: "cat %DUMP% | mysql --user=<DATABASE_USER> --password=<DATABASE_PASSWORD>"
