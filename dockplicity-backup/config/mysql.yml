@@ -1,7 +1,5 @@
 mysql:
-  regex: "mysql"
-  image: "mysql:latest"
-  commands:
-    - "sh -c 'mysqldump -h %ip% -u %env_MYSQL_USER% %env_MYSQL_DATABASE% > %target_dir%/%env_MYSQL_DATABASE%.dump'"
-  environment:
-    - MYSQL_PWD:%env_MYSQL_PASSWORD%
+  data-location: "/var/lib/mysql"
+  backup: "mysqldump --user=<DATABASE_USER> --password=<DATABASE_PASSWORD> --all-databases > %TMP_DUMP_DIR%/backup.sql"
+  restore: "exec(\"/usr/bin/mysql -u<DATABASE_USER> -p<DATABASE_PASSWORD> <DATABASE_NAME>\")"
+  test: "ls /var/lib/mysql"

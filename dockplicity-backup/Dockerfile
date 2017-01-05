@@ -10,17 +10,24 @@ ENV REMOVE_OLDER_THAN=6M
 ENV FULL_IF_OLDER_THAN=2W
 ENV ALLOW_SOURCE_MISMATCH=true
 ENV DATA_TYPE=raw
+ENV DATABASE_USER=root
+ENV DATABASE_PASSWORD=hellodocker
+ENV DATABASE_NAME=database
+ENV CONTAINER_ID=""
 
 RUN apt-get update
 RUN apt-get install -y duplicity python-pip gsutil libwww-perl curl
 RUN pip install boto
 RUN pip install dropbox
 RUN pip install pyyaml
+RUN pip install docker
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
 
 VOLUME /volumes
 
 ADD ./backup.py /scripts/backup.py
+ADD ./backup /scripts/backup
+ADD ./config /scripts/config
 RUN chmod -R 700 /scripts
 
 CMD python /scripts/backup.py
