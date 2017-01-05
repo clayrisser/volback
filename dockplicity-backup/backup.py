@@ -11,7 +11,7 @@ def main():
     options = get_options()
     data_type = get_data_type(options)
     backup(options, data_type)
-#    clean(options)
+    clean(options)
 
 def get_options():
     options = {
@@ -28,7 +28,7 @@ def get_options():
     volume_dir = raw_dir[:len(raw_dir) - 4]
     dump_dir = (volume_dir + '/' + options['data_type']).replace('//', '/')
     return {
-        'allow_source_mismatch': eval((os.environ['ALLOW_SOURCE_MISMATCH'] if 'ALLOW_SOURCE_MISMATCH' in os.environ else 'true').title()),
+        'allow_source_mismatch': False if 'ALLOW_SOURCE_MISMATCH' in os.environ and os.environ['ALLOW_SOURCE_MISMATCH'] == 'false' else True,
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
         'backup_type': os.environ['BACKUP_TYPE'] if 'BACKUP_TYPE' in os.environ else 'incr',
         'full_if_older_than': os.environ['FULL_IF_OLDER_THAN'] if 'FULL_IF_OLDER_THAN' in os.environ else '2W',
@@ -55,9 +55,7 @@ def get_data_type(options):
         envs = re.findall('(?<=\<)[A-Z\d\-\_]+(?=\>)', setting['restore'])
         for env in envs:
             setting['backup'] = setting['backup'].replace('<' + env + '>', os.environ[env] if env in os.environ else '')
-            setting['restore'] = setting['restore'].replace('<' + env + '>', os.environ[env] if env in os.environ else '')
-        setting['backup'] = ('/bin/sh -c "' + setting['backup'] + '"').replace('%TMP_DUMP_DIR%', setting['data-location'] + '/dockplicity_backup').replace('//', '/')
-        setting['restore'] = '/bin/sh -c "' + setting['restore'] + '"'
+        setting['backup'] = ('/bin/sh -c "' + setting['backup'] + '"').replace('%DUMP%', setting['data-location'] + '/dockplicity_backup/' + setting['backup-file']).replace('//', '/')
         return setting
     else:
         return 'raw'
@@ -71,8 +69,6 @@ def backup(options, data_type):
         os.system('mv ' + options['tmp_dump_dir'] + ' ' + options['dump_dir'])
         os.system('umount ' + options['raw_dir'])
         os.system('rm -d ' + options['raw_dir'])
-        os.system('ls ' + options['volume_dir'])
-        os.system('ls ' + options['dump_dir'])
         print(data_type)
     allow_source_mismatch = ''
     if (options['allow_source_mismatch']):
