@@ -24,6 +24,7 @@ RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cro
 RUN touch /docker/cron.log
 
 ADD ./run.sh /docker/run.sh
+ADD ./cron.sh /docker/cron.sh
 ADD ./src /docker/src
 ADD ./config /docker/config
 RUN chmod -R 700 /docker
