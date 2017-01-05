@@ -1,7 +1,0 @@
-mongo:
-  regex: "mongo"
-  image: "mongo:latest"
-  backup:
-    - "/usr/bin/mysqldump -u <DATABASE_USER> --password=<DATABASE_PASSWORD> <DATABASE_NAME>"
-  restore:
-    - "/usr/bin/mysql -u <DATABASE_USER> --password=<DATABASE_PASSWORD> <DATABASE_NAME>"

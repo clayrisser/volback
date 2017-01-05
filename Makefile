@@ -2,7 +2,7 @@ CWD := $(shell readlink -en $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LI
 
 
 .PHONY: all
-all: fetch_dependancies build push
+all: fetch_dependancies build sweep push
 
 .PHONY: dockplicity_backup
 dockplicity_backup: fetch_dependancies build_dockplicity_backup push_dockplicity_backup
@@ -20,11 +20,13 @@ build: build_dockplicity_backup build_dockplicity_restore build_dockplicity
 
 .PHONY: build_dockplicity_backup
 build_dockplicity_backup:
+	cp -r ./config ./dockplicity-backup/config
 	docker build -t jamrizzi/dockplicity-backup:latest -f $(CWD)/dockplicity-backup/Dockerfile $(CWD)/dockplicity-backup
 	$(info built dockplicity-backup)
 
 .PHONY: build_dockplicity_restore
 build_dockplicity_restore:
+	cp -r ./config ./dockplicity-restore/config
 	docker build -t jamrizzi/dockplicity-restore:latest -f $(CWD)/dockplicity-restore/Dockerfile $(CWD)/dockplicity-restore
 	$(info built dockplicity-restore)
 
@@ -56,11 +58,19 @@ push_dockplicity:
 
 ## CLEAN ##
 .PHONY: clean
-clean:
-	@rm -rf dockplicity-backup/backup/*.pyc
-#	docker stop $(docker ps -a -q)
-#	docker rm -f $(docker ps -a -q)
+clean: sweep bleach
 	$(info cleaned)
+
+.PHONY: sweep
+sweep:
+	@rm -rf dockplicity-backup/backup/*.pyc
+	@rm -rf dockplicity-restore/config dockplicity-backup/config
+	$(info swept)
+
+.PHONY: bleach
+bleach:
+#	docker-clean
+	$(info bleached)
 
 
 ## FETCH DEPENDANCIES ##

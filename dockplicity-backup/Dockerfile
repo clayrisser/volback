@@ -25,7 +25,6 @@ RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cro
 VOLUME /volumes
 
 ADD ./backup.py /scripts/backup.py
-ADD ./backup /scripts/backup
 ADD ./config /scripts/config
 RUN chmod -R 700 /scripts
 
