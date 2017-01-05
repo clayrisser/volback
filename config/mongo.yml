@@ -1,5 +1,4 @@
 mongo:
-  image: "mongo:latest"
   backup-file: "backup.archive"
   data-location: "/data/db"
   backup: "mongodump --gzip --archive=%DUMP%"

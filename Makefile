@@ -32,6 +32,7 @@ build_dockplicity_restore:
 
 .PHONY: build_dockplicity
 build_dockplicity:
+	cp -r ./config ./dockplicity/config
 	docker build -t jamrizzi/dockplicity:latest -f $(CWD)/dockplicity/Dockerfile $(CWD)/dockplicity
 	$(info built dockplicity)
 
@@ -64,7 +65,7 @@ clean: sweep bleach
 .PHONY: sweep
 sweep:
 	@rm -rf dockplicity-backup/backup/*.pyc
-	@rm -rf dockplicity-restore/config dockplicity-backup/config
+	@rm -rf dockplicity-restore/config dockplicity-backup/config dockplicity/config
 	$(info swept)
 
 .PHONY: bleach

@@ -1,5 +1,4 @@
 mariadb:
-  image: "mariadb:latest"
   backup-file: "backup.sql"
   data-location: "/var/lib/mysql"
   backup: "mysqldump --user=<DATABASE_USER> --password=<DATABASE_PASSWORD> --all-databases > %DUMP%"

@@ -10,16 +10,22 @@ ENV REMOVE_ALL_INC_BUT_OF_N_FULL=144
 ENV REMOVE_OLDER_THAN=6M
 ENV FULL_IF_OLDER_THAN=2W
 ENV ALLOW_SOURCE_MISMATCH=true
+ENV COMMAND=cron
+ENV SERVICE=""
+ENV RESTORE_ALL=false
+ENV BLACKLIST=false
 
 RUN mkdir /docker
 RUN apt-get update
 RUN apt-get install -y python python-pip curl
 RUN pip install docker
+RUN pip install pyyaml
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
 RUN touch /docker/cron.log
 
-ADD ./cron.sh /docker/cron.sh
+ADD ./run.sh /docker/run.sh
 ADD ./src /docker/src
+ADD ./config /docker/config
 RUN chmod -R 700 /docker
 
-CMD go-cron "$CRON_SCHEDULE" bash /docker/cron.sh
+CMD bash /docker/run.sh
