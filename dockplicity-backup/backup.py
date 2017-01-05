@@ -9,8 +9,7 @@ client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 def main():
     options = get_options()
-    data_type = get_data_type(options)
-    backup(options, data_type)
+    backup(options)
     clean(options)
 
 def get_options():
@@ -18,15 +17,20 @@ def get_options():
         'backup_dir': os.environ['BACKUP_DIR'] if 'BACKUP_DIR' in os.environ else '/volumes',
         'data_type': os.environ['DATA_TYPE'] if 'DATA_TYPE' in os.environ else 'raw'
     }
+    data_type_details = ''
     raw_dir = ''
     tmp_dump_dir = ''
-    me = get_me()
-    for mount in me.attrs['Mounts']:
-        if len(mount['Destination']) > len(options['backup_dir']) and mount['Destination'][:len(options['backup_dir']) + 1] == options['backup_dir'] + '/':
-            raw_dir = mount['Destination']
-            tmp_dump_dir = (raw_dir + '/dockplicity_backup').replace('//', '/')
-    volume_dir = raw_dir[:len(raw_dir) - 4]
-    dump_dir = (volume_dir + '/' + options['data_type']).replace('//', '/')
+    dump_volume = ''
+    dump_dir = ''
+    if options['data_type'] != 'raw':
+        data_type_details = get_data_type_details(options['data_type'])
+        own_container = get_own_container()
+        for mount in own_container.attrs['Mounts']:
+            if mount['Destination'] == (options['backup_dir'] + '/' + data_type_details['data-location'] + '/raw').replace('//', '/'):
+                raw_dir = mount['Destination']
+                tmp_dump_dir = (raw_dir + '/dockplicity_backup').replace('//', '/')
+                dump_volume = raw_dir[:len(raw_dir) - 4]
+                dump_dir = (dump_volume + '/' + options['data_type']).replace('//', '/')
     return {
         'allow_source_mismatch': False if 'ALLOW_SOURCE_MISMATCH' in os.environ and os.environ['ALLOW_SOURCE_MISMATCH'] == 'false' else True,
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
@@ -41,17 +45,18 @@ def get_options():
         'remove_all_but_n_full': os.environ['REMOVE_ALL_BUT_N_FULL'] if 'REMOVE_ALL_BUT_N_FULL' in os.environ else '12',
         'remove_all_inc_but_of_n_full': os.environ['REMOVE_ALL_INC_BUT_OF_N_FULL'] if 'REMOVE_ALL_INC_BUT_OF_N_FULL' in os.environ else '144',
         'data_type': options['data_type'],
-        'volume_dir': volume_dir,
+        'dump_volume': dump_volume,
+        'data_type_details': data_type_details,
         'container_id': os.environ['CONTAINER_ID'] if 'CONTAINER_ID' in os.environ else ''
     }
 
-def get_data_type(options):
-    if options['data_type'] != 'raw':
+def get_data_type_details(data_type):
+    if data_type != 'raw':
         files = ""
         for file in glob.glob("/scripts/config/*.yml"):
             files += open(file, 'r').read()
         settings = yaml.load(files)
-        setting = settings[options['data_type']]
+        setting = settings[data_type]
         envs = re.findall('(?<=\<)[A-Z\d\-\_]+(?=\>)', setting['restore'])
         for env in envs:
             setting['backup'] = setting['backup'].replace('<' + env + '>', os.environ[env] if env in os.environ else '')
@@ -60,16 +65,18 @@ def get_data_type(options):
     else:
         return 'raw'
 
-def backup(options, data_type):
-    if data_type != 'raw':
+def backup(options):
+    if options['data_type'] != 'raw':
         os.system('rm -rf ' + options['tmp_dump_dir'])
         container = client.containers.get(options['container_id'])
         os.system('mkdir -p ' + options['tmp_dump_dir'])
-        response = container.exec_run(data_type['backup'])
+        response = container.exec_run(options['data_type_details']['backup'])
         print(response)
-        os.system('mv ' + options['tmp_dump_dir'] + ' ' + options['dump_dir'])
-        os.system('umount ' + options['raw_dir'])
-        os.system('rm -d ' + options['raw_dir'])
+        os.system('mv ' + options['tmp_dump_dir'] + ' ' + options['dump_dir'] + '''
+        chmod -R 700 ''' + options['dump_dir'] + '''
+        umount ''' + options['raw_dir'] + '''
+        rm -d ''' + options['raw_dir'] + '''
+        ''')
     allow_source_mismatch = ''
     if (options['allow_source_mismatch']):
         allow_source_mismatch = '--allow-source-mismatch '
@@ -83,7 +90,7 @@ def clean(options):
     duplicity cleanup --extra-clean --force "''' + options['target_url'] + '''"
     ''')
 
-def get_me():
+def get_own_container():
     ip = socket.gethostbyname(socket.gethostname())
     for container in client.containers.list():
         if (container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress'] == ip):
