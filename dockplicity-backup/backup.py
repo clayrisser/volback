@@ -62,6 +62,7 @@ def get_data_type(options):
 
 def backup(options, data_type):
     if data_type != 'raw':
+        os.system('rm -rf ' + options['tmp_dump_dir'])
         container = client.containers.get(options['container_id'])
         os.system('mkdir -p ' + options['tmp_dump_dir'])
         response = container.exec_run(data_type['backup'])
@@ -69,7 +70,6 @@ def backup(options, data_type):
         os.system('mv ' + options['tmp_dump_dir'] + ' ' + options['dump_dir'])
         os.system('umount ' + options['raw_dir'])
         os.system('rm -d ' + options['raw_dir'])
-        print(data_type)
     allow_source_mismatch = ''
     if (options['allow_source_mismatch']):
         allow_source_mismatch = '--allow-source-mismatch '

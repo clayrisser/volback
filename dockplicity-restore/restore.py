@@ -71,12 +71,12 @@ def restore(options, data_type):
         force = '--force '
     os.system('(echo ' + options['passphrase'] + ') | duplicity restore ' + restore_volume + force + '--time ' + options['restore_time'] + ' ' + options['target_url'] + ' ' + restore_dir)
     if data_type != 'raw':
+        os.system('rm -rf ' + options['tmp_dump_dir'])
         container = client.containers.get(options['container_id'])
         os.system('mv ' + options['dump_dir'] + ' ' + options['tmp_dump_dir'])
         response = container.exec_run(data_type['restore'])
         print(response)
         os.system('rm -rf ' + options['tmp_dump_dir'])
-        print(data_type)
 
 def get_me():
     ip = socket.gethostbyname(socket.gethostname())
