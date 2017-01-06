@@ -46,7 +46,7 @@ def get_services(platform_type, options):
             print('service')
         else:
             for service in rancher_call(options, '/services')['data']:
-                if len(service['instanceIds']) > 0:
+                if service['instanceIds']:
                     container = rancher_call(options, '/containers/' + random.choice(service['instanceIds']))
                     data_type = 'raw'
                     for key, item in options['data_types'].iteritems():
@@ -71,7 +71,7 @@ def get_services(platform_type, options):
                         'name': service['name'],
                         'host': container['hostId'],
                         'data_type': data_type,
-                        'volumes': get_volumes(platform_type, options, container)
+                        'mounts': get_mounts(platform_type, options, container)
                     })
     else:
         if options['service']:
@@ -87,7 +87,7 @@ def get_services(platform_type, options):
                 'name': container.attrs['Name'],
                 'host': False,
                 'data_type': data_type,
-                'volumes': get_volumes(platform_type, options, container)
+                'mounts': get_mounts(platform_type, options, container)
             })
         else:
             for container in client.containers.list():
@@ -114,34 +114,36 @@ def get_services(platform_type, options):
                         'name': container.attrs['Name'],
                         'host': False,
                         'data_type': data_type,
-                        'volumes': get_volumes(platform_type, options, container)
+                        'mounts': get_mounts(platform_type, options, container)
                     })
     return services
 
-def get_volumes(platform_type, options, container):
-    volumes = {}
-    mounts = {}
+def get_mounts(platform_type, options, container):
+    mounts = list()
+    all_mounts = {}
     if platform_type == 'rancher':
-        mounts = container['data']['dockerContainer']['Mounts']
+        all_mounts = container['data']['dockerContainer']['Mounts']
     else:
-        mounts = container.attrs['Mounts']
-    for mount in mounts:
-        source = mount['Source']
-        volume_driver = mount['Driver'] if 'Driver' in mount else 'local'
+        all_mounts = container.attrs['Mounts']
+    for mount in all_mounts:
+        driver = mount['Driver'] if 'Driver' in mount else 'local'
+        source = mount['Source'] if driver == 'local' else mount['Name']
         if len(source) >= 15 and source[:15] == '/var/lib/docker':
             continue
         if len(source) >= 15 and source[:15] == '/var/run/docker':
             continue
-        if len(source) >= 16 and source[:16] == '/var/run/rancher':
+        if len(source) >= 16 and source[:16] == '/var/lib/rancher':
             continue
-        if volume_driver != options['volume_driver']:
+        if source == 'rancher-cni':
             continue
         destination = ('/volumes/' + mount['Destination'] + '/raw').replace('//', '/')
-        volumes[mount['Source']] = {
-            'bind': destination,
+        mounts.append({
+            'source': source,
+            'destination': destination,
+            'driver': driver,
             'mode': 'rw'
-        }
-    return volumes
+        })
+    return mounts
 
 def backup_services(platform_type, services, options):
     environment = {
@@ -157,39 +159,56 @@ def backup_services(platform_type, services, options):
     if 'GS_SECRET_ACCESS_KEY' in os.environ:
         environment['GS_SECRET_ACCESS_KEY'] = os.environ['GS_SECRET_ACCESS_KEY']
     if platform_type == 'rancher':
-        os.system('''
+        os.popen('''
         (echo ''' + options['rancher_url'] + '''; \
         echo ''' + options['rancher_access_key'] + '''; \
         echo ''' + options['rancher_secret_key'] + ''') | rancher config
         ''')
     for service in services:
-        if len(service['volumes']) > 0:
+        if len(service['mounts']) > 0:
+            success = False
             environment['TARGET_URL'] = (options['target_url'] + '/' + service['name']).replace('//', '/')
             environment['CONTAINER_ID'] = service['name']
             environment['DATA_TYPE'] = service['data_type']
-            service['volumes']['/var/run/docker.sock'] = {
-                'bind': '/var/run/docker.sock',
-                'mode': 'rw'
-            }
             if platform_type == 'rancher':
-                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged --volume-driver=' + options['volume_driver']
+                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock'
                 for key, env in environment.iteritems():
                     command += ' -e ' + key + '=' + env
-                for key, vol in service['volumes'].iteritems():
-                    command += ' -v ' + key + ':' + vol['bind']
-                print(command)
+                for mount in service['mounts']:
+                    command += ' -v ' + mount['source'] + ':' + mount['destination']
+                command += ' jamrizzi/dockplicity-backup:latest'
+                res = os.system(command)
+                if (res == 0):
+                    success = True
             else:
+                volumes = {}
+                for mount in service['mounts']:
+                    volumes[mount['source']] = {
+                        'bind': mount['destination'],
+                        'mode': mount['mode']
+                    }
+                volumes['/var/run/docker.sock'] = {
+                    'bind': '/var/run/docker.sock',
+                    'mode': 'rw'
+                }
                 response = client.containers.run(
                     image='jamrizzi/dockplicity-backup:latest',
-                    volume_driver=options['volume_driver'],
-                    volumes=service['volumes'],
+                    volumes=volumes,
                     remove=True,
                     privileged=True,
                     environment=environment
                 )
                 print(response)
+            if (success):
+                print(service['name'] + ': SUCCESS\n-----------------------')
+                for mount in service['mounts']:
+                    print('    - ' + mount['source'] + ': volume backup success')
+            else:
+                print(service['name'] + ': FAILED\n------------------------')
+                for mount in service['mounts']:
+                    print('    - ' + mount['source'] + ': volume backup failed')
         else:
-            print('No volumes to backup for ' + service['name'])
+            print('    - contains no volumes')
 
 def get_data_types():
     files = ""
