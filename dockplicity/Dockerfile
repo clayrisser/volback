@@ -1,7 +1,6 @@
 FROM ubuntu:latest
 
 ENV CRON_SCHEDULE="0 0 0 * * *"
-ENV VOLUME_DRIVER="local"
 ENV PASSPHRASE=hellodocker
 ENV BACKUP_TYPE=incr
 ENV TARGET_URL=gs://my_google_bucket
@@ -20,10 +19,10 @@ RUN apt-get install -y python python-pip curl
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
 RUN curl -L https://get.docker.com | bash
 RUN curl -L https://github.com/rancher/cli/releases/download/v0.4.1/rancher-linux-amd64-v0.4.1.tar.gz | tar -zxv -C /tmp && mv /tmp/rancher*/* /usr/local/bin
-RUN pip install docker \
-    pip install pyyaml \
+RUN pip install docker && \
+    pip install pyyaml && \
     pip install requests
-RUN mkdir /docker \
+RUN mkdir /docker && \
     touch /docker/cron.log
 
 ADD ./run.sh /docker/run.sh

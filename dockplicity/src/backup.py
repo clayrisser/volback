@@ -20,7 +20,6 @@ def get_options():
         'rancher_url': os.environ['RANCHER_URL'] if 'RANCHER_URL' in os.environ else False,
         'rancher_access_key': os.environ['RANCHER_ACCESS_KEY'] if 'RANCHER_ACCESS_KEY' in os.environ else False,
         'rancher_secret_key': os.environ['RANCHER_SECRET_KEY'] if 'RANCHER_SECRET_KEY' in os.environ else False,
-        'volume_driver': os.environ['VOLUME_DRIVER'] if 'VOLUME_DRIVER' in os.environ else 'local',
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
         'backup_type': os.environ['BACKUP_TYPE'] if 'BACKUP_TYPE' in os.environ else 'incr',
         'full_if_older_than': os.environ['FULL_IF_OLDER_THAN'] if 'FULL_IF_OLDER_THAN' in os.environ else '2W',
@@ -140,6 +139,7 @@ def get_mounts(platform_type, options, container):
         mounts.append({
             'source': source,
             'destination': destination,
+            'origional_destination': mount['Destination'],
             'driver': driver,
             'mode': 'rw'
         })
@@ -202,11 +202,11 @@ def backup_services(platform_type, services, options):
             if (success):
                 print(service['name'] + ': SUCCESS\n-----------------------')
                 for mount in service['mounts']:
-                    print('    - ' + mount['source'] + ': volume backup success')
+                    print('    - ' + mount['source'] + ':' + mount['origional_destination'] + ' - volume backup success')
             else:
                 print(service['name'] + ': FAILED\n------------------------')
                 for mount in service['mounts']:
-                    print('    - ' + mount['source'] + ': volume backup failed')
+                    print('    - ' + mount['source'] + ':' + mount['origional_destination'] + ' - volume backup failed')
         else:
             print('    - contains no volumes')
 
