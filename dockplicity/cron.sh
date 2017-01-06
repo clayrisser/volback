@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python /scripts/run.py > /var/log/cron.log
+python /docker/src/backup.py >> /var/log/cron.log
