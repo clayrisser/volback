@@ -1,8 +1,12 @@
 import docker
+import random
+import json
 import glob
 import yaml
 import socket
 import os
+import requests
+from requests.auth import HTTPBasicAuth
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 def main():
@@ -38,7 +42,37 @@ def get_platform_type(options):
 def get_services(platform_type, options):
     services = list()
     if platform_type == 'rancher':
-        services = list()
+        if options['service']:
+            print('service')
+        else:
+            for service in rancher_call(options, '/services')['data']:
+                if len(service['instanceIds']) > 0:
+                    container = rancher_call(options, '/containers/' + random.choice(service['instanceIds']))
+                    data_type = 'raw'
+                    for key, item in options['data_types'].iteritems():
+                        image = container['data']['dockerContainer']['Image']
+                        if ':' in image:
+                            image = image[:image.index(':')]
+                        if image == key:
+                            data_type = key
+                    valid = False
+                    if options['blacklist']:
+                        valid = True
+                labels = container['data']['dockerContainer']['Labels']
+                for label in labels.iteritems():
+                    if options['blacklist']:
+                        if label[0] == 'dockplicity' and label[1] == 'false':
+                            valid = False
+                    else:
+                        if label[0] == 'dockplicity' and label[1] == 'true':
+                            valid = True
+                if valid:
+                    services.append({
+                        'name': service['name'],
+                        'host': container['hostId'],
+                        'data_type': data_type,
+                        'volumes': get_volumes(platform_type, options, container)
+                    })
     else:
         if options['service']:
             container = client.containers.get(options['service'])
@@ -64,10 +98,10 @@ def get_services(platform_type, options):
                         image = image[:image.index(':')]
                     if image == key:
                         data_type = key
-                    valid = False
-                    if options['blacklist']:
-                        valid = True
-                    labels = container.attrs['Config']['Labels']
+                valid = False
+                if options['blacklist']:
+                    valid = True
+                labels = container.attrs['Config']['Labels']
                 for label in labels.iteritems():
                     if options['blacklist']:
                         if label[0] == 'dockplicity' and label[1] == 'false':
@@ -84,27 +118,29 @@ def get_services(platform_type, options):
                     })
     return services
 
-def get_volumes(platform_type, options, raw_service):
+def get_volumes(platform_type, options, container):
     volumes = {}
+    mounts = {}
     if platform_type == 'rancher':
-        volumes = {}
+        mounts = container['data']['dockerContainer']['Mounts']
     else:
-        container = raw_service
-        labels = container.attrs['Config']['Labels']
-        for mount in container.attrs['Mounts']:
-            source = mount['Source']
-            volume_driver = mount['Driver'] if 'Driver' in mount else 'local'
-            if len(source) >= 15 and source[:15] == '/var/lib/docker':
-                continue
-            if len(source) >= 15 and source[:15] == '/var/run/docker':
-                continue
-            if volume_driver != options['volume_driver']:
-                continue
-            destination = ('/volumes/' + mount['Destination'] + '/raw').replace('//', '/')
-            volumes[mount['Source']] = {
-                'bind': destination,
-                'mode': 'rw'
-            }
+        mounts = container.attrs['Mounts']
+    for mount in mounts:
+        source = mount['Source']
+        volume_driver = mount['Driver'] if 'Driver' in mount else 'local'
+        if len(source) >= 15 and source[:15] == '/var/lib/docker':
+            continue
+        if len(source) >= 15 and source[:15] == '/var/run/docker':
+            continue
+        if len(source) >= 16 and source[:16] == '/var/run/rancher':
+            continue
+        if volume_driver != options['volume_driver']:
+            continue
+        destination = ('/volumes/' + mount['Destination'] + '/raw').replace('//', '/')
+        volumes[mount['Source']] = {
+            'bind': destination,
+            'mode': 'rw'
+        }
     return volumes
 
 def backup_services(platform_type, services, options):
@@ -120,6 +156,12 @@ def backup_services(platform_type, services, options):
         environment['GS_ACCESS_KEY_ID'] = os.environ['GS_ACCESS_KEY_ID']
     if 'GS_SECRET_ACCESS_KEY' in os.environ:
         environment['GS_SECRET_ACCESS_KEY'] = os.environ['GS_SECRET_ACCESS_KEY']
+    if platform_type == 'rancher':
+        os.system('''
+        (echo ''' + options['rancher_url'] + '''; \
+        echo ''' + options['rancher_access_key'] + '''; \
+        echo ''' + options['rancher_secret_key'] + ''') | rancher config
+        ''')
     for service in services:
         if len(service['volumes']) > 0:
             environment['TARGET_URL'] = (options['target_url'] + '/' + service['name']).replace('//', '/')
@@ -129,15 +171,23 @@ def backup_services(platform_type, services, options):
                 'bind': '/var/run/docker.sock',
                 'mode': 'rw'
             }
-            response = client.containers.run(
-                image='jamrizzi/dockplicity-backup:latest',
-                volume_driver=options['volume_driver'],
-                volumes=service['volumes'],
-                remove=True,
-                privileged=True,
-                environment=environment
-            )
-            print(response)
+            if platform_type == 'rancher':
+                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged --volume-driver=' + options['volume_driver']
+                for key, env in environment.iteritems():
+                    command += ' -e ' + key + '=' + env
+                for key, vol in service['volumes'].iteritems():
+                    command += ' -v ' + key + ':' + vol['bind']
+                print(command)
+            else:
+                response = client.containers.run(
+                    image='jamrizzi/dockplicity-backup:latest',
+                    volume_driver=options['volume_driver'],
+                    volumes=service['volumes'],
+                    remove=True,
+                    privileged=True,
+                    environment=environment
+                )
+                print(response)
         else:
             print('No volumes to backup for ' + service['name'])
 
@@ -147,5 +197,12 @@ def get_data_types():
         files += open(file, 'r').read()
     settings = yaml.load(files)
     return settings
+
+def rancher_call(options, call):
+    r = requests.get(options['rancher_url'] + '/v2-beta/' + call, auth=HTTPBasicAuth(options['rancher_access_key'], options['rancher_secret_key']), headers={
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    })
+    return r.json()
 
 main()
