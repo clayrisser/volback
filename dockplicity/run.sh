@@ -5,5 +5,5 @@ if [ "$COMMAND" == "backup" ]; then
 elif [ "$COMMAND" == "restore" ]; then
     python /docker/src/restore.py
 else
-    go-cron "$CRON_SCHEDULE" bash /scripts/cron.sh
+    go-cron "$CRON_SCHEDULE" bash /docker/cron.sh
 fi
