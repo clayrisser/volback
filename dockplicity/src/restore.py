@@ -1,4 +1,5 @@
 import docker
+import time
 import random
 import json
 import glob
@@ -23,14 +24,18 @@ def get_options():
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
         'target_url': os.environ['TARGET_URL'] if 'TARGET_URL' in os.environ else 'gs://my_google_bucket',
         'blacklist': False if os.environ['BLACKLIST'] != 'true' else True,
+        'tmp_dir': os.environ['TMP_DIR'] if 'TMP_DIR' in os.environ else '/tmp',
         'service': False if os.environ['SERVICE'] == '' else os.environ['SERVICE'],
         'restore_all': True if os.environ['RESTORE_ALL'] == 'true' else False,
         'data_types': get_data_types()
     }
 
 def get_platform_type(options):
-    if options['rancher_url']:
-        return 'rancher'
+    if options['rancher_url'] or options['rancher_access_key'] or options['rancher_secret_key']:
+        if options['rancher_url'] and options['rancher_access_key'] and options['rancher_secret_key']:
+            return 'rancher'
+        else:
+            exit('You are missing RANCHER_URL, RANCHER_ACCESS_KEY, or RANCHER_SECRET_KEY')
     else:
         return 'docker'
 
@@ -51,6 +56,7 @@ def get_services(platform_type, options):
                                 data_type = key
                         services.append({
                             'name': service['name'],
+                            'container': container['data']['dockerContainer']['Names'][0][1:],
                             'host': container['hostId'],
                             'data_type': data_type,
                             'mounts': get_mounts(platform_type, options, container)
@@ -69,21 +75,22 @@ def get_services(platform_type, options):
                     valid = False
                     if options['blacklist']:
                         valid = True
-                labels = container['data']['dockerContainer']['Labels']
-                for label in labels.iteritems():
-                    if options['blacklist']:
-                        if label[0] == 'dockplicity' and label[1] == 'false':
-                            valid = False
-                    else:
-                        if label[0] == 'dockplicity' and label[1] == 'true':
-                            valid = True
-                if valid:
-                    services.append({
-                        'name': service['name'],
-                        'host': container['hostId'],
-                        'data_type': data_type,
-                        'mounts': get_mounts(platform_type, options, container)
-                    })
+                    labels = container['data']['dockerContainer']['Labels']
+                    for label in labels.iteritems():
+                        if options['blacklist']:
+                            if label[0] == 'dockplicity' and label[1] == 'false':
+                                valid = False
+                        else:
+                            if label[0] == 'dockplicity' and label[1] == 'true':
+                                valid = True
+                    if valid:
+                        services.append({
+                            'name': service['name'],
+                            'container': container['data']['dockerContainer']['Names'][0][1:],
+                            'host': container['hostId'],
+                            'data_type': data_type,
+                            'mounts': get_mounts(platform_type, options, container)
+                        })
     else:
         if options['service']:
             container = client.containers.get(options['service'])
@@ -95,7 +102,8 @@ def get_services(platform_type, options):
                 if image == key:
                     data_type = key
             services.append({
-                'name': container.attrs['Name'],
+                'name': container.attrs['Name'][1:],
+                'container': container.attrs['Name'][1:],
                 'host': False,
                 'data_type': data_type,
                 'mounts': get_mounts(platform_type, options, container)
@@ -122,7 +130,8 @@ def get_services(platform_type, options):
                             valid = True
                 if valid:
                     services.append({
-                        'name': container.attrs['Name'],
+                        'name': container.attrs['Name'][1:],
+                        'container': container.attrs['Name'][1:],
                         'host': False,
                         'data_type': data_type,
                         'mounts': get_mounts(platform_type, options, container)
@@ -145,7 +154,7 @@ def get_mounts(platform_type, options, container):
             continue
         if len(source) >= 16 and source[:16] == '/var/lib/rancher':
             continue
-        if source == 'rancher-cni':
+        if source == 'rancher-cni' or source == '/dev' or source == '/run' or source == '/lib/modules' or source == '/var/run':
             continue
         destination = ('/volumes/' + mount['Destination'] + '/raw').replace('//', '/')
         mounts.append({
@@ -158,9 +167,12 @@ def get_mounts(platform_type, options, container):
     return mounts
 
 def restore_services(platform_type, services, options):
+    if len(services) <= 0:
+        exit('No services to restore')
     environment = {
         'PASSPHRASE': options['passphrase'],
-        'FORCE': 'true'
+        'FORCE': 'true',
+        'TMPDIR': '/tmp/duplicity'
     }
     if 'GS_ACCESS_KEY_ID' in os.environ:
         environment['GS_ACCESS_KEY_ID'] = os.environ['GS_ACCESS_KEY_ID']
@@ -176,10 +188,10 @@ def restore_services(platform_type, services, options):
         if len(service['mounts']) > 0:
             success = False
             environment['TARGET_URL'] = (options['target_url'] + '/' + service['name']).replace('//', '/')
-            environment['CONTAINER_ID'] = service['name']
+            environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
             if platform_type == 'rancher':
-                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock'
+                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v ' + options['tmp_mount'] + ':/tmp/duplicity'
                 for key, env in environment.iteritems():
                     command += ' -e ' + key + '=' + env
                 for mount in service['mounts']:
@@ -199,24 +211,29 @@ def restore_services(platform_type, services, options):
                     'bind': '/var/run/docker.sock',
                     'mode': 'rw'
                 }
-                response = client.containers.run(
-                    image='jamrizzi/dockplicity-restore:latest',
-                    volumes=volumes,
-                    remove=True,
-                    privileged=True,
-                    environment=environment
-                )
-                print(response)
+                volumes[options['tmp_mount']] = {
+                    'bind': '/tmp/duplicity',
+                    'mode': 'rw'
+                }
+                try:
+                    response = client.containers.run(
+                        image='jamrizzi/dockplicity-restore:latest',
+                        volumes=volumes,
+                        remove=True,
+                        privileged=True,
+                        environment=environment
+                    )
+                    success = True
+                except:
+                    success = False
             if (success):
-                print(service['name'] + ': SUCCESS\n-----------------------')
-                for mount in service['mounts']:
-                    print('    - ' + mount['source'] + ':' + mount['origional_destination'] + ' - volume restore success')
+                print('\n' + service['name'] + ': SUCCESS\n----------------------------')
             else:
-                print(service['name'] + ': FAILED\n------------------------')
-                for mount in service['mounts']:
-                    print('    - ' + mount['source'] + ':' + mount['origional_destination'] + ' - volume restore failed')
+                print('\n' + service['name'] + ': FAILED\n-----------------------------')
+            for mount in service['mounts']:
+                print('    - ' + mount['source'] + ':' + mount['origional_destination'])
         else:
-            print('    - contains no volumes')
+            print('\n' + service['name'] + ': NO VOLUMES\n-----------------------------')
 
 def get_data_types():
     files = ""

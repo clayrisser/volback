@@ -40,6 +40,7 @@ def get_options():
         'raw_dir': raw_dir,
         'tmp_dump_dir': tmp_dump_dir,
         'dump_dir': dump_dir,
+        'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
         'target_url': os.environ['TARGET_URL'] if 'TARGET_URL' in os.environ else 'gs://my_google_bucket',
         'remove_older_than': os.environ['REMOVE_OLDER_THAN'] if 'REMOVE_OLDER_THAN' in os.environ else '6M',
         'remove_all_but_n_full': os.environ['REMOVE_ALL_BUT_N_FULL'] if 'REMOVE_ALL_BUT_N_FULL' in os.environ else '12',
@@ -78,9 +79,11 @@ def backup(options):
         rm -d ''' + options['raw_dir'] + '''
         ''')
     allow_source_mismatch = ''
+    if (options['encrypt'] == False):
+        no_encrypt = '--no-encrypt '
     if (options['allow_source_mismatch']):
         allow_source_mismatch = '--allow-source-mismatch '
-    os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + ') | duplicity ' + options['backup_type'] + ' ' + allow_source_mismatch + '--full-if-older-than ' + options['full_if_older_than'] + ' ' + options['backup_dir'] + ' ' + options['target_url'])
+    os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + ') | duplicity ' + options['backup_type'] + ' ' + allow_source_mismatch + no_encrypt + '--full-if-older-than ' + options['full_if_older_than'] + ' ' + options['backup_dir'] + ' ' + options['target_url'])
 
 def clean(options):
     os.system('''

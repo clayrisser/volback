@@ -13,6 +13,8 @@ ENV COMMAND=cron
 ENV SERVICE=""
 ENV RESTORE_ALL=false
 ENV BLACKLIST=false
+ENV ENCRYPT=false
+ENV TMP_MOUNT=/tmp
 
 RUN apt-get update
 RUN apt-get install -y python python-pip curl

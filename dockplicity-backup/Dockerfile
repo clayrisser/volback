@@ -13,14 +13,16 @@ ENV DATA_TYPE=raw
 ENV DATABASE_USER=root
 ENV DATABASE_PASSWORD=hellodocker
 ENV CONTAINER_ID=""
+ENV ENCRYPT=false
+ENV TMPDIR=/tmp
 
 RUN apt-get update
 RUN apt-get install -y duplicity python-pip gsutil libwww-perl curl
-RUN pip install boto
-RUN pip install dropbox
-RUN pip install pyyaml
-RUN pip install docker
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
+RUN pip install boto && \
+    pip install dropbox && \
+    pip install pyyaml && \
+    pip install docker
 
 VOLUME /volumes
 
