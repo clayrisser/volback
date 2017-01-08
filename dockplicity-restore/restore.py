@@ -9,41 +9,55 @@ client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 def main():
     options = get_options()
+    mount_storage(options)
     restore(options)
 
 def get_options():
     options = {
-        'restore_dir': os.environ['RESTORE_DIR'] if 'RESTORE_DIR' in os.environ else '/volumes',
-        'data_type': os.environ['DATA_TYPE'] if 'DATA_TYPE' in os.environ else 'raw'
+        'data_type': os.environ['DATA_TYPE'],
+        'target_url': os.environ['TARGET_URL']
     }
+    storage_backend = False
+    bucket = ''
+    if options['target_url'] != '':
+        storage_backend = options['target_url'][:options['target_url'].index(':')]
+        bucket = options['target_url'][options['target_url'].index(':') + 3:]
     data_type_details = ''
     raw_dir = ''
     tmp_dump_dir = ''
     dump_volume = ''
     dump_dir = ''
+    mounts = list()
+    own_container = get_own_container()
+    for mount in own_container.attrs['Mounts']:
+        if mount['Destination'] != '/var/run/docker.sock' and mount['Destination'] != '/volumes' and mount['Destination'] != '/borg':
+            mounts.append(mount)
     if options['data_type'] != 'raw':
         data_type_details = get_data_type_details(options['data_type'])
         own_container = get_own_container()
         for mount in own_container.attrs['Mounts']:
-            if options['data_type'] != 'raw' and mount['Destination'] == (options['restore_dir'] + '/' + data_type_details['data-location'] + '/raw').replace('//', '/'):
+            if options['data_type'] != 'raw' and mount['Destination'] == ('/volumes/' + data_type_details['data-location'] + '/raw').replace('//', '/'):
                 raw_dir = mount['Destination']
                 tmp_dump_dir = (raw_dir + '/dockplicity_backup').replace('//', '/')
                 dump_volume = raw_dir[:len(raw_dir) - 4]
                 dump_dir = (dump_volume + '/' + options['data_type']).replace('//', '/')
     return {
-        'allow_source_mismatch': False if 'ALLOW_SOURCE_MISMATCH' in os.environ and os.environ['ALLOW_SOURCE_MISMATCH'] == 'false' else True,
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
-        'restore_dir': options['restore_dir'],
+        'google_application_credentials': os.environ['GOOGLE_APPLICATION_CREDENTIALS'],
+        'service': os.environ['SERVICE'],
+        'access_key': os.environ['ACCESS_KEY'],
+        'secret_key': os.environ['SECRET_KEY'],
+        'target_url': options['target_url'],
+        'storage_backend': storage_backend,
+        'bucket': bucket,
         'raw_dir': raw_dir,
         'tmp_dump_dir': tmp_dump_dir,
         'dump_dir': dump_dir,
-        'target_url': os.environ['TARGET_URL'] if 'TARGET_URL' in os.environ else 'gs://my_google_bucket',
         'data_type': options['data_type'],
         'dump_volume': dump_volume,
-        'restore_time': os.environ['RESTORE_TIME'] if 'RESTORE_TIME' in os.environ else 'now',
-        'restore_volume': os.environ['RESTORE_VOLUME'] if 'RESTORE_VOLUME' in os.environ and os.environ['RESTORE_VOLUME'] != '' else False,
-        'force': True if 'FORCE' in os.environ and os.environ['FORCE'] == "true" else False,
+        'time': os.environ['TIME'],
         'data_type_details': data_type_details,
+        'mounts': mounts,
         'container_id': os.environ['CONTAINER_ID'] if 'CONTAINER_ID' in os.environ else ''
     }
 
@@ -62,19 +76,37 @@ def get_data_type_details(data_type):
     else:
         return 'raw'
 
+def mount_storage(options):
+    os.system('''
+    mkdir -p /project
+    echo ''' + options['access_key'] + ':' + options['secret_key'] + ''' > /project/auth.txt
+    chmod 600 /project/auth.txt
+    mkdir /borg
+    ''')
+    if options['storage_backend'] == 'gs':
+        os.system('s3fs ' + options['bucket'] + ''' /borg \
+        -o nomultipart \
+        -o passwd_file=/project/auth.txt \
+        -o sigv2 \
+        -o url=https://storage.googleapis.com
+        ''')
+
 def restore(options):
     restore_volume = ''
-    force = ''
-    restore_dir = options['restore_dir']
+    restore_dir = '/volumes'
     if (options['restore_volume']):
         file_to_restore = options['restore_volume']
         if file_to_restore[0] == '/':
             file_to_restore = file_to_restore[1:]
         restore_volume = '--file-to-restore ' + file_to_restore + ' '
         restore_dir = (options['restore_dir'] + '/' + options['restore_volume']).replace('//', '/')
-    if (options['force']):
-        force = '--force '
-    os.system('(echo ' + options['passphrase'] + ') | duplicity restore ' + restore_volume + force + '--time ' + options['restore_time'] + ' ' + options['target_url'] + ' ' + restore_dir)
+    no_encrypt = ''
+    if (options['encrypt'] == False):
+        no_encrypt = '--encryption=none '
+    for mount in options['mounts']:
+        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + options['time']
+        command = '(echo y) | borg extract ::' + name
+        os.system(command)
     if options['data_type'] != 'raw':
         os.system('rm -rf ' + options['tmp_dump_dir'])
         container = client.containers.get(options['container_id'])

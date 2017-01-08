@@ -1,30 +1,32 @@
 FROM ubuntu:latest
 
 ENV PASSPHRASE=hellodocker
-ENV BACKUP_TYPE=incr
-ENV TARGET_URL=gs://my_google_bucket
-ENV BACKUP_DIR=/volumes
-ENV REMOVE_ALL_BUT_N_FULL=12
-ENV REMOVE_ALL_INC_BUT_OF_N_FULL=144
-ENV REMOVE_OLDER_THAN=6M
-ENV FULL_IF_OLDER_THAN=2W
-ENV ALLOW_SOURCE_MISMATCH=true
-ENV DATA_TYPE=raw
-ENV DATABASE_USER=root
-ENV DATABASE_PASSWORD=hellodocker
-ENV CONTAINER_ID=""
+ENV ACCESS_KEY=""
+ENV SECRET_KEY=""
+ENV TARGET_URL=""
+ENV SERVICE=unknown
 ENV ENCRYPT=false
-ENV TMPDIR=/tmp
+ENV DATA_TYPE=raw
+ENV CONTAINER_ID=""
+ENV KEEP_WITHIN=1y
+ENV HOURLY=1
+ENV DAILY=2
+ENV WEEKLY=14
+ENV MONTHLY=30
+ENV YEARLY=200
 
 RUN apt-get update
-RUN apt-get install -y duplicity python-pip gsutil libwww-perl curl
+RUN apt-get install -y curl
+RUN apt-get install -y automake autotools-dev g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config python-pip borgbackup
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
-RUN pip install boto && \
-    pip install dropbox && \
-    pip install pyyaml && \
+RUN pip install pyyaml && \
     pip install docker
-
-VOLUME /volumes
+RUN git clone https://github.com/s3fs-fuse/s3fs-fuse.git && \
+    cd s3fs-fuse && \
+    ./autogen.sh && \
+    ./configure && \
+    make && \
+    make install
 
 ADD ./backup.py /scripts/backup.py
 ADD ./config /scripts/config

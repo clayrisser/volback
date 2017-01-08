@@ -1,26 +1,26 @@
 FROM ubuntu:latest
 
 ENV PASSPHRASE=hellodocker
-ENV TARGET_URL=gs://my_google_bucket
-ENV RESTORE_DIR=/volumes
-ENV ALLOW_SOURCE_MISMATCH=true
-ENV RESTORE_TIME=now
-ENV RESTORE_VOLUME=""
-ENV FORCE=false
-ENV DATABASE_USER=root
-ENV DATABASE_PASSWORD=hellodocker
+ENV ACCESS_KEY=""
+ENV SECRET_KEY=""
+ENV TARGET_URL=""
+ENV SERVICE=unknown
+ENV DATA_TYPE=raw
 ENV CONTAINER_ID=""
-ENV TMPDIR=/tmp
+ENV TIME=""
 
 RUN apt-get update
-RUN apt-get install -y duplicity python-pip gsutil libwww-perl curl
+RUN apt-get install -y curl
+RUN apt-get install -y automake autotools-dev g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config python-pip borgbackup
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
-RUN pip install boto && \
-    pip install dropbox && \
-    pip install pyyaml && \
+RUN pip install pyyaml && \
     pip install docker
-
-VOLUME /volumes
+RUN git clone https://github.com/s3fs-fuse/s3fs-fuse.git && \
+    cd s3fs-fuse && \
+    ./autogen.sh && \
+    ./configure && \
+    make && \
+    make install
 
 ADD ./restore.py /scripts/restore.py
 ADD ./config /scripts/config

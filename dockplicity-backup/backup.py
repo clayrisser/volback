@@ -9,46 +9,61 @@ client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 def main():
     options = get_options()
+    mount_storage(options)
     backup(options)
     clean(options)
 
 def get_options():
     options = {
-        'backup_dir': os.environ['BACKUP_DIR'] if 'BACKUP_DIR' in os.environ else '/volumes',
-        'data_type': os.environ['DATA_TYPE'] if 'DATA_TYPE' in os.environ else 'raw'
+        'data_type': os.environ['DATA_TYPE'],
+        'target_url': os.environ['TARGET_URL']
     }
+    storage_backend = False
+    bucket = ''
+    if options['target_url'] != '':
+        storage_backend = options['target_url'][:options['target_url'].index(':')]
+        bucket = options['target_url'][options['target_url'].index(':') + 3:]
     data_type_details = ''
     raw_dir = ''
     tmp_dump_dir = ''
     dump_volume = ''
     dump_dir = ''
+    mounts = list()
+    own_container = get_own_container()
+    for mount in own_container.attrs['Mounts']:
+        if mount['Destination'] != '/var/run/docker.sock' and mount['Destination'] != '/volumes' and mount['Destination'] != '/borg':
+            mounts.append(mount)
     if options['data_type'] != 'raw':
         data_type_details = get_data_type_details(options['data_type'])
-        own_container = get_own_container()
         for mount in own_container.attrs['Mounts']:
-            if mount['Destination'] == (options['backup_dir'] + '/' + data_type_details['data-location'] + '/raw').replace('//', '/'):
+            if mount['Destination'] == ('/volumes/' + data_type_details['data-location'] + '/raw').replace('//', '/'):
                 raw_dir = mount['Destination']
                 tmp_dump_dir = (raw_dir + '/dockplicity_backup').replace('//', '/')
                 dump_volume = raw_dir[:len(raw_dir) - 4]
                 dump_dir = (dump_volume + '/' + options['data_type']).replace('//', '/')
     return {
-        'allow_source_mismatch': False if 'ALLOW_SOURCE_MISMATCH' in os.environ and os.environ['ALLOW_SOURCE_MISMATCH'] == 'false' else True,
-        'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
-        'backup_type': os.environ['BACKUP_TYPE'] if 'BACKUP_TYPE' in os.environ else 'incr',
-        'full_if_older_than': os.environ['FULL_IF_OLDER_THAN'] if 'FULL_IF_OLDER_THAN' in os.environ else '2W',
-        'backup_dir': options['backup_dir'],
+        'passphrase': os.environ['PASSPHRASE'],
         'raw_dir': raw_dir,
+        'access_key': os.environ['ACCESS_KEY'],
+        'secret_key': os.environ['SECRET_KEY'],
+        'target_url': options['target_url'],
+        'storage_backend': storage_backend,
+        'bucket': bucket,
         'tmp_dump_dir': tmp_dump_dir,
         'dump_dir': dump_dir,
         'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
-        'target_url': os.environ['TARGET_URL'] if 'TARGET_URL' in os.environ else 'gs://my_google_bucket',
-        'remove_older_than': os.environ['REMOVE_OLDER_THAN'] if 'REMOVE_OLDER_THAN' in os.environ else '6M',
-        'remove_all_but_n_full': os.environ['REMOVE_ALL_BUT_N_FULL'] if 'REMOVE_ALL_BUT_N_FULL' in os.environ else '12',
-        'remove_all_inc_but_of_n_full': os.environ['REMOVE_ALL_INC_BUT_OF_N_FULL'] if 'REMOVE_ALL_INC_BUT_OF_N_FULL' in os.environ else '144',
         'data_type': options['data_type'],
         'dump_volume': dump_volume,
         'data_type_details': data_type_details,
-        'container_id': os.environ['CONTAINER_ID'] if 'CONTAINER_ID' in os.environ else ''
+        'service': os.environ['SERVICE'],
+        'container_id': os.environ['CONTAINER_ID'],
+        'yearly': os.environ['YEARLY'],
+        'monthly': os.environ['MONTHLY'],
+        'mounts': mounts,
+        'weekly': os.environ['WEEKLY'],
+        'daily': os.environ['DAILY'],
+        'hourly': os.environ['HOURLY'],
+        'keep_within': os.environ['KEEP_WITHIN']
     }
 
 def get_data_type_details(data_type):
@@ -66,7 +81,25 @@ def get_data_type_details(data_type):
     else:
         return 'raw'
 
+def mount_storage(options):
+    os.system('''
+    mkdir -p /project
+    echo ''' + options['access_key'] + ':' + options['secret_key'] + ''' > /project/auth.txt
+    chmod 600 /project/auth.txt
+    ''')
+    if options['storage_backend'] == 'gs':
+        os.system('''
+        mkdir /borg
+        s3fs ''' + options['bucket'] + ''' /borg \
+        -o nomultipart \
+        -o passwd_file=/project/auth.txt \
+        -o sigv2 \
+        -o url=https://storage.googleapis.com
+        ''')
+
 def backup(options):
+    os.environ['BORG_PASSPHRASE'] = os.environ['PASSPHRASE']
+    os.environ['BORG_REPO'] = '/borg'
     if options['data_type'] != 'raw':
         os.system('rm -rf ' + options['tmp_dump_dir'])
         container = client.containers.get(options['container_id'])
@@ -78,20 +111,22 @@ def backup(options):
         umount ''' + options['raw_dir'] + '''
         rm -d ''' + options['raw_dir'] + '''
         ''')
-    allow_source_mismatch = ''
+    no_encrypt = ''
     if (options['encrypt'] == False):
-        no_encrypt = '--no-encrypt '
-    if (options['allow_source_mismatch']):
-        allow_source_mismatch = '--allow-source-mismatch '
-    os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + ') | duplicity ' + options['backup_type'] + ' ' + allow_source_mismatch + no_encrypt + '--full-if-older-than ' + options['full_if_older_than'] + ' ' + options['backup_dir'] + ' ' + options['target_url'])
+        no_encrypt = '--encryption=none '
+    if os.path.isdir('/borg') == False or os.listdir('/borg') == []:
+        os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + '; echo) | borg init ' + no_encrypt + '/borg')
+    for mount in options['mounts']:
+        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-{now}'
+        command = '(echo y) | borg create ::' + name + ' ' + mount['Destination']
+        os.system(command)
 
 def clean(options):
-    os.system('''
-    duplicity remove-older-than ''' + options['remove_older_than'] + ' --force "' + options['target_url'] + '''"
-    duplicity remove-all-but-n-full ''' + options['remove_all_but_n_full'] + ' --force "' + options['target_url'] + '''"
-    duplicity remove-all-inc-of-but-n-full ''' + options['remove_all_inc_but_of_n_full'] + ' --force "' + options['target_url'] + '''"
-    duplicity cleanup --extra-clean --force "''' + options['target_url'] + '''"
-    ''')
+    prefixes = list()
+    for mount in options['mounts']:
+        name = options['service'] + mount['Destination'].replace('/', '#')
+        command = '(echo y) | borg prune --prefix=' + name + ' --keep-within=' + options['keep_within'] + ' --keep-hourly=' + options['hourly'] + ' --keep-daily=' + options['daily'] + ' --keep-weekly=' + options['weekly'] + ' --keep-monthly=' + options['monthly'] + ' --keep-yearly=' + options['yearly']
+        os.system(command)
 
 def get_own_container():
     ip = socket.gethostbyname(socket.gethostname())

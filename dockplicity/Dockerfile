@@ -31,5 +31,13 @@ ADD ./run.sh /docker/run.sh
 ADD ./src /docker/src
 ADD ./config /docker/config
 RUN chmod -R 700 /docker
+RUN tee /backup <<EOF \
+#!/bin/bash \
+python /docker/src/backup.py \
+EOF && chmod +x /backup
+RUN tee /restore <<EOF \
+#!/bin/bash \
+python /docker/src/restore.py \
+EOF && chmod +x /restore
 
 CMD bash /docker/run.sh
