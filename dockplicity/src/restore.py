@@ -21,8 +21,8 @@ def get_options():
         'rancher_url': False if os.environ['RANCHER_URL'] == '' else os.environ['RANCHER_URL'],
         'rancher_access_key': False if os.environ['RANCHER_ACCESS_KEY'] == '' else os.environ['RANCHER_ACCESS_KEY'],
         'rancher_secret_key': False if os.environ['RANCHER_SECRET_KEY'] == '' else os.environ['RANCHER_SECRET_KEY'],
-        'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
-        'target_url': os.environ['TARGET_URL'] if 'TARGET_URL' in os.environ else 'gs://my_google_bucket',
+        'passphrase': os.environ['PASSPHRASE'],
+        'storage_url': os.environ['STORAGE_URL'],
         'blacklist': False if os.environ['BLACKLIST'] != 'true' else True,
         'encrypt': os.environ['ENCRYPT'],
         'service': False if os.environ['SERVICE'] == '' else os.environ['SERVICE'],
@@ -177,8 +177,9 @@ def restore_services(platform_type, services, options):
         'PASSPHRASE': options['passphrase'],
         'ENCRYPT': options['encrypt'],
         'TIME': options['time'],
-        'ACCESS_KEY': options['storage_access_key'],
-        'SECRET_KEY': options['storage_secret_key']
+        'STORAGE_ACCESS_KEY': options['storage_access_key'],
+        'STORAGE_SECRET_KEY': options['storage_secret_key'],
+        'STORAGE_URL': options['storage_url']
     }
     if platform_type == 'rancher':
         os.popen('''
@@ -189,7 +190,6 @@ def restore_services(platform_type, services, options):
     for service in services:
         if len(service['mounts']) > 0:
             success = False
-            environment['TARGET_URL'] = options['target_url'] + ('/' + service['name']).replace('//', '/')
             environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
             environment['SERVICE'] = service['name']

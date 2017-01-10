@@ -15,13 +15,13 @@ def main():
 def get_options():
     options = {
         'data_type': os.environ['DATA_TYPE'],
-        'target_url': os.environ['TARGET_URL']
+        'storage_url': os.environ['STORAGE_URL']
     }
     storage_backend = False
     bucket = ''
-    if options['target_url'] != '':
-        storage_backend = options['target_url'][:options['target_url'].index(':')]
-        bucket = options['target_url'][options['target_url'].index(':') + 3:]
+    if options['storage_url'] != '':
+        storage_backend = options['storage_url'][:options['storage_url'].index(':')]
+        bucket = options['storage_url'][options['storage_url'].index(':') + 3:]
     service = os.environ['SERVICE']
     data_type_details = ''
     raw_dir = ''
@@ -44,9 +44,9 @@ def get_options():
                 dump_dir = (dump_volume + '/' + options['data_type']).replace('//', '/')
     return {
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
-        'access_key': os.environ['ACCESS_KEY'],
-        'secret_key': os.environ['SECRET_KEY'],
-        'target_url': options['target_url'],
+        'storage_access_key': os.environ['STORAGE_ACCESS_KEY'],
+        'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
+        'storage_url': options['storage_url'],
         'storage_backend': storage_backend,
         'bucket': bucket,
         'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
@@ -82,7 +82,7 @@ def mount_storage(options):
     os.system('''
     mkdir -p /project
     mkdir -p ''' +  options['borg_repo'] + '''
-    echo ''' + options['access_key'] + ':' + options['secret_key'] + ''' > /project/auth.txt
+    echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
     mkdir -p /borg
     ''')

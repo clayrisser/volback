@@ -24,7 +24,7 @@ def get_options():
         'storage_access_key': os.environ['STORAGE_ACCESS_KEY'],
         'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
         'passphrase': os.environ['PASSPHRASE'],
-        'target_url': os.environ['TARGET_URL'],
+        'storage_url': os.environ['STORAGE_URL'],
         'encrypt': os.environ['ENCRYPT'],
         'storage_volume': os.environ['STORAGE_VOLUME'] if 'STORAGE_VOLUME' in os.environ else False,
         'blacklist': False if os.environ['BLACKLIST'] != 'true' else True,
@@ -186,8 +186,9 @@ def backup_services(platform_type, services, options):
         'WEEKLY': options['weekly'],
         'MONTHLY': options['monthly'],
         'YEARLY': options['yearly'],
-        'ACCESS_KEY': options['storage_access_key'],
-        'SECRET_KEY': options['storage_secret_key']
+        'STORAGE_ACCESS_KEY': options['storage_access_key'],
+        'STORAGE_SECRET_KEY': options['storage_secret_key'],
+        'STORAGE_URL': options['storage_url']
     }
     if platform_type == 'rancher':
         os.popen('''
@@ -198,7 +199,6 @@ def backup_services(platform_type, services, options):
     for service in services:
         if len(service['mounts']) > 0:
             success = False
-            environment['TARGET_URL'] = options['target_url']
             environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
             environment['SERVICE'] = service['name']

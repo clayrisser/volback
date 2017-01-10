@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 ENV CRON_SCHEDULE="0 0 0 * * *"
 ENV PASSPHRASE=hellodocker
-ENV TARGET_URL=gs://my_google_bucket
+ENV STORAGE_URL=gs://my_google_bucket
 ENV COMMAND=cron
 ENV SERVICE=""
 ENV RESTORE_ALL=false
