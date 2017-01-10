@@ -20,18 +20,21 @@ build: build_dockplicity_backup build_dockplicity_restore build_dockplicity
 
 .PHONY: build_dockplicity_backup
 build_dockplicity_backup:
+	docker pull jamrizzi/dockplicity-backup
 	cp -r ./config ./dockplicity-backup/config
 	docker build -t jamrizzi/dockplicity-backup:latest -f $(CWD)/dockplicity-backup/Dockerfile $(CWD)/dockplicity-backup
 	$(info built dockplicity-backup)
 
 .PHONY: build_dockplicity_restore
 build_dockplicity_restore:
+	docker pull jamrizzi/dockplicity-restore
 	cp -r ./config ./dockplicity-restore/config
 	docker build -t jamrizzi/dockplicity-restore:latest -f $(CWD)/dockplicity-restore/Dockerfile $(CWD)/dockplicity-restore
 	$(info built dockplicity-restore)
 
 .PHONY: build_dockplicity
 build_dockplicity:
+	docker pull jamrizzi/dockplicity
 	cp -r ./config ./dockplicity/config
 	docker build -t jamrizzi/dockplicity:latest -f $(CWD)/dockplicity/Dockerfile $(CWD)/dockplicity
 	$(info built dockplicity)

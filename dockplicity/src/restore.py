@@ -18,15 +18,19 @@ def main():
 
 def get_options():
     return {
-        'rancher_url': os.environ['RANCHER_URL'] if 'RANCHER_URL' in os.environ else False,
-        'rancher_access_key': os.environ['RANCHER_ACCESS_KEY'] if 'RANCHER_ACCESS_KEY' in os.environ else False,
-        'rancher_secret_key': os.environ['RANCHER_SECRET_KEY'] if 'RANCHER_SECRET_KEY' in os.environ else False,
+        'rancher_url': False if os.environ['RANCHER_URL'] == '' else os.environ['RANCHER_URL'],
+        'rancher_access_key': False if os.environ['RANCHER_ACCESS_KEY'] == '' else os.environ['RANCHER_ACCESS_KEY'],
+        'rancher_secret_key': False if os.environ['RANCHER_SECRET_KEY'] == '' else os.environ['RANCHER_SECRET_KEY'],
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
         'target_url': os.environ['TARGET_URL'] if 'TARGET_URL' in os.environ else 'gs://my_google_bucket',
         'blacklist': False if os.environ['BLACKLIST'] != 'true' else True,
-        'tmp_dir': os.environ['TMP_DIR'] if 'TMP_DIR' in os.environ else '/tmp',
+        'encrypt': os.environ['ENCRYPT'],
         'service': False if os.environ['SERVICE'] == '' else os.environ['SERVICE'],
         'restore_all': True if os.environ['RESTORE_ALL'] == 'true' else False,
+        'storage_volume': os.environ['STORAGE_VOLUME'] if 'STORAGE_VOLUME' in os.environ else False,
+        'storage_access_key': os.environ['STORAGE_ACCESS_KEY'],
+        'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
+        'time': False if os.environ['TIME'] == '' else os.environ['TIME'],
         'data_types': get_data_types()
     }
 
@@ -171,13 +175,10 @@ def restore_services(platform_type, services, options):
         exit('No services to restore')
     environment = {
         'PASSPHRASE': options['passphrase'],
-        'FORCE': 'true',
-        'TMPDIR': '/tmp/duplicity'
+        'ENCRYPT': options['encrypt'],
+        'ACCESS_KEY': options['storage_access_key'],
+        'SECRET_KEY': options['storage_secret_key']
     }
-    if 'GS_ACCESS_KEY_ID' in os.environ:
-        environment['GS_ACCESS_KEY_ID'] = os.environ['GS_ACCESS_KEY_ID']
-    if 'GS_SECRET_ACCESS_KEY' in os.environ:
-        environment['GS_SECRET_ACCESS_KEY'] = os.environ['GS_SECRET_ACCESS_KEY']
     if platform_type == 'rancher':
         os.popen('''
         (echo ''' + options['rancher_url'] + '''; \
@@ -187,11 +188,15 @@ def restore_services(platform_type, services, options):
     for service in services:
         if len(service['mounts']) > 0:
             success = False
-            environment['TARGET_URL'] = (options['target_url'] + '/' + service['name']).replace('//', '/')
+            storage_volume = ''
+            if options['storage_volume']:
+                storage_volume = ' -v ' + options['storage_volume'] + ':/borg'
+            environment['TARGET_URL'] = options['target_url'] + ('/' + service['name']).replace('//', '/')
             environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
+            environment['SERVICE'] = service['name']
             if platform_type == 'rancher':
-                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v ' + options['tmp_mount'] + ':/tmp/duplicity'
+                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
                 for key, env in environment.iteritems():
                     command += ' -e ' + key + '=' + env
                 for mount in service['mounts']:
@@ -211,10 +216,6 @@ def restore_services(platform_type, services, options):
                     'bind': '/var/run/docker.sock',
                     'mode': 'rw'
                 }
-                volumes[options['tmp_mount']] = {
-                    'bind': '/tmp/duplicity',
-                    'mode': 'rw'
-                }
                 try:
                     response = client.containers.run(
                         image='jamrizzi/dockplicity-restore:latest',
@@ -223,6 +224,7 @@ def restore_services(platform_type, services, options):
                         privileged=True,
                         environment=environment
                     )
+                    print(response)
                     success = True
                 except:
                     success = False

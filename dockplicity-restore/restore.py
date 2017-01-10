@@ -22,6 +22,7 @@ def get_options():
     if options['target_url'] != '':
         storage_backend = options['target_url'][:options['target_url'].index(':')]
         bucket = options['target_url'][options['target_url'].index(':') + 3:]
+    service = os.environ['SERVICE']
     data_type_details = ''
     raw_dir = ''
     tmp_dump_dir = ''
@@ -30,7 +31,7 @@ def get_options():
     mounts = list()
     own_container = get_own_container()
     for mount in own_container.attrs['Mounts']:
-        if mount['Destination'] != '/var/run/docker.sock' and mount['Destination'] != '/volumes' and mount['Destination'] != '/borg':
+        if len(mount['Destination']) > 8 and mount['Destination'][:9] == '/volumes/':
             mounts.append(mount)
     if options['data_type'] != 'raw':
         data_type_details = get_data_type_details(options['data_type'])
@@ -43,18 +44,19 @@ def get_options():
                 dump_dir = (dump_volume + '/' + options['data_type']).replace('//', '/')
     return {
         'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
-        'google_application_credentials': os.environ['GOOGLE_APPLICATION_CREDENTIALS'],
-        'service': os.environ['SERVICE'],
         'access_key': os.environ['ACCESS_KEY'],
         'secret_key': os.environ['SECRET_KEY'],
         'target_url': options['target_url'],
         'storage_backend': storage_backend,
         'bucket': bucket,
+        'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
         'raw_dir': raw_dir,
         'tmp_dump_dir': tmp_dump_dir,
         'dump_dir': dump_dir,
         'data_type': options['data_type'],
         'dump_volume': dump_volume,
+        'service': service,
+        'borg_repo': '/borg/' + service,
         'time': os.environ['TIME'],
         'data_type_details': data_type_details,
         'mounts': mounts,
@@ -79,12 +81,13 @@ def get_data_type_details(data_type):
 def mount_storage(options):
     os.system('''
     mkdir -p /project
+    mkdir -p ''' +  options['borg_repo'] + '''
     echo ''' + options['access_key'] + ':' + options['secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
-    mkdir /borg
+    mkdir -p /borg
     ''')
     if options['storage_backend'] == 'gs':
-        os.system('s3fs ' + options['bucket'] + ''' /borg \
+        os.system('s3fs ' + options['bucket'] + ' ' +  options['borg_repo'] + ''' \
         -o nomultipart \
         -o passwd_file=/project/auth.txt \
         -o sigv2 \
@@ -92,19 +95,14 @@ def mount_storage(options):
         ''')
 
 def restore(options):
-    restore_volume = ''
-    restore_dir = '/volumes'
-    if (options['restore_volume']):
-        file_to_restore = options['restore_volume']
-        if file_to_restore[0] == '/':
-            file_to_restore = file_to_restore[1:]
-        restore_volume = '--file-to-restore ' + file_to_restore + ' '
-        restore_dir = (options['restore_dir'] + '/' + options['restore_volume']).replace('//', '/')
+    os.environ['BORG_PASSPHRASE'] = os.environ['PASSPHRASE']
+    os.environ['BORG_REPO'] = options['borg_repo']
+    os.environ['LANG'] = 'en_US.UTF-8'
     no_encrypt = ''
     if (options['encrypt'] == False):
         no_encrypt = '--encryption=none '
     for mount in options['mounts']:
-        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + options['time']
+        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-' + options['time']
         command = '(echo y) | borg extract ::' + name
         os.system(command)
     if options['data_type'] != 'raw':

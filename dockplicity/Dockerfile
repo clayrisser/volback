@@ -1,21 +1,5 @@
 FROM ubuntu:latest
 
-ENV CRON_SCHEDULE="0 0 0 * * *"
-ENV PASSPHRASE=hellodocker
-ENV BACKUP_TYPE=incr
-ENV TARGET_URL=gs://my_google_bucket
-ENV REMOVE_ALL_BUT_N_FULL=12
-ENV REMOVE_ALL_INC_BUT_OF_N_FULL=144
-ENV REMOVE_OLDER_THAN=6M
-ENV FULL_IF_OLDER_THAN=2W
-ENV ALLOW_SOURCE_MISMATCH=true
-ENV COMMAND=cron
-ENV SERVICE=""
-ENV RESTORE_ALL=false
-ENV BLACKLIST=false
-ENV ENCRYPT=false
-ENV TMP_MOUNT=/tmp
-
 RUN apt-get update
 RUN apt-get install -y python python-pip curl
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
@@ -27,17 +11,34 @@ RUN pip install docker && \
 RUN mkdir /docker && \
     touch /docker/cron.log
 
-ADD ./run.sh /docker/run.sh
 ADD ./src /docker/src
 ADD ./config /docker/config
-RUN chmod -R 700 /docker
-RUN tee /backup <<EOF \
-#!/bin/bash \
-python /docker/src/backup.py \
-EOF && chmod +x /backup
-RUN tee /restore <<EOF \
-#!/bin/bash \
-python /docker/src/restore.py \
-EOF && chmod +x /restore
+ADD ./backup.sh /bin/backup
+ADD ./restore.sh /bin/restore
+RUN chmod -R 700 /docker && \
+    chmod +x /bin/backup && \
+    chmod +x /bin/restore
+
+ENV CRON_SCHEDULE="0 0 0 * * *"
+ENV PASSPHRASE=hellodocker
+ENV TARGET_URL=gs://my_google_bucket
+ENV COMMAND=cron
+ENV SERVICE=""
+ENV RESTORE_ALL=false
+ENV BLACKLIST=false
+ENV ENCRYPT=false
+ENV STORAGE_VOLUME=""
+ENV STORAGE_ACCESS_KEY=""
+ENV STORAGE_SECRET_KEY=""
+ENV KEEP_WITHIN=1y
+ENV HOURLY=1
+ENV DAILY=2
+ENV WEEKLY=14
+ENV MONTHLY=30
+ENV YEARLY=200
+ENV RANCHER_URL=""
+ENV RANCHER_ACCESS_KEY=""
+ENV RANCHER_SECRET_KEY=""
+ENV TIME=now
 
 CMD bash /docker/run.sh

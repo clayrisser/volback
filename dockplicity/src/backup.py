@@ -18,21 +18,24 @@ def main():
 
 def get_options():
     return {
-        'rancher_url': os.environ['RANCHER_URL'] if 'RANCHER_URL' in os.environ else False,
-        'rancher_access_key': os.environ['RANCHER_ACCESS_KEY'] if 'RANCHER_ACCESS_KEY' in os.environ else False,
-        'rancher_secret_key': os.environ['RANCHER_SECRET_KEY'] if 'RANCHER_SECRET_KEY' in os.environ else False,
-        'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
-        'backup_type': os.environ['BACKUP_TYPE'] if 'BACKUP_TYPE' in os.environ else 'incr',
-        'full_if_older_than': os.environ['FULL_IF_OLDER_THAN'] if 'FULL_IF_OLDER_THAN' in os.environ else '2W',
-        'target_url': os.environ['TARGET_URL'] if 'TARGET_URL' in os.environ else 'gs://my_google_bucket',
-        'remove_older_than': os.environ['REMOVE_OLDER_THAN'] if 'REMOVE_OLDER_THAN' in os.environ else '6M',
-        'tmp_mount': os.environ['TMP_MOUNT'] if 'TMP_MOUNT' in os.environ else '/tmp',
-        'encrypt': os.environ['ENCRYPT'] if 'ENCRYPT' in os.environ else 'false',
-        'remove_all_but_n_full': os.environ['REMOVE_ALL_BUT_N_FULL'] if 'REMOVE_ALL_BUT_N_FULL' in os.environ else '12',
+        'rancher_url': False if os.environ['RANCHER_URL'] == '' else os.environ['RANCHER_URL'],
+        'rancher_access_key': False if os.environ['RANCHER_ACCESS_KEY'] == '' else os.environ['RANCHER_ACCESS_KEY'],
+        'rancher_secret_key': False if os.environ['RANCHER_SECRET_KEY'] == '' else os.environ['RANCHER_SECRET_KEY'],
+        'storage_access_key': os.environ['STORAGE_ACCESS_KEY'],
+        'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
+        'passphrase': os.environ['PASSPHRASE'],
+        'target_url': os.environ['TARGET_URL'],
+        'encrypt': os.environ['ENCRYPT'],
+        'storage_volume': os.environ['STORAGE_VOLUME'] if 'STORAGE_VOLUME' in os.environ else False,
         'blacklist': False if os.environ['BLACKLIST'] != 'true' else True,
         'service': False if os.environ['SERVICE'] == '' else os.environ['SERVICE'],
         'data_types': get_data_types(),
-        'remove_all_inc_but_of_n_full': os.environ['REMOVE_ALL_INC_BUT_OF_N_FULL'] if 'REMOVE_ALL_INC_BUT_OF_N_FULL' in os.environ else '144'
+        'keep_within': os.environ['KEEP_WITHIN'],
+        'hourly': os.environ['HOURLY'],
+        'daily': os.environ['DAILY'],
+        'weekly': os.environ['WEEKLY'],
+        'monthly': os.environ['MONTHLY'],
+        'yearly': os.environ['YEARLY']
     }
 
 def get_platform_type(options):
@@ -176,18 +179,16 @@ def backup_services(platform_type, services, options):
         exit('No services to backup')
     environment = {
         'PASSPHRASE': options['passphrase'],
-        'BACKUP_TYPE': options['backup_type'],
-        'REMOVE_ALL_BUT_N_FULL': options['remove_all_but_n_full'],
-        'REMOVE_ALL_INC_BUT_OF_N_FULL': options['remove_all_inc_but_of_n_full'],
-        'REMOVE_OLDER_THAN': options['remove_older_than'],
-        'FULL_IF_OLDER_THAN': options['full_if_older_than'],
-        'TMPDIR': '/tmp/duplicity',
-        'ENCRYPT': options['encrypt']
+        'ENCRYPT': options['encrypt'],
+        'KEEP_WITHIN': options['keep_within'],
+        'HOURLY': options['hourly'],
+        'DAILY': options['daily'],
+        'WEEKLY': options['weekly'],
+        'MONTHLY': options['monthly'],
+        'YEARLY': options['yearly'],
+        'ACCESS_KEY': options['storage_access_key'],
+        'SECRET_KEY': options['storage_secret_key']
     }
-    if 'GS_ACCESS_KEY_ID' in os.environ:
-        environment['GS_ACCESS_KEY_ID'] = os.environ['GS_ACCESS_KEY_ID']
-    if 'GS_SECRET_ACCESS_KEY' in os.environ:
-        environment['GS_SECRET_ACCESS_KEY'] = os.environ['GS_SECRET_ACCESS_KEY']
     if platform_type == 'rancher':
         os.popen('''
         (echo ''' + options['rancher_url'] + '''; \
@@ -197,17 +198,20 @@ def backup_services(platform_type, services, options):
     for service in services:
         if len(service['mounts']) > 0:
             success = False
-            environment['TARGET_URL'] = options['target_url'] + ('/' + service['name']).replace('//', '/')
+            environment['TARGET_URL'] = options['target_url']
             environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
+            environment['SERVICE'] = service['name']
             if platform_type == 'rancher':
-                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v ' + options['tmp_mount'] + ':/tmp/duplicity'
+                storage_volume = ''
+                if options['storage_volume']:
+                    storage_volume = ' -v ' + options['storage_volume'] + ':/borg'
+                command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
                 for key, env in environment.iteritems():
                     command += ' -e ' + key + '=' + env
                 for mount in service['mounts']:
                     command += ' -v ' + mount['source'] + ':' + mount['destination']
                 command += ' jamrizzi/dockplicity-backup:latest'
-                print(command)
                 res = os.system(command)
                 if (res == 0):
                     success = True
@@ -222,10 +226,11 @@ def backup_services(platform_type, services, options):
                     'bind': '/var/run/docker.sock',
                     'mode': 'rw'
                 }
-                volumes[options['tmp_mount']] = {
-                    'bind': '/tmp/duplicity',
-                    'mode': 'rw'
-                }
+                if options['storage_volume']:
+                    volumes[options['storage_volume']] = {
+                        'bind': '/borg',
+                        'mode': 'rw'
+                    }
                 try:
                     response = client.containers.run(
                         image='jamrizzi/dockplicity-backup:latest',

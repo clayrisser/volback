@@ -23,6 +23,7 @@ def get_options():
     if options['target_url'] != '':
         storage_backend = options['target_url'][:options['target_url'].index(':')]
         bucket = options['target_url'][options['target_url'].index(':') + 3:]
+    service = os.environ['SERVICE']
     data_type_details = ''
     raw_dir = ''
     tmp_dump_dir = ''
@@ -31,7 +32,7 @@ def get_options():
     mounts = list()
     own_container = get_own_container()
     for mount in own_container.attrs['Mounts']:
-        if mount['Destination'] != '/var/run/docker.sock' and mount['Destination'] != '/volumes' and mount['Destination'] != '/borg':
+        if len(mount['Destination']) > 8 and mount['Destination'][:9] == '/volumes/':
             mounts.append(mount)
     if options['data_type'] != 'raw':
         data_type_details = get_data_type_details(options['data_type'])
@@ -55,8 +56,9 @@ def get_options():
         'data_type': options['data_type'],
         'dump_volume': dump_volume,
         'data_type_details': data_type_details,
-        'service': os.environ['SERVICE'],
+        'service': service,
         'container_id': os.environ['CONTAINER_ID'],
+        'borg_repo': '/borg/' + service,
         'yearly': os.environ['YEARLY'],
         'monthly': os.environ['MONTHLY'],
         'mounts': mounts,
@@ -84,12 +86,12 @@ def get_data_type_details(data_type):
 def mount_storage(options):
     os.system('''
     mkdir -p /project
+    mkdir -p ''' +  options['borg_repo'] + '''
     echo ''' + options['access_key'] + ':' + options['secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
     ''')
     if options['storage_backend'] == 'gs':
         os.system('''
-        mkdir /borg
         s3fs ''' + options['bucket'] + ''' /borg \
         -o nomultipart \
         -o passwd_file=/project/auth.txt \
@@ -99,7 +101,7 @@ def mount_storage(options):
 
 def backup(options):
     os.environ['BORG_PASSPHRASE'] = os.environ['PASSPHRASE']
-    os.environ['BORG_REPO'] = '/borg'
+    os.environ['BORG_REPO'] = options['borg_repo']
     if options['data_type'] != 'raw':
         os.system('rm -rf ' + options['tmp_dump_dir'])
         container = client.containers.get(options['container_id'])
@@ -114,10 +116,11 @@ def backup(options):
     no_encrypt = ''
     if (options['encrypt'] == False):
         no_encrypt = '--encryption=none '
-    if os.path.isdir('/borg') == False or os.listdir('/borg') == []:
-        os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + '; echo) | borg init ' + no_encrypt + '/borg')
+    if os.listdir(options['borg_repo']) == []:
+        os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + '; echo) | borg init ' + no_encrypt + options['borg_repo'])
     for mount in options['mounts']:
-        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-{now}'
+        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-{now:%s}'
+        print(mount)
         command = '(echo y) | borg create ::' + name + ' ' + mount['Destination']
         os.system(command)
 
