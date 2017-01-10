@@ -176,6 +176,7 @@ def restore_services(platform_type, services, options):
     environment = {
         'PASSPHRASE': options['passphrase'],
         'ENCRYPT': options['encrypt'],
+        'TIME': options['time'],
         'ACCESS_KEY': options['storage_access_key'],
         'SECRET_KEY': options['storage_secret_key']
     }
@@ -188,14 +189,14 @@ def restore_services(platform_type, services, options):
     for service in services:
         if len(service['mounts']) > 0:
             success = False
-            storage_volume = ''
-            if options['storage_volume']:
-                storage_volume = ' -v ' + options['storage_volume'] + ':/borg'
             environment['TARGET_URL'] = options['target_url'] + ('/' + service['name']).replace('//', '/')
             environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
             environment['SERVICE'] = service['name']
             if platform_type == 'rancher':
+                storage_volume = ''
+                if options['storage_volume']:
+                    storage_volume = ' -v ' + options['storage_volume'] + ':/borg'
                 command = 'rancher --host ' + service['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
                 for key, env in environment.iteritems():
                     command += ' -e ' + key + '=' + env
@@ -216,6 +217,11 @@ def restore_services(platform_type, services, options):
                     'bind': '/var/run/docker.sock',
                     'mode': 'rw'
                 }
+                if options['storage_volume']:
+                    volumes[options['storage_volume']] = {
+                        'bind': '/borg',
+                        'mode': 'rw'
+                    }
                 try:
                     response = client.containers.run(
                         image='jamrizzi/dockplicity-restore:latest',
@@ -224,7 +230,6 @@ def restore_services(platform_type, services, options):
                         privileged=True,
                         environment=environment
                     )
-                    print(response)
                     success = True
                 except:
                     success = False
