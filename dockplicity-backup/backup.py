@@ -118,8 +118,9 @@ def backup(options):
         no_encrypt = '--encryption=none '
     if os.listdir(options['borg_repo']) == []:
         os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + '; echo) | borg init ' + no_encrypt + options['borg_repo'])
+    now = str(int(time.time()))
     for mount in options['mounts']:
-        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-{now:%s}'
+        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-' + now
         print(mount)
         command = '(echo y) | borg create ::' + name + ' ' + mount['Destination']
         os.system(command)

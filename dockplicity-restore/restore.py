@@ -102,7 +102,8 @@ def restore(options):
     if (options['encrypt'] == False):
         no_encrypt = '--encryption=none '
     for mount in options['mounts']:
-        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-' + options['time']
+        name = options['service'] + ':' + mount['Destination'].replace('/', '#')
+        name = name + '-' + get_time(options, name)
         command = '(echo y) | borg extract ::' + name
         os.system(command)
     if options['data_type'] != 'raw':
@@ -112,6 +113,29 @@ def restore(options):
         response = container.exec_run(options['data_type_details']['restore'])
         print(response)
         os.system('rm -rf ' + options['tmp_dump_dir'])
+
+def get_time(options, name):
+    if os.path.isdir(options['borg_repo']):
+        timestamp =  int(options['time'])
+        backups = filter(None, os.popen('borg list ' + options['borg_repo']).read().split('\n'))
+        exists = False
+        for backup in backups:
+            if (name == re.findall('[\w\#\-\_\:]+(?=\-[\d]+[" "][A-Z][a-z]+)', backup)[0]):
+                _timestamp = int(re.findall('(?<=\-)[\d]+(?=[" "])', backup)[0])
+                if (_timestamp == timestamp):
+                    exists = True
+        if (exists == False):
+            timestamp = -1
+            for backup in backups:
+                if (name == re.findall('[\w\#\-\_\:]+(?=\-[\d]+[" "][A-Z][a-z]+)', backup)[0]):
+                    _timestamp = int(re.findall('(?<=\-)[\d]+(?=[" "])', backup)[0])
+                    if (timestamp == -1):
+                        timestamp = _timestamp
+                    elif (_timestamp < timestamp):
+                        timestamp = _timestamp
+        return str(timestamp)
+    else:
+        return str(options['time'])
 
 def get_own_container():
     ip = socket.gethostbyname(socket.gethostname())

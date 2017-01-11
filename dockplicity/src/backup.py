@@ -12,11 +12,25 @@ client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 def main():
     options = get_options()
+    mount_storage(options)
     platform_type = get_platform_type(options)
     services = get_services(platform_type, options)
     backup_services(platform_type, services, options)
 
 def get_options():
+    options = {
+        'storage_url': os.environ['STORAGE_URL']
+    }
+    storage_backend = False
+    bucket = ''
+    if options['storage_url'] != '':
+        storage_backend = options['storage_url'][:options['storage_url'].index(':')]
+        bucket = options['storage_url'][options['storage_url'].index(':') + 3:]
+    own_container = get_own_container()
+    storage_volume = False
+    for mount in own_container.attrs['Mounts']:
+        if mount['Destination'] == '/borg':
+            storage_volume = mount['Source']
     return {
         'rancher_url': False if os.environ['RANCHER_URL'] == '' else os.environ['RANCHER_URL'],
         'rancher_access_key': False if os.environ['RANCHER_ACCESS_KEY'] == '' else os.environ['RANCHER_ACCESS_KEY'],
@@ -25,8 +39,10 @@ def get_options():
         'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
         'passphrase': os.environ['PASSPHRASE'],
         'storage_url': os.environ['STORAGE_URL'],
+        'storage_backend': storage_backend,
+        'bucket': bucket,
         'encrypt': os.environ['ENCRYPT'],
-        'storage_volume': os.environ['STORAGE_VOLUME'] if 'STORAGE_VOLUME' in os.environ else False,
+        'storage_volume': storage_volume,
         'blacklist': False if os.environ['BLACKLIST'] != 'true' else True,
         'service': False if os.environ['SERVICE'] == '' else os.environ['SERVICE'],
         'data_types': get_data_types(),
@@ -164,6 +180,8 @@ def get_mounts(platform_type, options, container):
             continue
         if source == 'rancher-cni' or source == '/dev' or source == '/run' or source == '/lib/modules' or source == '/var/run':
             continue
+        if mount['Destination'] == '/borg':
+            continue
         destination = ('/volumes/' + mount['Destination'] + '/raw').replace('//', '/')
         mounts.append({
             'source': source,
@@ -173,6 +191,27 @@ def get_mounts(platform_type, options, container):
             'mode': 'rw'
         })
     return mounts
+
+def mount_storage(options):
+    os.system('''
+    mkdir -p /project
+    echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
+    chmod 600 /project/auth.txt
+    ''')
+    if options['storage_backend'] == 'gs':
+        os.system('''
+        s3fs ''' + options['bucket'] + ''' /borg \
+        -o nomultipart \
+        -o passwd_file=/project/auth.txt \
+        -o sigv2 \
+        -o url=https://storage.googleapis.com
+        ''')
+
+def get_own_container():
+    ip = socket.gethostbyname(socket.gethostname())
+    for container in client.containers.list():
+        if (container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress'] == ip):
+            return container
 
 def backup_services(platform_type, services, options):
     if len(services) <= 0:

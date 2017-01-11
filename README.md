@@ -58,6 +58,8 @@ docker run --rm \
 
 ## Future Plans
 * Automatic backup when change detected
+* Notifications
+* Management portal
 
 ## Error/Bugs/Features
 You can file error and bug reports as well as feature requests at [https://github.com/jamrizzi/dockplicity/issues](https://github.com/jamrizzi/dockplicity/issues).

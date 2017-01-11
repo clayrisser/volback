@@ -1,4 +1,5 @@
 import docker
+import re
 import time
 import random
 import json
@@ -12,11 +13,45 @@ client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 def main():
     options = get_options()
+    mount_storage(options)
     platform_type = get_platform_type(options)
     services = get_services(platform_type, options)
     restore_services(platform_type, services, options)
 
 def get_options():
+    options = {
+        'storage_url': os.environ['STORAGE_URL'],
+        'time': os.environ['TIME']
+    }
+    _time = 0
+    if options['time'][len(options['time']) - 1:] == 'S':
+        _time = int(time.time()) - int(options['time'][:len(options['time']) - 1])
+    elif options['time'][len(options['time']) - 1:] == 'M':
+        _time = int(time.time()) - int(int(options['time'][:len(options['time']) - 1]) * 60)
+    elif options['time'][len(options['time']) - 1:] == 'H':
+        _time = int(time.time()) - int(int(options['time'][:len(options['time']) - 1]) * 60 * 60)
+    elif options['time'][len(options['time']) - 1:] == 'd':
+        _time = int(time.time()) - int(int(options['time'][:len(options['time']) - 1]) * 60 * 60 * 24)
+    elif options['time'][len(options['time']) - 1:] == 'w':
+        _time = int(time.time()) - int(int(options['time'][:len(options['time']) - 1]) * 60 * 60 * 24 * 7)
+    elif options['time'][len(options['time']) - 1:] == 'm':
+        _time = int(time.time()) - int(int(options['time'][:len(options['time']) - 1]) * 60 * 60 * 24 * 265.25 / 12)
+    elif options['time'][len(options['time']) - 1:] == 'y':
+        _time = int(time.time()) - int(int(options['time'][:len(options['time']) - 1]) * 60 * 60 * 24 * 265.25)
+    elif options['time'] == '':
+        _time = int(time.time())
+    else:
+        _time = int(options['time'])
+    storage_backend = False
+    bucket = ''
+    if options['storage_url'] != '':
+        storage_backend = options['storage_url'][:options['storage_url'].index(':')]
+        bucket = options['storage_url'][options['storage_url'].index(':') + 3:]
+    own_container = get_own_container()
+    storage_volume = False
+    for mount in own_container.attrs['Mounts']:
+        if mount['Destination'] == '/borg':
+            storage_volume = mount['Source']
     return {
         'rancher_url': False if os.environ['RANCHER_URL'] == '' else os.environ['RANCHER_URL'],
         'rancher_access_key': False if os.environ['RANCHER_ACCESS_KEY'] == '' else os.environ['RANCHER_ACCESS_KEY'],
@@ -24,13 +59,15 @@ def get_options():
         'passphrase': os.environ['PASSPHRASE'],
         'storage_url': os.environ['STORAGE_URL'],
         'blacklist': False if os.environ['BLACKLIST'] != 'true' else True,
+        'storage_backend': storage_backend,
+        'bucket': bucket,
         'encrypt': os.environ['ENCRYPT'],
         'service': False if os.environ['SERVICE'] == '' else os.environ['SERVICE'],
         'restore_all': True if os.environ['RESTORE_ALL'] == 'true' else False,
-        'storage_volume': os.environ['STORAGE_VOLUME'] if 'STORAGE_VOLUME' in os.environ else False,
+        'storage_volume': storage_volume,
         'storage_access_key': os.environ['STORAGE_ACCESS_KEY'],
         'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
-        'time': False if os.environ['TIME'] == '' else os.environ['TIME'],
+        'time': _time,
         'data_types': get_data_types()
     }
 
@@ -160,6 +197,8 @@ def get_mounts(platform_type, options, container):
             continue
         if source == 'rancher-cni' or source == '/dev' or source == '/run' or source == '/lib/modules' or source == '/var/run':
             continue
+        if mount['Destination'] == '/borg':
+            continue
         destination = ('/volumes/' + mount['Destination'] + '/raw').replace('//', '/')
         mounts.append({
             'source': source,
@@ -170,13 +209,27 @@ def get_mounts(platform_type, options, container):
         })
     return mounts
 
+def mount_storage(options):
+    os.system('''
+    mkdir -p /project
+    echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
+    chmod 600 /project/auth.txt
+    ''')
+    if options['storage_backend'] == 'gs':
+        os.system('''
+        s3fs ''' + options['bucket'] + ''' /borg \
+        -o nomultipart \
+        -o passwd_file=/project/auth.txt \
+        -o sigv2 \
+        -o url=https://storage.googleapis.com
+        ''')
+
 def restore_services(platform_type, services, options):
     if len(services) <= 0:
         exit('No services to restore')
     environment = {
         'PASSPHRASE': options['passphrase'],
         'ENCRYPT': options['encrypt'],
-        'TIME': options['time'],
         'STORAGE_ACCESS_KEY': options['storage_access_key'],
         'STORAGE_SECRET_KEY': options['storage_secret_key'],
         'STORAGE_URL': options['storage_url']
@@ -190,6 +243,7 @@ def restore_services(platform_type, services, options):
     for service in services:
         if len(service['mounts']) > 0:
             success = False
+            environment['TIME'] = get_time(options, service)
             environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
             environment['SERVICE'] = service['name']
@@ -241,6 +295,29 @@ def restore_services(platform_type, services, options):
                 print('    - ' + mount['source'] + ':' + mount['origional_destination'])
         else:
             print('\n' + service['name'] + ': NO VOLUMES\n-----------------------------')
+
+def get_time(options, service):
+    os.environ['BORG_PASSPHRASE'] = os.environ['PASSPHRASE']
+    borg_repo = '/borg/' + service['name']
+    if os.path.isdir(borg_repo):
+        timestamp = -1
+        backups = filter(None, os.popen('borg list ' + borg_repo).read().split('\n'))
+        for backup in backups:
+            _timestamp = int(re.findall('(?<=\-)[\d]+(?=[" "])', backup)[0])
+            if (_timestamp <= options['time']):
+                if (_timestamp > timestamp):
+                    timestamp = _timestamp
+            elif (timestamp == -1 or _timestamp < timestamp):
+                timestamp = _timestamp
+        return str(timestamp)
+    else:
+        return str(options['time'])
+
+def get_own_container():
+    ip = socket.gethostbyname(socket.gethostname())
+    for container in client.containers.list():
+        if (container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress'] == ip):
+            return container
 
 def get_data_types():
     files = ""
