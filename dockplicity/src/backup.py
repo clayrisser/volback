@@ -281,13 +281,14 @@ def backup_services(platform_type, services, options):
                     success = True
                 except:
                     success = False
+            data_type_pretty = '' if service['data_type'] == 'raw' else ' ~' + service['data_type']
             if (success):
-                print('\n' + service['name'] + ' ~' + service['data_type'] + ': SUCCESS\n----------------------------')
+                print('\n' + service['name'] + data_type_pretty + ': SUCCESS\n----------------------------')
             else:
-                print('\n' + service['name'] + ' ~' + service['data_type'] + ': FAILED\n-----------------------------')
+                print('\n' + service['name'] + data_type_pretty + ': FAILED\n-----------------------------')
             for mount in service['mounts']:
-                print('    - ' + mount['source'] + ':' + mount['origional_destination'] + ' (' + mount['driver'] + ')' + ' ~' + service['data_type'])
-            time.sleep(1)
+                driver_pretty = '' if mount['driver'] == 'local' else ' (' + mount['driver'] + ')'
+                print('    - ' + mount['source'] + ':' + mount['origional_destination'] + driver_pretty + data_type_pretty)
         else:
             print('\n' + service['name'] + ': NO VOLUMES\n-----------------------------')
 

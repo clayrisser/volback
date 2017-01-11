@@ -243,7 +243,8 @@ def restore_services(platform_type, services, options):
     for service in services:
         if len(service['mounts']) > 0:
             success = False
-            environment['TIME'] = get_time(options, service)
+            timestamp = get_time(options, service)
+            environment['TIME'] = timestamp
             environment['CONTAINER_ID'] = service['container']
             environment['DATA_TYPE'] = service['data_type']
             environment['SERVICE'] = service['name']
@@ -287,12 +288,15 @@ def restore_services(platform_type, services, options):
                     success = True
                 except:
                     success = False
+
+            data_type_pretty = '' if service['data_type'] == 'raw' else ' ~' + service['data_type']
             if (success):
-                print('\n' + service['name'] + ': SUCCESS\n----------------------------')
+                print('\n' + service['name'] + data_type_pretty + ' (' + time.strftime("%B %d, %Y %I:%M %p %Z", time.localtime(int(timestamp))) + '): SUCCESS\n----------------------------')
             else:
-                print('\n' + service['name'] + ': FAILED\n-----------------------------')
+                print('\n' + service['name'] + data_type_pretty + ': FAILED\n-----------------------------')
             for mount in service['mounts']:
-                print('    - ' + mount['source'] + ':' + mount['origional_destination'])
+                driver_pretty = '' if mount['driver'] == 'local' else ' (' + mount['driver'] + ')'
+                print('    - ' + mount['source'] + ':' + mount['origional_destination'] + driver_pretty + data_type_pretty)
         else:
             print('\n' + service['name'] + ': NO VOLUMES\n-----------------------------')
 
