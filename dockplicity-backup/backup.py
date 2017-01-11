@@ -86,7 +86,7 @@ def get_data_type_details(data_type):
 def mount_storage(options):
     os.system('''
     mkdir -p /project
-    mkdir -p ''' +  options['borg_repo'] + '''
+    mkdir -p /borg
     echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
     ''')
@@ -98,6 +98,7 @@ def mount_storage(options):
         -o sigv2 \
         -o url=https://storage.googleapis.com
         ''')
+    os.system('mkdir -p ' + options['borg_repo'])
 
 def backup(options):
     os.environ['BORG_PASSPHRASE'] = os.environ['PASSPHRASE']
@@ -121,7 +122,6 @@ def backup(options):
     now = str(int(time.time()))
     for mount in options['mounts']:
         name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-' + now
-        print(mount)
         command = '(echo y) | borg create ::' + name + ' ' + mount['Destination']
         os.system(command)
 

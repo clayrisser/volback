@@ -212,6 +212,7 @@ def get_mounts(platform_type, options, container):
 def mount_storage(options):
     os.system('''
     mkdir -p /project
+    mkdir -p /borg
     echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
     ''')
@@ -288,7 +289,6 @@ def restore_services(platform_type, services, options):
                     success = True
                 except:
                     success = False
-
             data_type_pretty = '' if service['data_type'] == 'raw' else ' ~' + service['data_type']
             if (success):
                 print('\n' + service['name'] + data_type_pretty + ' (' + time.strftime("%B %d, %Y %I:%M %p %Z", time.localtime(int(timestamp))) + '): SUCCESS\n----------------------------')

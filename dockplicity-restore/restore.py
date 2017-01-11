@@ -81,18 +81,20 @@ def get_data_type_details(data_type):
 def mount_storage(options):
     os.system('''
     mkdir -p /project
-    mkdir -p ''' +  options['borg_repo'] + '''
+    mkdir -p /borg
     echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
     mkdir -p /borg
     ''')
     if options['storage_backend'] == 'gs':
-        os.system('s3fs ' + options['bucket'] + ' ' +  options['borg_repo'] + ''' \
+        os.system('''
+        s3fs ''' + options['bucket'] + ''' /borg \
         -o nomultipart \
         -o passwd_file=/project/auth.txt \
         -o sigv2 \
         -o url=https://storage.googleapis.com
         ''')
+    os.system('mkdir -p ' + options['borg_repo'])
 
 def restore(options):
     os.environ['BORG_PASSPHRASE'] = os.environ['PASSPHRASE']

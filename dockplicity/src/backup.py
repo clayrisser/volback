@@ -195,6 +195,7 @@ def get_mounts(platform_type, options, container):
 def mount_storage(options):
     os.system('''
     mkdir -p /project
+    mkdir -p /borg
     echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
     ''')
