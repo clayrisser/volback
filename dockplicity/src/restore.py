@@ -228,6 +228,8 @@ def mount_storage(options):
 def restore_services(platform_type, services, options):
     if len(services) <= 0:
         exit('No services to restore')
+    if os.popen('ls /borg').read() == '':
+        exit('Storage repository is empty')
     environment = {
         'PASSPHRASE': options['passphrase'],
         'ENCRYPT': options['encrypt'],

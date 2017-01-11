@@ -46,4 +46,4 @@ RUN chmod -R 700 /docker && \
     chmod +x /bin/backup && \
     chmod +x /bin/restore
 
-CMD bash /docker/run.sh
+CMD go-cron "$CRON_SCHEDULE" python /docker/src/backup.py >> /docker/cron.log
