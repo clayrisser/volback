@@ -3,7 +3,6 @@ FROM ubuntu:latest
 ENV CRON_SCHEDULE="0 0 0 * * *"
 ENV PASSPHRASE=hellodocker
 ENV STORAGE_URL=""
-ENV COMMAND=cron
 ENV SERVICE=""
 ENV RESTORE_ALL=false
 ENV BLACKLIST=false

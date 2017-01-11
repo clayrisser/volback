@@ -1,4 +1,3 @@
-import socket
 import time
 import os
 import yaml
@@ -140,9 +139,8 @@ def get_time(options, name):
         return str(options['time'])
 
 def get_own_container():
-    ip = socket.gethostbyname(socket.gethostname())
-    for container in client.containers.list():
-        if (container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress'] == ip):
-            return container
+    name = os.popen('docker inspect -f \'{{.Name}}\' $HOSTNAME').read()[1:].rstrip()
+    container = client.containers.get(name)
+    return container
 
 main()

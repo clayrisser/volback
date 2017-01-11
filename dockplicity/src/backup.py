@@ -4,7 +4,6 @@ import random
 import json
 import glob
 import yaml
-import socket
 import os
 import requests
 from requests.auth import HTTPBasicAuth
@@ -209,10 +208,9 @@ def mount_storage(options):
         ''')
 
 def get_own_container():
-    ip = socket.gethostbyname(socket.gethostname())
-    for container in client.containers.list():
-        if (container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress'] == ip):
-            return container
+    name = os.popen('docker inspect -f \'{{.Name}}\' $HOSTNAME').read()[1:].rstrip()
+    container = client.containers.get(name)
+    return container
 
 def backup_services(platform_type, services, options):
     if len(services) <= 0:

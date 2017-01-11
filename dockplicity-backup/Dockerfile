@@ -18,7 +18,7 @@ ENV YEARLY=200
 RUN apt-get update
 RUN apt-get install -y curl
 RUN apt-get install -y automake autotools-dev g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config python-pip borgbackup
-RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | tar -x -C /usr/local/bin
+RUN curl -L https://get.docker.com | bash
 RUN pip install pyyaml && \
     pip install docker
 RUN git clone https://github.com/s3fs-fuse/s3fs-fuse.git && \
