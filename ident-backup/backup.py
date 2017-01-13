@@ -9,7 +9,8 @@ client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 def main():
     options = get_options()
     mount_storage(options)
-    restore(options)
+    backup(options)
+    clean(options)
 
 def get_options():
     options = {
@@ -34,32 +35,36 @@ def get_options():
             mounts.append(mount)
     if options['data_type'] != 'raw':
         data_type_details = get_data_type_details(options['data_type'])
-        own_container = get_own_container()
         for mount in own_container.attrs['Mounts']:
-            if options['data_type'] != 'raw' and mount['Destination'] == ('/volumes/' + data_type_details['data-location'] + '/raw').replace('//', '/'):
+            if mount['Destination'] == ('/volumes/' + data_type_details['data-location'] + '/raw').replace('//', '/'):
                 raw_dir = mount['Destination']
-                tmp_dump_dir = (raw_dir + '/dockplicity_backup').replace('//', '/')
+                tmp_dump_dir = (raw_dir + '/ident_backup').replace('//', '/')
                 dump_volume = raw_dir[:len(raw_dir) - 4]
                 dump_dir = (dump_volume + '/' + options['data_type']).replace('//', '/')
     return {
-        'passphrase': os.environ['PASSPHRASE'] if 'PASSPHRASE' in os.environ else 'hellodocker',
+        'passphrase': os.environ['PASSPHRASE'],
+        'raw_dir': raw_dir,
         'storage_access_key': os.environ['STORAGE_ACCESS_KEY'],
         'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
         'storage_url': options['storage_url'],
         'storage_backend': storage_backend,
         'bucket': bucket,
-        'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
-        'raw_dir': raw_dir,
         'tmp_dump_dir': tmp_dump_dir,
         'dump_dir': dump_dir,
+        'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
         'data_type': options['data_type'],
         'dump_volume': dump_volume,
-        'service': service,
-        'borg_repo': '/borg/' + service,
-        'time': os.environ['TIME'],
         'data_type_details': data_type_details,
+        'service': service,
+        'container_id': os.environ['CONTAINER_ID'],
+        'borg_repo': '/borg/' + service,
+        'yearly': os.environ['YEARLY'],
+        'monthly': os.environ['MONTHLY'],
         'mounts': mounts,
-        'container_id': os.environ['CONTAINER_ID'] if 'CONTAINER_ID' in os.environ else ''
+        'weekly': os.environ['WEEKLY'],
+        'daily': os.environ['DAILY'],
+        'hourly': os.environ['HOURLY'],
+        'keep_within': os.environ['KEEP_WITHIN']
     }
 
 def get_data_type_details(data_type):
@@ -71,8 +76,8 @@ def get_data_type_details(data_type):
         setting = settings[data_type]
         envs = re.findall('(?<=\<)[A-Z\d\-\_]+(?=\>)', setting['restore'])
         for env in envs:
-            setting['restore'] = setting['restore'].replace('<' + env + '>', os.environ[env] if env in os.environ else '')
-        setting['restore'] = ('/bin/sh -c "' + setting['restore'] + '"').replace('%DUMP%', setting['data-location'] + '/dockplicity_backup/' + setting['backup-file']).replace('//', '/')
+            setting['backup'] = setting['backup'].replace('<' + env + '>', os.environ[env] if env in os.environ else '')
+        setting['backup'] = ('/bin/sh -c "' + setting['backup'] + '"').replace('%DUMP%', setting['data-location'] + '/ident_backup/' + setting['backup-file']).replace('//', '/')
         return setting
     else:
         return 'raw'
@@ -83,7 +88,6 @@ def mount_storage(options):
     mkdir -p /borg
     echo ''' + options['storage_access_key'] + ':' + options['storage_secret_key'] + ''' > /project/auth.txt
     chmod 600 /project/auth.txt
-    mkdir -p /borg
     ''')
     if options['storage_backend'] == 'gs':
         os.system('''
@@ -95,48 +99,37 @@ def mount_storage(options):
         ''')
     os.system('mkdir -p ' + options['borg_repo'])
 
-def restore(options):
+def backup(options):
     os.environ['BORG_PASSPHRASE'] = os.environ['PASSPHRASE']
     os.environ['BORG_REPO'] = options['borg_repo']
-    os.environ['LANG'] = 'en_US.UTF-8'
-    no_encrypt = ''
-    if (options['encrypt'] == False):
-        no_encrypt = '--encryption=none '
-    for mount in options['mounts']:
-        name = options['service'] + ':' + mount['Destination'].replace('/', '#')
-        name = name + '-' + get_time(options, name)
-        command = '(echo y) | borg extract ::' + name
-        os.system(command)
     if options['data_type'] != 'raw':
         os.system('rm -rf ' + options['tmp_dump_dir'])
         container = client.containers.get(options['container_id'])
-        os.system('mv ' + options['dump_dir'] + ' ' + options['tmp_dump_dir'])
-        response = container.exec_run(options['data_type_details']['restore'])
+        os.system('mkdir -p ' + options['tmp_dump_dir'])
+        response = container.exec_run(options['data_type_details']['backup'])
         print(response)
-        os.system('rm -rf ' + options['tmp_dump_dir'])
+        os.system('mv ' + options['tmp_dump_dir'] + ' ' + options['dump_dir'] + '''
+        chmod -R 700 ''' + options['dump_dir'] + '''
+        umount ''' + options['raw_dir'] + '''
+        rm -d ''' + options['raw_dir'] + '''
+        ''')
+    no_encrypt = ''
+    if (options['encrypt'] == False):
+        no_encrypt = '--encryption=none '
+    if os.listdir(options['borg_repo']) == []:
+        os.system('(echo ' + options['passphrase'] + '; echo ' + options['passphrase'] + '; echo) | borg init ' + no_encrypt + options['borg_repo'])
+    now = str(int(time.time()))
+    for mount in options['mounts']:
+        name = options['service'] + ':' + mount['Destination'].replace('/', '#') + '-' + now
+        command = '(echo y) | borg create ::' + name + ' ' + mount['Destination']
+        os.system(command)
 
-def get_time(options, name):
-    if os.path.isdir(options['borg_repo']):
-        timestamp =  int(options['time'])
-        backups = filter(None, os.popen('borg list ' + options['borg_repo']).read().split('\n'))
-        exists = False
-        for backup in backups:
-            if (name == re.findall('[\w\#\-\_\:]+(?=\-[\d]+[" "][A-Z][a-z]+)', backup)[0]):
-                _timestamp = int(re.findall('(?<=\-)[\d]+(?=[" "])', backup)[0])
-                if (_timestamp == timestamp):
-                    exists = True
-        if (exists == False):
-            timestamp = -1
-            for backup in backups:
-                if (name == re.findall('[\w\#\-\_\:]+(?=\-[\d]+[" "][A-Z][a-z]+)', backup)[0]):
-                    _timestamp = int(re.findall('(?<=\-)[\d]+(?=[" "])', backup)[0])
-                    if (timestamp == -1):
-                        timestamp = _timestamp
-                    elif (_timestamp < timestamp):
-                        timestamp = _timestamp
-        return str(timestamp)
-    else:
-        return str(options['time'])
+def clean(options):
+    prefixes = list()
+    for mount in options['mounts']:
+        name = options['service'] + mount['Destination'].replace('/', '#')
+        command = '(echo y) | borg prune --prefix=' + name + ' --keep-within=' + options['keep_within'] + ' --keep-hourly=' + options['hourly'] + ' --keep-daily=' + options['daily'] + ' --keep-weekly=' + options['weekly'] + ' --keep-monthly=' + options['monthly'] + ' --keep-yearly=' + options['yearly']
+        os.system(command)
 
 def get_own_container():
     name = os.popen('docker inspect -f \'{{.Name}}\' $HOSTNAME').read()[1:].rstrip()
