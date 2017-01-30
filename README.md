@@ -1,7 +1,7 @@
-# dockplicity _Beta_
+# ident _Beta_
 A robust backup solution for Docker volumes with duplicity
 
-### [jamrizzi/dockplicity:latest](https://hub.docker.com/r/jamrizzi/dockplicity/)
+### [jamrizzi/ident:latest](https://hub.docker.com/r/jamrizzi/ident/)
 
 ## Features
 * Restore individual docker volumes
@@ -22,7 +22,7 @@ docker run -d \
   -e STORAGE_URL="gs://my-google-bucket" \
   -e STORAGE_ACCESS_KEY_ID=gs-access-key-id \
   -e STORAGE_SECRET_ACCESS_KEY=gs-secret-access-key \
-  jamrizzi/dockplicity:latest
+  jamrizzi/ident:latest
 ```
 
 ## Backup
@@ -33,7 +33,7 @@ docker run --rm \
   -e STORAGE_URL="gs://my-google-bucket" \
   -e STORAGE_ACCESS_KEY_ID=gs-access-key-id \
   -e STORAGE_SECRET_ACCESS_KEY=gs-secret-access-key \
-  jamrizzi/dockplicity:latest backup
+  jamrizzi/ident:latest backup
 ```
 
 ## Restore
@@ -44,7 +44,7 @@ docker run --rm \
   -e STORAGE_URL="gs://my-google-bucket" \
   -e STORAGE_ACCESS_KEY_ID=gs-access-key-id \
   -e STORAGE_SECRET_ACCESS_KEY=gs-secret-access-key \
-  jamrizzi/dockplicity:latest restore
+  jamrizzi/ident:latest restore
 ```
 
 ## Options
