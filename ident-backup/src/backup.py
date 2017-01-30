@@ -6,7 +6,6 @@ import docker
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 class Backup:
-
     def run(self, **kwargs):
         self.__borg_init(
             borg_repo=kwargs['borg_repo'],

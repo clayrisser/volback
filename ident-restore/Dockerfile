@@ -1,14 +1,23 @@
-FROM ubuntu:latest
+############################################################
+# Dockerfile to run ident restore
+# Based on Ubuntu
+############################################################
 
+FROM ubuntu:16.04
+
+MAINTAINER Jam Risser (jamrizzi)
+
+ENV CONTAINER_ID=""
+ENV DATA_TYPE=raw
+ENV ENCRYPT=false
 ENV PASSPHRASE=hellodocker
+ENV SERVICE=unknown
 ENV STORAGE_ACCESS_KEY=""
 ENV STORAGE_SECRET_KEY=""
 ENV STORAGE_URL=""
-ENV SERVICE=unknown
-ENV ENCRYPT=false
-ENV DATA_TYPE=raw
-ENV CONTAINER_ID=""
-ENV TIME=""
+ENV TIME=9999999999
+
+WORKDIR /app
 
 RUN apt-get update
 RUN apt-get install -y curl
@@ -24,8 +33,8 @@ RUN git clone https://github.com/s3fs-fuse/s3fs-fuse.git && \
     make install
 RUN locale-gen en_US.UTF-8
 
-ADD ./restore.py /scripts/restore.py
-ADD ./config /scripts/config
-RUN chmod -R 700 /scripts
+ADD ./src /app/src
+ADD ./config /app/config
+RUN chmod -R 700 /app
 
-CMD python /scripts/restore.py
+ENTRYPOINT python /app/src/run.py

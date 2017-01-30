@@ -7,7 +7,6 @@ import re
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 class Helper:
-
     def mount_storage(self, **kwargs):
         os.system('''
         mkdir -p /project
@@ -68,10 +67,16 @@ class Helper:
                 files += open(file, 'r').read()
             settings = yaml.load(files)
             setting = settings[data_type]
-            envs = re.findall('(?<=\<)[A-Z\d\-\_]+(?=\>)', setting['backup'])
-            for env in envs:
-                setting['backup'] = setting['backup'].replace('<' + env + '>', os.environ[env] if env in os.environ else '')
-            setting['backup'] = ('/bin/sh -c "' + setting['backup'] + '"').replace('%DUMP%', setting['data-location'] + '/ident_backup/' + setting['backup-file']).replace('//', '/')
+            setting['backup'] = self.__replace_config_prop_placeholders(setting, 'backup')
+            setting['restore'] = self.__replace_config_prop_placeholders(setting, 'restore')
             return setting
         else:
             return 'raw'
+
+    def __replace_config_prop_placeholders(self, setting, prop):
+        updated_prop = setting[prop]
+        envs = re.findall('(?<=\<)[A-Z\d\-\_]+(?=\>)', updated_prop)
+        for env in envs:
+            updated_prop = updated_prop.replace('<' + env + '>', os.environ[env] if env in os.environ else '')
+        updated_prop = ('/bin/sh -c "' + updated_prop + '"').replace('%DUMP%', setting['data-location'] + '/ident_backup/' + setting['backup-file']).replace('//', '/')
+        return updated_prop
