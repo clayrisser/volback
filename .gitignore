@@ -3,6 +3,9 @@
 *~
 
 # Config
-dockplicity-restore/config
-dockplicity-backup/config
-dockplicity/config
+ident-restore/config
+ident-restore/src/helper.py
+ident-backup/config
+ident-backup/src/helper.py
+ident/config
+ident/src/helper.py
