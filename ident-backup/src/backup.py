@@ -25,7 +25,9 @@ class Backup:
             encrypt=kwargs['encrypt'],
             mounts=kwargs['mounts'],
             passphrase=kwargs['passphrase'],
-            service=kwargs['service']
+            service=kwargs['service'],
+            raw_dir=kwargs['raw_dir'],
+            dump_dir=kwargs['dump_dir']
         )
 
     def clean(self, **kwargs):
@@ -47,8 +49,11 @@ class Backup:
             os.system('(echo ' + kwargs['passphrase'] + '; echo ' + kwargs['passphrase'] + '; echo) | borg init ' + no_encrypt + kwargs['borg_repo'])
         now = str(int(time.time()))
         for mount in kwargs['mounts']:
-            name = kwargs['service'] + ':' + mount['Destination'].replace('/', '#') + '-' + now
-            command = '(echo y) | borg create ::' + name + ' ' + mount['Destination']
+            destination = mount['Destination']
+            if destination == kwargs['raw_dir']:
+                destination = kwargs['dump_dir']
+            name = kwargs['service'] + ':' + destination.replace('/', '#') + '-' + now
+            command = '(echo y) | borg create ::' + name + ' ' + destination
             os.system(command)
 
     def __smart_backup(self, **kwargs):

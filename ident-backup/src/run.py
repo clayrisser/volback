@@ -20,7 +20,7 @@ def main():
         data_type=options['data_type'],
         data_type_details=options['data_type_details'],
         dump_dir=options['dump_dir'],
-        encrypt=['encrypt'],
+        encrypt=options['encrypt'],
         mounts=options['mounts'],
         passphrase=options['passphrase'],
         raw_dir=options['raw_dir'],
