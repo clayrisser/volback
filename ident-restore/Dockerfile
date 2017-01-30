@@ -19,9 +19,19 @@ ENV TIME=9999999999
 
 WORKDIR /app
 
-RUN apt-get update
-RUN apt-get install -y curl
-RUN apt-get install -y automake autotools-dev g++ git libcurl4-gnutls-dev libfuse-dev libssl-dev libxml2-dev make pkg-config python-pip borgbackup
+RUN apt-get update && apt-get install -y curl \
+    automake \
+    autotools-dev \
+    g++ \
+    git \
+    libcurl4-gnutls-dev \
+    libfuse-dev \
+    libssl-dev \
+    libxml2-dev \
+    make \
+    pkg-config \
+    python-pip \
+    borgbackup
 RUN curl -L https://get.docker.com | bash
 RUN pip install pyyaml && \
     pip install docker
