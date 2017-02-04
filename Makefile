@@ -28,6 +28,7 @@ build_ident_restore:
 build_ident:
 	docker pull jamrizzi/ident
 	cp -r ./config ./ident/config
+	cp -r ./shared/* ./ident/src/
 	docker build -t jamrizzi/ident:latest -f $(CWD)/ident/Dockerfile $(CWD)/ident
 	$(info built ident)
 
@@ -53,7 +54,7 @@ clean: sweep bleach
 sweep:
 	@rm -rf ident-backup/backup/*.pyc
 	@rm -rf ident-restore/config ident-backup/config ident/config
-	@rm -f ident-restore/src/helper.py ident-backup/src/helper.py
+	@rm -f ident-restore/src/helper.py ident-backup/src/helper.py ident/src/helper.py
 	$(info swept)
 .PHONY: bleach
 bleach:
