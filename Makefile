@@ -15,20 +15,20 @@ build: build_ident_backup build_ident_restore build_ident
 build_ident_backup:
 	docker pull jamrizzi/ident-backup
 	cp -r ./config ./ident-backup/config
-	cp -r ./shared/* ./ident-backup/src/
+	cp -r ./shared/* ./ident-backup/src/pkg/
 	docker build -t jamrizzi/ident-backup:latest -f $(CWD)/ident-backup/Dockerfile $(CWD)/ident-backup
 	$(info built ident-backup)
 .PHONY: build_ident_restore
 build_ident_restore:
 	docker pull jamrizzi/ident-restore
 	cp -r ./config ./ident-restore/config
-	cp -r ./shared/* ./ident-restore/src/
+	cp -r ./shared/* ./ident-restore/src/pkg/
 	docker build -t jamrizzi/ident-restore:latest -f $(CWD)/ident-restore/Dockerfile $(CWD)/ident-restore
 	$(info built ident-restore)
 build_ident:
 	docker pull jamrizzi/ident
 	cp -r ./config ./ident/config
-	cp -r ./shared/* ./ident/src/
+	cp -r ./shared/* ./ident/src/pkg/
 	docker build -t jamrizzi/ident:latest -f $(CWD)/ident/Dockerfile $(CWD)/ident
 	$(info built ident)
 
@@ -52,9 +52,9 @@ clean: sweep bleach
 	$(info cleaned)
 .PHONY: sweep
 sweep:
-	@rm -rf ident-backup/backup/*.pyc
+	@find . -name "*.pyc" -type f -delete
 	@rm -rf ident-restore/config ident-backup/config ident/config
-	@rm -f ident-restore/src/helper.py ident-backup/src/helper.py ident/src/helper.py
+	@rm -f ident-restore/src/pkg/helper.py ident-backup/src/pkg/helper.py ident/src/pkg/helper.py
 	$(info swept)
 .PHONY: bleach
 bleach:

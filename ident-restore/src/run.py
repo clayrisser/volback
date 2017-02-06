@@ -1,6 +1,6 @@
 import os
-from helper import Helper
-from restore import Restore
+from pkg.helper import Helper
+from pkg.restore import Restore
 
 helper = Helper()
 restore = Restore()

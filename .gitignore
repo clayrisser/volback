@@ -4,8 +4,8 @@
 
 # Config
 ident-restore/config
-ident-restore/src/helper.py
+ident-restore/src/pkg/helper.py
 ident-backup/config
-ident-backup/src/helper.py
+ident-backup/src/pkg/helper.py
 ident/config
-ident/src/helper.py
+ident/src/pkg/helper.py

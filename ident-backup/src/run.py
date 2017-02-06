@@ -1,6 +1,6 @@
 import os
-from helper import Helper
-from backup import Backup
+from pkg.helper import Helper
+from pkg.backup import Backup
 
 helper = Helper()
 backup = Backup()

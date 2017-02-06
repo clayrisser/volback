@@ -50,9 +50,9 @@ class Helper:
             smart_backup_data['data_type_details'] = data_type_details
             for mount in mounts:
                 if mount['Destination'] == data_type_details['data-location']:
-                    raw_dir = ('/volumes/' + mount['Source'] + '/raw').replace('//', '/')
+                    raw_dir = ('/volumes/' + mount['Destination'] + '/raw').replace('//', '/')
                     tmp_dump_dir = (raw_dir + '/ident_backup').replace('//', '/')
-                    dump_volume = ('/volumes/' + mount['Source']).replace('//', '/')
+                    dump_volume = ('/volumes/' + mount['Destination']).replace('//', '/')
                     dump_dir = (dump_volume + '/' + kwargs['data_type']).replace('//', '/')
                     smart_backup_data['raw_dir'] = raw_dir
                     smart_backup_data['tmp_dump_dir'] = tmp_dump_dir

@@ -1,13 +1,14 @@
 import os
 import time
-from helper import Helper
-from shared import Shared
-# from backup import Backup
+import sys
+from pkg.helper import Helper
+from pkg.shared import Shared
+from pkg.backup import Backup
 # from restore import Restore
 
 helper = Helper()
 shared = Shared()
-# backup = Backup()
+backup = Backup()
 # restore = Restore()
 
 def main():
@@ -26,8 +27,30 @@ def main():
         data_types=options['data_types'],
         blacklist=options['blacklist']
     )
-    print(services)
-    # backup.run(platform_type, services, options)
+    if sys.argv[1] == 'cron':
+        print('running cron')
+    if sys.argv[1] == 'backup':
+        backup.run(
+            encrypt=options['encrypt'],
+            keep_daily=options['keep_daily'],
+            keep_hourly=options['keep_hourly'],
+            keep_monthly=options['keep_monthly'],
+            keep_weekly=options['keep_weekly'],
+            keep_within=options['keep_within'],
+            keep_yearly=options['keep_yearly'],
+            passphrase=options['passphrase'],
+            platform_type=platform_type,
+            rancher_access_key=options['rancher_access_key'],
+            rancher_secret_key=options['rancher_secret_key'],
+            rancher_url=options['rancher_url'],
+            services=services,
+            storage_access_key=options['storage_access_key'],
+            storage_secret_key=options['storage_secret_key'],
+            storage_url=options['storage_url'],
+            storage_volume=options['storage_volume']
+        )
+    if sys.argv[1] == 'restore':
+        print('running restore')
 
 def get_options():
     options = {

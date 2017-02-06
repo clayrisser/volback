@@ -58,4 +58,5 @@ ADD ./src /app/src
 ADD ./config /app/config
 RUN chmod -R 700 /app
 
-ENTRYPOINT python /app/src/run.py
+ENTRYPOINT ["python", "/app/src/run.py"]
+CMD ["cron"]
