@@ -8,7 +8,7 @@ platform = {
 
 class Backup:
     def run(self, **kwargs):
-        if len(kwargs['services']) <= 0:
+        if kwargs['services'] == None or len(kwargs['services']) <= 0:
             exit('No services to backup')
         environment = {
             'PASSPHRASE': kwargs['passphrase'],
@@ -31,9 +31,9 @@ class Backup:
             )
         for service in kwargs['services']:
             has_mounts = False
+            success = False
             if len(service['mounts']) > 0:
                 has_mounts = True
-                success = False
                 environment['CONTAINER_ID'] = service['container']
                 environment['DATA_TYPE'] = service['data_type']
                 environment['SERVICE'] = service['name']
@@ -49,14 +49,14 @@ class Backup:
                         storage_volume=kwargs['storage_volume'],
                         environment=environment
                     )
-            self.print_response(
+            self.__print_response(
                 has_mounts=has_mounts,
                 success=success,
                 service=service
             )
 
 
-    def print_response(self, **kwargs):
+    def __print_response(self, **kwargs):
         service = kwargs['service']
         if kwargs['has_mounts']:
             data_type_pretty = '' if service['data_type'] == 'raw' else ' ~' + service['data_type']

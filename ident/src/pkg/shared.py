@@ -40,7 +40,7 @@ class Shared:
                     service=kwargs['service']
                 )
                 return services.append(service)
-            else:
+            elif kwargs['operation'] != 'restore' or (kwargs['operation'] == 'restore' and kwargs['restore_all']):
                 return platform['rancher'].get_services(
                     blacklist=kwargs['blacklist'],
                     data_types=kwargs['data_types'],
@@ -55,9 +55,8 @@ class Shared:
                     service=kwargs['service']
                 )
                 return services.append(service)
-            else:
+            elif kwargs['operation'] != 'restore' or (kwargs['operation'] == 'restore' and kwargs['restore_all']):
                 return platform['docker'].get_services(
                     blacklist=kwargs['blacklist'],
                     data_types=kwargs['data_types']
                 )
-

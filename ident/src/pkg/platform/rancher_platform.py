@@ -28,6 +28,23 @@ class RancherPlatform:
                 success = True
         return success
 
+    def restore(self, **kwargs):
+        success = False
+        storage_volume = ''
+        environment=environment
+        if kwargs['storage_volume']:
+            storage_volume = ' -v ' + kwargs['storage_volume'] + ':/backup'
+        command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
+        for key, env in environment.iteritems():
+            command += ' -e ' + key + '=' + env
+        for mount in kwargs['service']['mounts']:
+            command += ' -v ' + mount['source'] + ':' + mount['destination']
+        command += ' jamrizzi/ident-restore:latest'
+        res = os.system(command)
+        if (res == 0):
+            success = True
+        return success
+
     def get_service(self, **kwargs):
         for service in self.__rancher_call(
             '/services',

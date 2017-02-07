@@ -34,6 +34,37 @@ class DockerPlatform:
                 success = False
         return success
 
+    def restore(self, **kwargs):
+        success = False
+        environment=kwargs['environment']
+        volumes = {}
+        for mount in kwargs['service']['mounts']:
+            volumes[mount['source']] = {
+                'bind': mount['destination'],
+                'mode': mount['mode']
+            }
+        volumes['/var/run/docker.sock'] = {
+            'bind': '/var/run/docker.sock',
+            'mode': 'rw'
+        }
+        if kwargs['storage_volume']:
+            volumes[kwargs['storage_volume']] = {
+                'bind': '/backup',
+                'mode': 'rw'
+            }
+        try:
+            response = client.containers.run(
+                image='jamrizzi/ident-restore:latest',
+                volumes=volumes,
+                remove=True,
+                privileged=True,
+                environment=environment
+            )
+            success = True
+        except:
+            success = False
+        return success
+
     def get_service(self, **kwargs):
         container = client.containers.get(kwargs['service'])
         data_type = 'raw'
