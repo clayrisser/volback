@@ -1,12 +1,12 @@
-import time
-import re
 import os
+import re
+import time
 from pkg.platform.docker_platform import DockerPlatform
 from pkg.platform.rancher_platform import RancherPlatform
 
 platform = {
-    'rancher': RancherPlatform(),
-    'docker': DockerPlatform()
+    'docker': DockerPlatform(),
+    'rancher': RancherPlatform()
 }
 
 class Restore:
@@ -16,17 +16,17 @@ class Restore:
         if os.popen('ls /backup').read() == '':
             exit('Storage repository is empty')
         environment = {
-            'PASSPHRASE': kwargs['passphrase'],
             'ENCRYPT': kwargs['encrypt'],
+            'PASSPHRASE': kwargs['passphrase'],
             'STORAGE_ACCESS_KEY': kwargs['storage_access_key'],
             'STORAGE_SECRET_KEY': kwargs['storage_secret_key'],
             'STORAGE_URL': kwargs['storage_url']
         }
         if kwargs['platform_type'] == 'rancher':
             platform['rancher'].init(
-                rancher_url=kwargs['rancher_url'],
                 rancher_access_key=kwargs['rancher_access_key'],
-                rancher_secret_key=kwargs['rancher_secret_key']
+                rancher_secret_key=kwargs['rancher_secret_key'],
+                rancher_url=kwargs['rancher_url']
             )
         for service in kwargs['services']:
             has_mounts = False
@@ -34,30 +34,30 @@ class Restore:
             if len(service['mounts']) > 0:
                 has_mounts = True
                 timestamp = self.__get_time(
-                    service=service,
                     passphrase=kwargs['passphrase'],
+                    service=service,
                     time=kwargs['time']
                 )
-                environment['TIME'] = timestamp
                 environment['CONTAINER_ID'] = service['container']
                 environment['DATA_TYPE'] = service['data_type']
                 environment['SERVICE'] = service['name']
+                environment['TIME'] = timestamp
                 if kwargs['platform_type'] == 'rancher':
                     success = platform['rancher'].restore(
+                        environment=environment,
                         service=service,
-                        storage_volume=kwargs['storage_volume'],
-                        environment=environment
+                        storage_volume=kwargs['storage_volume']
                     )
                 else:
                     success = platform['docker'].restore(
+                        environment=environment,
                         service=service,
-                        storage_volume=kwargs['storage_volume'],
-                        environment=environment
+                        storage_volume=kwargs['storage_volume']
                     )
             self.__print_response(
                 has_mounts=has_mounts,
-                success=success,
                 service=service,
+                success=success,
                 timestamp=timestamp
             )
 

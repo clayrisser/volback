@@ -1,14 +1,14 @@
+import docker
 import glob
 import random
 import yaml
-import docker
 from pkg.platform.docker_platform import DockerPlatform
 from pkg.platform.rancher_platform import RancherPlatform
 
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 platform = {
-    'rancher': RancherPlatform(),
-    'docker': DockerPlatform()
+    'docker': DockerPlatform(),
+    'rancher': RancherPlatform()
 }
 
 class Shared:

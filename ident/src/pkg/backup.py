@@ -2,8 +2,8 @@ from pkg.platform.docker_platform import DockerPlatform
 from pkg.platform.rancher_platform import RancherPlatform
 
 platform = {
-    'rancher': RancherPlatform(),
-    'docker': DockerPlatform()
+    'docker': DockerPlatform(),
+    'rancher': RancherPlatform()
 }
 
 class Backup:
@@ -11,23 +11,23 @@ class Backup:
         if kwargs['services'] == None or len(kwargs['services']) <= 0:
             exit('No services to backup')
         environment = {
-            'PASSPHRASE': kwargs['passphrase'],
-            'ENCRYPT': 'true' if kwargs['encrypt'] else 'false',
-            'KEEP_WITHIN': kwargs['keep_within'],
-            'HOURLY': kwargs['keep_hourly'],
             'DAILY': kwargs['keep_daily'],
-            'WEEKLY': kwargs['keep_weekly'],
+            'ENCRYPT': 'true' if kwargs['encrypt'] else 'false',
+            'HOURLY': kwargs['keep_hourly'],
+            'KEEP_WITHIN': kwargs['keep_within'],
             'MONTHLY': kwargs['keep_monthly'],
-            'YEARLY': kwargs['keep_yearly'],
+            'PASSPHRASE': kwargs['passphrase'],
             'STORAGE_ACCESS_KEY': kwargs['storage_access_key'],
             'STORAGE_SECRET_KEY': kwargs['storage_secret_key'],
-            'STORAGE_URL': kwargs['storage_url']
+            'STORAGE_URL': kwargs['storage_url'],
+            'WEEKLY': kwargs['keep_weekly'],
+            'YEARLY': kwargs['keep_yearly']
         }
         if kwargs['platform_type'] == 'rancher':
             platform['rancher'].init(
-                rancher_url=kwargs['rancher_url'],
                 rancher_access_key=kwargs['rancher_access_key'],
-                rancher_secret_key=kwargs['rancher_secret_key']
+                rancher_secret_key=kwargs['rancher_secret_key'],
+                rancher_url=kwargs['rancher_url']
             )
         for service in kwargs['services']:
             has_mounts = False
@@ -39,20 +39,20 @@ class Backup:
                 environment['SERVICE'] = service['name']
                 if kwargs['platform_type'] == 'rancher':
                     success = platform['rancher'].backup(
+                        environment=environment,
                         service=service,
-                        storage_volume=kwargs['storage_volume'],
-                        environment=environment
+                        storage_volume=kwargs['storage_volume']
                     )
                 else:
                     success = platform['docker'].backup(
+                        environment=environment,
                         service=service,
-                        storage_volume=kwargs['storage_volume'],
-                        environment=environment
+                        storage_volume=kwargs['storage_volume']
                     )
             self.__print_response(
                 has_mounts=has_mounts,
-                success=success,
-                service=service
+                service=service,
+                success=success
             )
 
 

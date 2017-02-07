@@ -23,11 +23,11 @@ class DockerPlatform:
                 }
             try:
                 response = client.containers.run(
+                    environment=environment,
                     image='jamrizzi/ident-backup:latest',
-                    volumes=volumes,
-                    remove=True,
                     privileged=True,
-                    environment=environment
+                    remove=True,
+                    volumes=volumes
                 )
                 success = True
             except:
@@ -35,8 +35,8 @@ class DockerPlatform:
         return success
 
     def restore(self, **kwargs):
-        success = False
         environment=kwargs['environment']
+        success = False
         volumes = {}
         for mount in kwargs['service']['mounts']:
             volumes[mount['source']] = {
@@ -54,11 +54,11 @@ class DockerPlatform:
             }
         try:
             response = client.containers.run(
+                environment=environment,
                 image='jamrizzi/ident-restore:latest',
-                volumes=volumes,
-                remove=True,
                 privileged=True,
-                environment=environment
+                remove=True,
+                volumes=volumes
             )
             success = True
         except:
@@ -75,14 +75,11 @@ class DockerPlatform:
             if image == key:
                 data_type = key
         return {
-            'name': container.attrs['Name'][1:],
             'container': container.attrs['Name'][1:],
-            'host': False,
             'data_type': data_type,
-            'mounts': self.__get_mounts(
-                container=container,
-                platform_type='docker'
-            )
+            'host': False,
+            'mounts': self.__get_mounts(container),
+            'name': container.attrs['Name'][1:]
         }
 
     def get_services(self, **kwargs):

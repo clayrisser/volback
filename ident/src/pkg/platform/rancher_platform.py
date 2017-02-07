@@ -1,5 +1,8 @@
-import os
 import docker
+import os
+import random
+import requests
+from requests.auth import HTTPBasicAuth
 
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -48,17 +51,17 @@ class RancherPlatform:
     def get_service(self, **kwargs):
         for service in self.__rancher_call(
             '/services',
-            rancher_url=kwargs['rancher_url'],
             rancher_access_key=kwargs['rancher_access_key'],
-            rancher_secret_key=kwargs['rancher_secret_key']
+            rancher_secret_key=kwargs['rancher_secret_key'],
+            rancher_url=kwargs['rancher_url']
         )['data']:
             if service['name'] == kwargs['service']:
                 if service['instanceIds']:
                     container = self.__rancher_call(
                         '/containers/' + random.choice(service['instanceIds']),
-                        rancher_url=kwargs['rancher_url'],
                         rancher_access_key=kwargs['rancher_access_key'],
-                        rancher_secret_key=kwargs['rancher_secret_key']
+                        rancher_secret_key=kwargs['rancher_secret_key'],
+                        rancher_url=kwargs['rancher_url']
                     )
                     data_type = 'raw'
                     for key, item in kwargs['data_types'].iteritems():
@@ -68,14 +71,11 @@ class RancherPlatform:
                         if image == key:
                             data_type = key
                     return {
-                        'name': service['name'],
                         'container': container['data']['dockerContainer']['Names'][0][1:],
-                        'host': container['hostId'],
                         'data_type': data_type,
-                        'mounts': self.get_mounts(
-                            container=container,
-                            platform_type='rancher'
-                        )
+                        'host': container['hostId'],
+                        'mounts': self.__get_mounts(container),
+                        'name': service['name']
                     }
 
     def get_services(self, **kwargs):
@@ -89,12 +89,12 @@ class RancherPlatform:
             if service['instanceIds']:
                 container = self.__rancher_call(
                     '/containers/' + random.choice(service['instanceIds']),
-                    rancher_url=kwargs['rancher_url'],
                     rancher_access_key=kwargs['rancher_access_key'],
-                    rancher_secret_key=kwargs['rancher_secret_key']
+                    rancher_secret_key=kwargs['rancher_secret_key'],
+                    rancher_url=kwargs['rancher_url']
                 )
                 data_type = 'raw'
-                for key, item in options['data_types'].iteritems():
+                for key, item in kwargs['data_types'].iteritems():
                     image = container['data']['dockerContainer']['Image']
                     if ':' in image:
                         image = image[:image.index(':')]
@@ -105,7 +105,7 @@ class RancherPlatform:
                     valid = True
                 labels = container['data']['dockerContainer']['Labels']
                 for label in labels.iteritems():
-                    if options['blacklist']:
+                    if kwargs['blacklist']:
                         if label[0] == 'ident' and label[1] == 'false':
                             valid = False
                     else:
@@ -113,11 +113,11 @@ class RancherPlatform:
                             valid = True
                 if valid:
                     services.append({
-                        'name': service['name'],
                         'container': container['data']['dockerContainer']['Names'][0][1:],
-                        'host': container['hostId'],
                         'data_type': data_type,
-                        'mounts': self.__get_mounts(container)
+                        'host': container['hostId'],
+                        'mounts': self.__get_mounts(container),
+                        'name': service['name']
                     })
         return services
 
