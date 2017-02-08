@@ -4,8 +4,9 @@ client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
 class DockerPlatform:
     def backup(self, **kwargs):
-        success = False
         environment = kwargs['environment']
+        response = ''
+        success = False
         volumes = {}
         for mount in kwargs['service']['mounts']:
             volumes[mount['source']] = {
@@ -32,10 +33,14 @@ class DockerPlatform:
                 success = True
             except:
                 success = False
-        return success
+        return {
+            'response': response,
+            'success': success
+        }
 
     def restore(self, **kwargs):
         environment=kwargs['environment']
+        response = ''
         success = False
         volumes = {}
         for mount in kwargs['service']['mounts']:
@@ -63,7 +68,10 @@ class DockerPlatform:
             success = True
         except:
             success = False
-        return success
+        return {
+            'response': response,
+            'success': success
+        }
 
     def get_service(self, **kwargs):
         container = client.containers.get(kwargs['service'])

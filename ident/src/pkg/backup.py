@@ -31,6 +31,7 @@ class Backup:
             )
         for service in kwargs['services']:
             has_mounts = False
+            response = ''
             success = False
             if len(service['mounts']) > 0:
                 has_mounts = True
@@ -38,19 +39,25 @@ class Backup:
                 environment['DATA_TYPE'] = service['data_type']
                 environment['SERVICE'] = service['name']
                 if kwargs['platform_type'] == 'rancher':
-                    success = platform['rancher'].backup(
+                    package = platform['rancher'].backup(
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
                     )
+                    response = package['response']
+                    success = package['success']
                 else:
-                    success = platform['docker'].backup(
+                    package = platform['docker'].backup(
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
                     )
+                    response = package['response']
+                    success = package['success']
             self.__print_response(
+                debug=kwargs['debug'],
                 has_mounts=has_mounts,
+                package=package,
                 service=service,
                 success=success
             )
@@ -65,8 +72,10 @@ class Backup:
             else:
                 print('\n' + service['name'] + data_type_pretty + ': FAILED\n-----------------------------')
             for mount in service['mounts']:
-                print(mount)
                 driver_pretty = '' if mount['driver'] == 'local' else ' (' + mount['driver'] + ')'
                 print('    - ' + mount['source'] + ':' + mount['original_destination'] + driver_pretty + data_type_pretty)
         else:
             print('\n' + service['name'] + ': NO VOLUMES\n-----------------------------')
+        if kwargs['debug']:
+            print('--------- jamrizzi/ident-backup')
+            print(kwargs['response'])

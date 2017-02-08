@@ -33,6 +33,7 @@ def main():
         print('running cron')
     if sys.argv[1] == 'backup':
         backup.run(
+            debug=options['debug'],
             encrypt=options['encrypt'],
             keep_daily=options['keep_daily'],
             keep_hourly=options['keep_hourly'],
@@ -53,6 +54,7 @@ def main():
         )
     if sys.argv[1] == 'restore':
         restore.run(
+            debug=options['debug'],
             encrypt=options['encrypt'],
             passphrase=options['passphrase'],
             platform_type=platform_type,
@@ -104,6 +106,7 @@ def get_options():
     return {
         'blacklist': True if os.environ['BLACKLIST'] == 'true' else False,
         'bucket': bucket,
+        'debug': True if os.environ['DEBUG'] == 'true' else False,
         'data_types': shared.get_data_types(),
         'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
         'keep_daily': os.environ['KEEP_DAILY'],

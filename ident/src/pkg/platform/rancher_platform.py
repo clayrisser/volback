@@ -2,6 +2,7 @@ import docker
 import os
 import random
 import requests
+import uuid
 from requests.auth import HTTPBasicAuth
 
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
@@ -15,38 +16,56 @@ class RancherPlatform:
         ''')
 
     def backup(self, **kwargs):
-        success = False
-        storage_volume = ''
         environment=kwargs['environment']
+        name=uuid.uuid4().hex
+        response = ''
+        storage_volume = ''
+        success = False
         if kwargs['storage_volume']:
             storage_volume = ' -v ' + kwargs['storage_volume'] + ':/backup'
-            command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
+            command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
             for key, env in environment.iteritems():
                 command += ' -e ' + key + '=' + env
             for mount in kwargs['service']['mounts']:
                 command += ' -v ' + mount['source'] + ':' + mount['destination']
             command += ' jamrizzi/ident-backup:latest'
-            res = os.system(command)
-            if (res == 0):
+            try:
+                os.popen(command)
+                response = os.popen('rancher --host ' + kwargs['service']['host'] + ' docker logs ' + name).read()
+                os.popen('rancher --host ' + kwargs['service']['host'] + ' docker rm ' + name)
                 success = True
-        return success
+            except:
+                success = False
+        return {
+            'response': response,
+            'success': success
+        }
 
     def restore(self, **kwargs):
-        success = False
-        storage_volume = ''
         environment=environment
+        name=uuid.uuid4().hex
+        response = ''
+        storage_volume = ''
+        success = False
         if kwargs['storage_volume']:
             storage_volume = ' -v ' + kwargs['storage_volume'] + ':/backup'
-        command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
+        command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
         for key, env in environment.iteritems():
             command += ' -e ' + key + '=' + env
         for mount in kwargs['service']['mounts']:
             command += ' -v ' + mount['source'] + ':' + mount['destination']
         command += ' jamrizzi/ident-restore:latest'
-        res = os.system(command)
-        if (res == 0):
+        try:
+            os.popen(command)
+            response = os.popen('rancher --host ' + kwargs['service']['host'] + ' docker logs ' + name).read()
+            os.popen('rancher --host ' + kwargs['service']['host'] + ' docker rm ' + name)
             success = True
-        return success
+        except:
+            success = False
+        return {
+            'response': response,
+            'success': success
+        }
 
     def get_service(self, **kwargs):
         for service in self.__rancher_call(

@@ -30,6 +30,7 @@ class Restore:
             )
         for service in kwargs['services']:
             has_mounts = False
+            response = ''
             success = False
             if len(service['mounts']) > 0:
                 has_mounts = True
@@ -43,19 +44,25 @@ class Restore:
                 environment['SERVICE'] = service['name']
                 environment['TIME'] = timestamp
                 if kwargs['platform_type'] == 'rancher':
-                    success = platform['rancher'].restore(
+                    package = platform['rancher'].restore(
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
                     )
+                    response = package['response']
+                    success = package['success']
                 else:
-                    success = platform['docker'].restore(
+                    package = platform['docker'].restore(
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
                     )
+                    response = package['response']
+                    success = package['success']
             self.__print_response(
+                debug=kwargs['debug'],
                 has_mounts=has_mounts,
+                response=response,
                 service=service,
                 success=success,
                 timestamp=timestamp
@@ -92,3 +99,6 @@ class Restore:
             return str(timestamp)
         else:
             return str(kwargs['time'])
+        if kwargs['debug']:
+            print('--------- jamrizzi/ident-restore')
+            print(kwargs['response'])
