@@ -30,7 +30,7 @@ def main():
         operation=sys.argv[1]
     )
     if sys.argv[1] == 'cron':
-        print('running cron')
+        os.system('go-cron "' + options['cron_schedule'] + '" python /app/src/run.py backup >> /app/cron.log')
     if sys.argv[1] == 'backup':
         backup.run(
             debug=options['debug'],
@@ -108,6 +108,7 @@ def get_options():
         'bucket': bucket,
         'debug': True if os.environ['DEBUG'] == 'true' else False,
         'data_types': shared.get_data_types(),
+        'cron_schedule': '0 ' + os.environ['CRON_SCHEDULE'],
         'encrypt': True if os.environ['ENCRYPT'] == 'true' else False,
         'keep_daily': os.environ['KEEP_DAILY'],
         'keep_hourly': os.environ['KEEP_HOURLY'],

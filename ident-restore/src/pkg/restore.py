@@ -54,7 +54,7 @@ class Restore:
                 name=name
             )
             command = 'cd / && (echo y) | borg extract ::' + name
-            os.system(command)
+            os.popen(command)
 
     def __smart_restore(self, **kwargs):
         os.system('ls ' + kwargs['dump_dir'])

@@ -8,7 +8,7 @@ FROM ubuntu:16.04
 MAINTAINER Jam Risser (jamrizzi)
 
 ENV BLACKLIST=false
-ENV CRON_SCHEDULE="0 0 0 * * *"
+ENV CRON_SCHEDULE="0 0 * * *"
 ENV DEBUG=false
 ENV ENCRYPT=false
 ENV KEEP_DAILY=2

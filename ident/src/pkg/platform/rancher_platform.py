@@ -23,19 +23,21 @@ class RancherPlatform:
         success = False
         if kwargs['storage_volume']:
             storage_volume = ' -v ' + kwargs['storage_volume'] + ':/backup'
-            command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
-            for key, env in environment.iteritems():
-                command += ' -e ' + key + '=' + env
-            for mount in kwargs['service']['mounts']:
-                command += ' -v ' + mount['source'] + ':' + mount['destination']
-            command += ' jamrizzi/ident-backup:latest'
-            try:
-                os.popen(command)
-                response = os.popen('rancher --host ' + kwargs['service']['host'] + ' docker logs ' + name).read()
-                os.popen('rancher --host ' + kwargs['service']['host'] + ' docker rm ' + name)
-                success = True
-            except:
-                success = False
+        command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
+        for key, env in environment.iteritems():
+            command += ' -e ' + key + '=' + env
+        for mount in kwargs['service']['mounts']:
+            command += ' -v ' + mount['source'] + ':' + mount['destination']
+        command += ' jamrizzi/ident-backup:latest'
+        if kwargs['debug']:
+            print('>> ' + command)
+        try:
+            os.popen(command)
+            response = os.popen('rancher --host ' + kwargs['service']['host'] + ' docker logs ' + name).read()
+            os.popen('rancher --host ' + kwargs['service']['host'] + ' docker rm ' + name)
+            success = True
+        except:
+            success = False
         return {
             'response': response,
             'success': success
@@ -55,6 +57,8 @@ class RancherPlatform:
         for mount in kwargs['service']['mounts']:
             command += ' -v ' + mount['source'] + ':' + mount['destination']
         command += ' jamrizzi/ident-restore:latest'
+        if kwargs['debug']:
+            print('>> ' + command)
         try:
             os.popen(command)
             response = os.popen('rancher --host ' + kwargs['service']['host'] + ' docker logs ' + name).read()

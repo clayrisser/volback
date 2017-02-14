@@ -62,8 +62,8 @@ class Helper:
 
     def __get_data_type_details(self, data_type):
         if data_type != 'raw':
-            files = ""
-            for file in glob.glob("/app/config/*.yml"):
+            files = ''
+            for file in glob.glob('/app/config/*.yml'):
                 files += open(file, 'r').read()
             settings = yaml.load(files)
             setting = settings[data_type]

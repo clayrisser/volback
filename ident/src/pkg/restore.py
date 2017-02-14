@@ -45,6 +45,7 @@ class Restore:
                 environment['TIME'] = timestamp
                 if kwargs['platform_type'] == 'rancher':
                     package = platform['rancher'].restore(
+                        debug=kwargs['debug'],
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
@@ -100,5 +101,7 @@ class Restore:
         else:
             return str(kwargs['time'])
         if kwargs['debug']:
-            print('--------- jamrizzi/ident-restore')
+            print('<<<<<<<<<<<< jamrizzi/ident-restore >>>>>>>>>>>>')
             print(kwargs['response'])
+            print('<<<<<<<<<<<<')
+        print('')

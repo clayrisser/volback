@@ -53,7 +53,7 @@ class Backup:
                 destination = kwargs['dump_dir']
             name = kwargs['service'] + ':' + destination.replace('/', '#') + '-' + now
             command = '(echo y) | borg create ::' + name + ' ' + destination
-            os.system(command)
+            os.popen(command)
 
     def __smart_backup(self, **kwargs):
         os.system('rm -rf ' + kwargs['tmp_dump_dir'])

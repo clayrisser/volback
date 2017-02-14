@@ -40,6 +40,7 @@ class Backup:
                 environment['SERVICE'] = service['name']
                 if kwargs['platform_type'] == 'rancher':
                     package = platform['rancher'].backup(
+                        debug=kwargs['debug'],
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
@@ -58,6 +59,7 @@ class Backup:
                 debug=kwargs['debug'],
                 has_mounts=has_mounts,
                 package=package,
+                response=response,
                 service=service,
                 success=success
             )
@@ -68,14 +70,16 @@ class Backup:
         if kwargs['has_mounts']:
             data_type_pretty = '' if service['data_type'] == 'raw' else ' ~' + service['data_type']
             if (kwargs['success']):
-                print('\n' + service['name'] + data_type_pretty + ': SUCCESS\n----------------------------')
+                print(service['name'] + data_type_pretty + ': SUCCESS\n----------------------------')
             else:
-                print('\n' + service['name'] + data_type_pretty + ': FAILED\n-----------------------------')
+                print(service['name'] + data_type_pretty + ': FAILED\n-----------------------------')
             for mount in service['mounts']:
                 driver_pretty = '' if mount['driver'] == 'local' else ' (' + mount['driver'] + ')'
                 print('    - ' + mount['source'] + ':' + mount['original_destination'] + driver_pretty + data_type_pretty)
         else:
             print('\n' + service['name'] + ': NO VOLUMES\n-----------------------------')
         if kwargs['debug']:
-            print('--------- jamrizzi/ident-backup')
+            print('<<<<<<<<<<<< jamrizzi/ident-backup >>>>>>>>>>>>')
             print(kwargs['response'])
+            print('<<<<<<<<<<<<')
+        print('')
