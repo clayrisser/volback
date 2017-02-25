@@ -34,6 +34,7 @@ class Shared:
             if kwargs['service']:
                 service = platform['rancher'].get_service(
                     data_types=kwargs['data_types'],
+                    own_container=kwargs['own_container'],
                     rancher_access_key=kwargs['rancher_access_key'],
                     rancher_secret_key=kwargs['rancher_secret_key'],
                     rancher_url=kwargs['rancher_url'],
@@ -44,6 +45,7 @@ class Shared:
                 return platform['rancher'].get_services(
                     blacklist=kwargs['blacklist'],
                     data_types=kwargs['data_types'],
+                    own_container=kwargs['own_container'],
                     rancher_access_key=kwargs['rancher_access_key'],
                     rancher_secret_key=kwargs['rancher_secret_key'],
                     rancher_url=kwargs['rancher_url']
@@ -52,11 +54,13 @@ class Shared:
             if kwargs['service']:
                 service = platform['docker'].get_service(
                     data_types=kwargs['data_types'],
+                    own_container=kwargs['own_container'],
                     service=kwargs['service']
                 )
                 return services.append(service)
             elif kwargs['operation'] != 'restore' or (kwargs['operation'] == 'restore' and kwargs['restore_all']):
                 return platform['docker'].get_services(
                     blacklist=kwargs['blacklist'],
+                    own_container=kwargs['own_container'],
                     data_types=kwargs['data_types']
                 )

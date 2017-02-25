@@ -49,6 +49,7 @@ class Backup:
                     success = package['success']
                 else:
                     package = platform['docker'].backup(
+                        debug=kwargs['debug'],
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
@@ -63,7 +64,6 @@ class Backup:
                 service=service,
                 success=success
             )
-
 
     def __print_response(self, **kwargs):
         service = kwargs['service']

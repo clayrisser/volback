@@ -14,20 +14,21 @@ restore = Restore()
 def main():
     options = get_options()
     platform_type = shared.get_platform_type(
-        rancher_url=options['rancher_url'],
         rancher_access_key=options['rancher_access_key'],
-        rancher_secret_key=options['rancher_secret_key']
+        rancher_secret_key=options['rancher_secret_key'],
+        rancher_url=options['rancher_url']
     )
     services = shared.get_services(
+        blacklist=options['blacklist'],
+        data_types=options['data_types'],
+        operation=sys.argv[1],
+        own_container=options['own_container'],
         platform_type=platform_type,
-        service=options['service'],
         rancher_access_key=options['rancher_access_key'],
         rancher_secret_key=options['rancher_secret_key'],
         rancher_url=options['rancher_url'],
-        data_types=options['data_types'],
-        blacklist=options['blacklist'],
         restore_all=options['restore_all'],
-        operation=sys.argv[1]
+        service=options['service']
     )
     if sys.argv[1] == 'cron':
         os.system('go-cron "' + options['cron_schedule'] + '" python /app/src/run.py backup >> /app/cron.log')
@@ -116,6 +117,7 @@ def get_options():
         'keep_weekly': os.environ['KEEP_WEEKLY'],
         'keep_within': os.environ['KEEP_WITHIN'],
         'keep_yearly': os.environ['KEEP_YEARLY'],
+        'own_container': own_container,
         'passphrase': os.environ['PASSPHRASE'],
         'rancher_access_key': False if os.environ['RANCHER_ACCESS_KEY'] == '' else os.environ['RANCHER_ACCESS_KEY'],
         'rancher_secret_key': False if os.environ['RANCHER_SECRET_KEY'] == '' else os.environ['RANCHER_SECRET_KEY'],

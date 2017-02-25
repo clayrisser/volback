@@ -54,6 +54,7 @@ class Restore:
                     success = package['success']
                 else:
                     package = platform['docker'].restore(
+                        debug=kwargs['debug'],
                         environment=environment,
                         service=service,
                         storage_volume=kwargs['storage_volume']
