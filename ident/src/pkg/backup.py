@@ -59,7 +59,6 @@ class Backup:
             self.__print_response(
                 debug=kwargs['debug'],
                 has_mounts=has_mounts,
-                package=package,
                 response=response,
                 service=service,
                 success=success

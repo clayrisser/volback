@@ -1,4 +1,5 @@
 import docker
+import json
 
 client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -9,8 +10,7 @@ class DockerPlatform:
         success = False
         volumes = {}
         for env in kwargs['service']['env']:
-            environment[env[:env.index('=')]] = env[env.index('='):]
-        print(environment)
+            environment[env[:env.index('=')]] = env[env.index('=') + 1:]
         for mount in kwargs['service']['mounts']:
             volumes[mount['source']] = {
                 'bind': mount['destination'],
@@ -20,14 +20,18 @@ class DockerPlatform:
             'bind': '/var/run/docker.sock',
             'mode': 'rw'
         }
+        volumes['/var/lib/docker'] = {
+            'bind': '/var/lib/docker',
+            'mode': 'rw'
+        }
         if kwargs['storage_volume']:
             volumes[kwargs['storage_volume']] = {
                 'bind': '/backup',
                 'mode': 'rw'
             }
         if kwargs['debug']:
-            print('>> environment: ' + environment)
-            print('>> volumes: ' + volumes)
+            print('>> environment: ' + json.dumps(environment))
+            print('>> volumes: ' + json.dumps(volumes))
         try:
             response = client.containers.run(
                 environment=environment,
@@ -161,10 +165,14 @@ class DockerPlatform:
     def __get_env(self, container, own_container):
         env = list()
         for attached_env in container.attrs['Config']['Env']:
-            ignore = False
-            for own_env in own_container.attrs['Config']['Env']:
-                if attached_env[:attached_env.index('=')] == own_env[:own_env.index('=')]:
-                    ignore = True
-            if ignore == False:
+            self_override = False
+            own_env = ''
+            for _own_env in own_container.attrs['Config']['Env']:
+                if attached_env[:attached_env.index('=')] == _own_env[:_own_env.index('=')]:
+                    own_env = _own_env
+                    self_override = True
+            if self_override:
+                env.append(own_env)
+            else:
                 env.append(attached_env)
         return env

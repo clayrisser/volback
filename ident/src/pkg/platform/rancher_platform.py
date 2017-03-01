@@ -23,7 +23,7 @@ class RancherPlatform:
         success = False
         if kwargs['storage_volume']:
             storage_volume = ' -v ' + kwargs['storage_volume'] + ':/backup'
-        command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
+        command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker' + storage_volume
         for key, env in environment.iteritems():
             command += ' -e ' + key + '=' + env
         for mount in kwargs['service']['mounts']:

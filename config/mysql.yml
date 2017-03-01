@@ -1,5 +1,5 @@
 mysql:
   backup-file: "backup.sql"
   data-location: "/var/lib/mysql"
-  backup: "mysqldump --user=<DATABASE_USER> --password=<DATABASE_PASSWORD> --all-databases > %DUMP%"
-  restore: "cat %DUMP% | mysql --user=<DATABASE_USER> --password=<DATABASE_PASSWORD>"
+  backup: "mysqldump --user=root --password=<MYSQL_ROOT_PASSWORD> --all-databases > %DUMP%"
+  restore: "cat %DUMP% | mysql --user=root --password=<MYSQL_ROOT_PASSWORD>"
