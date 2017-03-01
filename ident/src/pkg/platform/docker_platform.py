@@ -53,6 +53,8 @@ class DockerPlatform:
         response = ''
         success = False
         volumes = {}
+        for env in kwargs['service']['env']:
+            environment[env[:env.index('=')]] = env[env.index('=') + 1:]
         for mount in kwargs['service']['mounts']:
             volumes[mount['source']] = {
                 'bind': mount['destination'],
@@ -62,9 +64,13 @@ class DockerPlatform:
             'bind': '/var/run/docker.sock',
             'mode': 'rw'
         }
+        volumes['/var/lib/docker'] = {
+            'bind': '/var/lib/docker',
+            'mode': 'rw'
+        }
         if kwargs['debug']:
-            print('>> environment: ' + environment)
-            print('>> volumes: ' + volumes)
+            print('>> environment: ' + json.dumps(environment))
+            print('>> volumes: ' + json.dumps(volumes))
         if kwargs['storage_volume']:
             volumes[kwargs['storage_volume']] = {
                 'bind': '/backup',

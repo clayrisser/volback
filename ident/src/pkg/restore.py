@@ -32,6 +32,7 @@ class Restore:
             has_mounts = False
             response = ''
             success = False
+            timestamp = ''
             if len(service['mounts']) > 0:
                 has_mounts = True
                 timestamp = self.__get_time(
@@ -83,6 +84,11 @@ class Restore:
                 print('    - ' + mount['source'] + ':' + mount['original_destination'] + driver_pretty + data_type_pretty)
         else:
             print('\n' + service['name'] + ': NO VOLUMES\n-----------------------------')
+        if kwargs['debug']:
+            print('<<<<<<<<<<<< jamrizzi/ident-restore >>>>>>>>>>>>')
+            print(kwargs['response'])
+            print('<<<<<<<<<<<<')
+        print('')
 
     def __get_time(self, **kwargs):
         service = kwargs['service']
@@ -101,8 +107,3 @@ class Restore:
             return str(timestamp)
         else:
             return str(kwargs['time'])
-        if kwargs['debug']:
-            print('<<<<<<<<<<<< jamrizzi/ident-restore >>>>>>>>>>>>')
-            print(kwargs['response'])
-            print('<<<<<<<<<<<<')
-        print('')
