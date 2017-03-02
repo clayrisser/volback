@@ -43,9 +43,8 @@ docker run --rm \
 ```
 
 ## Options
-* __CRON_SCHEDULE="0 0 0 &ast; &ast; &ast;"__ - the frequency backups run
-  * Note that this cron schedule is based on seconds, not minutes.
-  * It is strongly advised not to set the cron lower than "0 &ast; &ast; &ast; &ast; &ast;"
+* __CRON_SCHEDULE="0 0 &ast; &ast; &ast;"__ - the frequency backups run
+  * Note that even though this cron schedule uses [gocron](https://github.com/jasonlvhit/gocron), it is based on minutes instead of seconds for safty.
 * __PASSPHRASE=hellodocker__ - the passphrase used to encrypt your backups
 * __ENCRYPT=false__ - if set to true, will encrypt backups with the passphrase
 * __TIME=now__ - restore backup from specified time (format as unix timestamp)
@@ -56,7 +55,7 @@ docker run --rm \
 * Management portal
 
 ## Error/Bugs/Features
-You can file error and bug reports as well as feature requests at [https://github.com/jamrizzi/dockplicity/issues](https://github.com/jamrizzi/dockplicity/issues).
+You can file error and bug reports as well as feature requests at [https://github.com/jamrizzi/ident/issues](https://github.com/jamrizzi/ident/issues).
 
 ## Contributing
 1. Fork it!
