@@ -16,7 +16,7 @@ class Restore:
         if os.popen('ls /backup').read() == '':
             exit('Storage repository is empty')
         environment = {
-            'ENCRYPT': kwargs['encrypt'],
+            'ENCRYPT': 'true' if kwargs['encrypt'] else 'false',
             'PASSPHRASE': kwargs['passphrase'],
             'STORAGE_ACCESS_KEY': kwargs['storage_access_key'],
             'STORAGE_SECRET_KEY': kwargs['storage_secret_key'],

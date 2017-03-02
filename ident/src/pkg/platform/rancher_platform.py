@@ -26,6 +26,8 @@ class RancherPlatform:
         command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker' + storage_volume
         for key, env in environment.iteritems():
             command += ' -e ' + key + '=' + env
+        for env in kwargs['service']['env']:
+            command += ' -e ' + env
         for mount in kwargs['service']['mounts']:
             command += ' -v ' + mount['source'] + ':' + mount['destination']
         command += ' jamrizzi/ident-backup:latest'
@@ -44,7 +46,7 @@ class RancherPlatform:
         }
 
     def restore(self, **kwargs):
-        environment=environment
+        environment=kwargs['environment']
         name=uuid.uuid4().hex
         response = ''
         storage_volume = ''
@@ -54,6 +56,8 @@ class RancherPlatform:
         command = 'rancher --host ' + kwargs['service']['host'] + ' docker run --name ' + name + ' --privileged -v /var/run/docker.sock:/var/run/docker.sock' + storage_volume
         for key, env in environment.iteritems():
             command += ' -e ' + key + '=' + env
+        for env in kwargs['service']['env']:
+            command += ' -e ' + env
         for mount in kwargs['service']['mounts']:
             command += ' -v ' + mount['source'] + ':' + mount['destination']
         command += ' jamrizzi/ident-restore:latest'
@@ -96,6 +100,7 @@ class RancherPlatform:
                     return {
                         'container': container['data']['dockerContainer']['Names'][0][1:],
                         'data_type': data_type,
+                        'env': self.__get_env(service, kwargs['own_container']),
                         'host': container['hostId'],
                         'mounts': self.__get_mounts(container),
                         'name': service['name']
@@ -138,6 +143,7 @@ class RancherPlatform:
                     services.append({
                         'container': container['data']['dockerContainer']['Names'][0][1:],
                         'data_type': data_type,
+                        'env': self.__get_env(service, kwargs['own_container']),
                         'host': container['hostId'],
                         'mounts': self.__get_mounts(container),
                         'name': service['name']
@@ -169,6 +175,25 @@ class RancherPlatform:
                 'mode': 'rw'
             })
         return mounts
+
+    def __get_env(self, service, own_container):
+        launchConfig = service['data']['fields']['launchConfig']
+        environment = None
+        env = list()
+        if 'environment' in launchConfig:
+            environment = launchConfig['environment']
+            for attached_key, attached_env in environment.iteritems():
+                self_override = False
+                own_env = ''
+                for own_key, _own_env in environment.iteritems():
+                    if attached_key == own_key:
+                        own_env = own_key + '=' + _own_env
+                        self_override = True
+                if self_override:
+                    env.append(own_env)
+                else:
+                    env.append(attached_env)
+        return env
 
     def __rancher_call(self, call, **kwargs):
         r = requests.get(kwargs['rancher_url'] + '/v2-beta/' + call, auth=HTTPBasicAuth(kwargs['rancher_access_key'], kwargs['rancher_secret_key']), headers={

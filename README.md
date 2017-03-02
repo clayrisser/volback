@@ -1,5 +1,5 @@
 # ident _Beta_
-A robust backup solution for Docker volumes with duplicity
+A robust backup solution for Docker volumes
 
 ### [jamrizzi/ident:latest](https://hub.docker.com/r/jamrizzi/ident/)
 
@@ -18,32 +18,27 @@ This will backup volumes automatically every day.
 ```sh
 docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -e CRON_SCHEDULE="0 0 0 * * *" \
-  -e STORAGE_URL="gs://my-google-bucket" \
-  -e STORAGE_ACCESS_KEY_ID=gs-access-key-id \
-  -e STORAGE_SECRET_ACCESS_KEY=gs-secret-access-key \
+  -v /backup:/backup \
+  -e CRON_SCHEDULE="0 0 * * *" \
   jamrizzi/ident:latest
 ```
 
 ## Backup
-This will run a singe backup.
+This will run a single backup for all your containers.
 ```sh
 docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -e STORAGE_URL="gs://my-google-bucket" \
-  -e STORAGE_ACCESS_KEY_ID=gs-access-key-id \
-  -e STORAGE_SECRET_ACCESS_KEY=gs-secret-access-key \
+  -v /backup:/backup \
   jamrizzi/ident:latest backup
 ```
 
 ## Restore
-This will restore all backed up volumes.
+This will restore all backed up volumes for a single service or container.
 ```sh
 docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -e STORAGE_URL="gs://my-google-bucket" \
-  -e STORAGE_ACCESS_KEY_ID=gs-access-key-id \
-  -e STORAGE_SECRET_ACCESS_KEY=gs-secret-access-key \
+  -v /backup:/backup \
+  -e SERVICE="my-service-name" \
   jamrizzi/ident:latest restore
 ```
 
@@ -53,7 +48,6 @@ docker run --rm \
   * It is strongly advised not to set the cron lower than "0 &ast; &ast; &ast; &ast; &ast;"
 * __PASSPHRASE=hellodocker__ - the passphrase used to encrypt your backups
 * __ENCRYPT=false__ - if set to true, will encrypt backups with the passphrase
-* __RESTORE_VOLUME=myvolumename__ - if set, restores a single volume instead of restoring all volumes
 * __TIME=now__ - restore backup from specified time (format as unix timestamp)
 
 ## Future Plans
@@ -72,4 +66,5 @@ You can file error and bug reports as well as feature requests at [https://githu
 5. Submit a pull request :D
 
 ## Credit
-* [Jam Risser](https://github.com/jamrizzi)
+* Created by [Jam Risser](https://github.com/jamrizzi)
+* Powered by [Borg](https://borgbackup.readthedocs.io/en/stable/)
