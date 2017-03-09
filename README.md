@@ -5,6 +5,7 @@ A robust backup solution for Docker volumes
 
 ## Features
 * Restore individual docker volumes
+* Database dumping and restoring
 * Works with docker volume drivers
 * Automatic backups
 * Data deduplication
