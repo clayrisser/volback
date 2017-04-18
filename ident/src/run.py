@@ -30,6 +30,8 @@ def main():
         restore_all=options['restore_all'],
         service=options['service']
     )
+    if sys.argv[1] == 'server':
+        os.system('/usr/bin/supervisord -n')
     if sys.argv[1] == 'cron':
         os.system('go-cron "' + options['cron_schedule'] + '" python /app/src/run.py backup >> /app/cron.log')
     if sys.argv[1] == 'backup':

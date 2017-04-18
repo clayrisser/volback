@@ -21,27 +21,26 @@ init:
 
 .PHONY: build
 build: build_ident_backup build_ident_restore build_ident
+.PHONY: ident_base
+ident_base:
+	docker build --squash -t jamrizzi/ident-base:latest -f ./shared/base/Dockerfile ./shared
 .PHONY: build_ident_backup
 build_ident_backup:
-	cp -r ./config ./ident-backup/config
+	cp -r ./shared/config ./ident-backup/config
 	cp -r ./shared/* ./ident-backup/src/pkg/
-	docker build -t jamrizzi/ident-backup:latest -f $(CWD)/ident-backup/Dockerfile $(CWD)/ident-backup
+	docker build -t jamrizzi/ident-backup:latest -f $(CWD)/ident-backup/deployment/Dockerfile $(CWD)/ident-backup
 	$(info built ident-backup)
 .PHONY: build_ident_restore
 build_ident_restore:
-	cp -r ./config ./ident-restore/config
+	cp -r ./shared/config ./ident-restore/config
 	cp -r ./shared/* ./ident-restore/src/pkg/
-	docker build -t jamrizzi/ident-restore:latest -f $(CWD)/ident-restore/Dockerfile $(CWD)/ident-restore
+	docker build -t jamrizzi/ident-restore:latest -f $(CWD)/ident-restore/deployment/Dockerfile $(CWD)/ident-restore
 	$(info built ident-restore)
 build_ident:
-	cp -r ./config ./ident/config
+	cp -r ./shared/config ./ident/config
 	cp -r ./shared/* ./ident/src/pkg/
-	docker build -t jamrizzi/ident:latest -f $(CWD)/ident/Dockerfile $(CWD)/ident
+	docker build -t jamrizzi/ident:latest -f $(CWD)/ident/deployment/Dockerfile $(CWD)/ident
 	$(info built ident)
-
-.PHONY: ident-base
-ident-base:
-	docker build --squash -t jamrizzi/ident-base:latest -f ./ident-base/Dockerfile ./ident-base
 
 .PHONY: push
 push: push_ident_base push_ident_backup push_ident_restore push_ident
