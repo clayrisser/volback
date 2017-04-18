@@ -39,7 +39,7 @@ build_ident_restore:
 build_ident:
 	cp -r ./shared/config ./ident/config
 	cp -r ./shared/* ./ident/src/pkg/
-	docker build -t jamrizzi/ident:latest -f $(CWD)/ident/deployment/Dockerfile $(CWD)/ident
+	docker build -t jamrizzi/ident:1.0.0_alpha -f $(CWD)/ident/deployment/Dockerfile $(CWD)/ident
 	$(info built ident)
 
 .PHONY: push
@@ -58,7 +58,7 @@ push_ident_restore:
 	$(info pushed ident-restore)
 .PHONY: push_ident
 push_ident:
-	docker push jamrizzi/ident:latest
+	docker push jamrizzi/ident:1.0.0_alpha
 	$(info pushed ident)
 
 .PHONY: pull
@@ -106,8 +106,8 @@ endif
 	$(info fetched docker)
 
 ident/env:
-	virtualenv env
-	env/bin/pip install -r requirements.txt
+	virtualenv ident/env
+	ident/env/bin/pip install -r ident/requirements.txt
 	$(info created virtualenv)
 
 ident/db.sqlite3:

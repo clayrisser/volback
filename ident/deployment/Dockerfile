@@ -61,5 +61,5 @@ ADD ./src /app/src
 ADD ./config /app/config
 RUN chmod -R 700 /app
 
-ENTRYPOINT ["tini", "--", "python", "/app/src/run.py"]
+ENTRYPOINT ["/sbin/tini", "--", "python", "/app/src/run.py"]
 CMD ["server"]

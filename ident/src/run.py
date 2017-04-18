@@ -1,10 +1,13 @@
 import os
 import time
 import sys
+import subprocess
+import signal
 from pkg.helper import Helper
 from pkg.shared import Shared
 from pkg.backup import Backup
 from pkg.restore import Restore
+from functools import partial
 
 helper = Helper()
 shared = Shared()
@@ -31,9 +34,15 @@ def main():
         service=options['service']
     )
     if sys.argv[1] == 'server':
-        os.system('/usr/bin/supervisord -n')
+        server = subprocess.Popen(['/usr/bin/supervisord', '-n'], shell=True)
+        signal.signal(signal.SIGINT, partial(signal_handler, server))
+        server.wait()
     if sys.argv[1] == 'cron':
-        os.system('go-cron "' + options['cron_schedule'] + '" python /app/src/run.py backup >> /app/cron.log')
+        server = subprocess.Popen([
+            'go-cron "' + options['cron_schedule'] + '" python /app/src/run.py backup >> /app/cron.log'
+        ], shell=True)
+        signal.signal(signal.SIGINT, partial(signal_handler, server))
+        server.wait()
     if sys.argv[1] == 'backup':
         backup.run(
             debug=options['debug'],
@@ -71,6 +80,9 @@ def main():
             storage_volume=options['storage_volume'],
             time=options['time']
         )
+
+def signal_handler(server, signal_int, frame):
+    server.send_signal(signal.SIGTERM)
 
 def get_options():
     options = {
