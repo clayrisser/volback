@@ -3,22 +3,15 @@ DOCKER_USER := "jamrizzi"
 TAG := "major-refactor"
 
 .PHONY: all
-all: clean fetch_dependancies build
+all: fetch_dependancies build clean
 .PHONY: ident_base
-ident_base: clean fetch_dependancies build_ident_base
+ident_base: fetch_dependancies build_ident_base clean
 .PHONY: ident_backup
-ident_backup: clean fetch_dependancies build_ident_backup
+ident_backup: fetch_dependancies build_ident_backup clean
 .PHONY: ident_restore
-ident_restore: clean fetch_dependancies build_ident_restore
+ident_restore: fetch_dependancies build_ident_restore clean
 .PHONY: ident
-ident: clean fetch_dependancies build_ident
-
-.PHONY: init
-init:
-	docker pull $(DOCKER_USER)/ident-base:$(TAG)
-	docker pull $(DOCKER_USER)/ident-backup:$(TAG)
-	docker pull $(DOCKER_USER)/ident-restore:$(TAG)
-	docker pull $(DOCKER_USER)/ident:$(TAG)
+ident: fetch_dependancies build_ident clean
 
 .PHONY: build
 build: build_ident_backup build_ident_restore build_ident
@@ -82,18 +75,28 @@ pull_ident:
 	docker pull $(DOCKER_USER)/ident:$(TAG)
 	$(info pulled ident)
 
+.PHONY: ssh_ident_backup
+ssh_ident_backup:
+	docker exec -it --entrypoint /bin/sh $(DOCKER_USER)/ident-backup:$(TAG)
+.PHONY: ssh_ident_restore
+ssh_ident_restore:
+	docker exec -it --entrypoint /bin/sh $(DOCKER_USER)/ident-restore:$(TAG)
+.PHONY: ssh_ident
+ssh_ident:
+	docker exec -it some-ident /bin/sh
+
 .PHONY: run_ident
 run_ident:
-	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG)
+	docker run --name some-ident --rm -p 8888:8888 -e TAG=$(TAG) -e DEBUG=true -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG)
 .PHONY: run_ident_cron
 run_ident_cron:
-	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) cron
+	docker run --name some-ident --rm -e TAG=$(TAG) -e DEBUG=true -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) cron
 .PHONY: run_ident_backup
 run_ident_backup:
-	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) backup
+	docker run --name some-ident --rm -e TAG=$(TAG) -e DEBUG=true -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) backup
 .PHONY: run_ident_restore
 run_ident_restore:
-	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) restore
+	docker run --name some-ident --rm -e TAG=$(TAG) -e DEBUG=true -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) restore
 
 .PHONY: env
 env: ident-backup/env ident-restore/env ident/env

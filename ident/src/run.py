@@ -34,10 +34,9 @@ def main():
         service=options['service']
     )
     if sys.argv[1] == 'server':
-        # server = subprocess.Popen(['/usr/bin/supervisord', '-n'], shell=True)
-        # signal.signal(signal.SIGINT, partial(signal_handler, server))
-        # server.wait()
-        print('server running . . .')
+        server = subprocess.Popen(['python /app/src/server.py'], shell=True)
+        signal.signal(signal.SIGINT, partial(signal_handler, server))
+        server.wait()
     if sys.argv[1] == 'cron':
         server = subprocess.Popen([
             'go-cron "' + options['cron_schedule'] + '" python /app/src/run.py backup >> /app/cron.log'

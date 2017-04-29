@@ -21,6 +21,7 @@ ENV KEEP_WEEKLY=14
 ENV KEEP_WITHIN=1y
 ENV KEEP_YEARLY=200
 ENV PASSPHRASE=hellodocker
+ENV PORT=8888
 ENV RANCHER_ACCESS_KEY=""
 ENV RANCHER_SECRET_KEY=""
 ENV RANCHER_URL=""
@@ -35,12 +36,8 @@ ENV TIME=""
 
 WORKDIR /app/
 
-RUN apk add --no-cache build-base \
-    nginx \
-    supervisor \
-    uwsgi-python
-RUN pip install --upgrade pip && \
-    mkdir -p /run/nginx
+RUN apk add --no-cache build-base
+RUN pip install --upgrade pip
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | \
     tar -x -C /usr/local/bin && \
     curl -L https://github.com/rancher/cli/releases/download/v0.4.1/rancher-linux-amd64-v0.4.1.tar.gz | \
@@ -50,8 +47,6 @@ RUN touch /app/cron.log
 
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
-COPY ./deployment/nginx.conf /etc/nginx/conf.d/default.conf
-COPY ./deployment/supervisord.conf /etc/supervisord.conf
 COPY ./ /app/
 RUN chown -R nobody:nobody /app/
 
