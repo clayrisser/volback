@@ -3,15 +3,15 @@ DOCKER_USER := "jamrizzi"
 TAG := "major-refactor"
 
 .PHONY: all
-all: sweep fetch_dependancies build
+all: clean fetch_dependancies build
 .PHONY: ident_base
-ident_base: sweep fetch_dependancies build_ident_base
+ident_base: clean fetch_dependancies build_ident_base
 .PHONY: ident_backup
-ident_backup: sweep fetch_dependancies build_ident_backup
+ident_backup: clean fetch_dependancies build_ident_backup
 .PHONY: ident_restore
-ident_restore: sweep fetch_dependancies build_ident_restore
+ident_restore: clean fetch_dependancies build_ident_restore
 .PHONY: ident
-ident: sweep fetch_dependancies build_ident
+ident: clean fetch_dependancies build_ident
 
 .PHONY: init
 init:

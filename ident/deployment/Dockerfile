@@ -3,7 +3,7 @@
 # Based on Alpine
 ############################################################
 
-FROM jamrizzi/ident-base:latest
+FROM jamrizzi/ident-base:major-refactor
 
 MAINTAINER Jam Risser (jamrizzi)
 
@@ -52,10 +52,7 @@ RUN pip install -r requirements.txt
 COPY ./deployment/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./deployment/supervisord.conf /etc/supervisord.conf
 COPY ./ /app/
-RUN chown -R nobody:nobody /app/ && \
-    python manage.py collectstatic --noinput && \
-    python manage.py makemigrations && \
-    python manage.py migrate
+RUN chown -R nobody:nobody /app/
 
 ADD ./src /app/src
 ADD ./config /app/config

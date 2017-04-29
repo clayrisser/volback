@@ -34,7 +34,8 @@ def main():
         service=options['service']
     )
     if sys.argv[1] == 'server':
-        server = subprocess.Popen(['/usr/bin/supervisord', '-n'], shell=True)
+        # server = subprocess.Popen(['/usr/bin/supervisord', '-n'], shell=True)
+        server = subprocess.Popen(['echo', 'running the server . . .'], shell=True)
         signal.signal(signal.SIGINT, partial(signal_handler, server))
         server.wait()
     if sys.argv[1] == 'cron':

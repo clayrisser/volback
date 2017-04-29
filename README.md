@@ -12,6 +12,9 @@ A robust backup solution for Docker volumes
 * Clear outdated backups
 * Backup encryption
 
+## Building
+Before building, docker experimental features must be enabled
+
 ## Usage
 
 ### Cron

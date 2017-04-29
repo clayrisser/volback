@@ -1,0 +1,5 @@
+mariadb:
+  backup-file: "backup.sql"
+  data-location: "/var/lib/mysql"
+  backup: "mysqldump --user=<DATABASE_USER> --password=<DATABASE_PASSWORD> --all-databases > %DUMP%"
+  restore: "cat %DUMP% | mysql --user=<DATABASE_USER> --password=<DATABASE_PASSWORD>"
