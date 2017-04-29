@@ -106,5 +106,5 @@ ident-restore/env
 ident-restore/pkg/config
 ident-restore/src/pkg/helper.py
 ident/env
-ident/pkg/config
+ident/config
 ident/src/pkg/helper.py
