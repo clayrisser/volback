@@ -98,10 +98,13 @@ docs
 \#*
 *~
 
-# Config
-ident-restore/config
-ident-restore/src/pkg/helper.py
+# Sections
+ident-backup/env
 ident-backup/config
 ident-backup/src/pkg/helper.py
+ident-restore/env
+ident-restore/config
+ident-restore/src/pkg/helper.py
+ident/env
 ident/config
 ident/src/pkg/helper.py

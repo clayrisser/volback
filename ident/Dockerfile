@@ -1,6 +1,6 @@
 ############################################################
 # Dockerfile to run ident
-# Based on Ubuntu
+# Based on Alpine
 ############################################################
 
 FROM jamrizzi/ident-base:latest
