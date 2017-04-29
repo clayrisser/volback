@@ -1,9 +1,9 @@
 ############################################################
 # Dockerfile to run ident-restore
-# Based on Ubuntu
+# Based on Alpine
 ############################################################
 
-FROM jamrizzi/ident-base:latest
+FROM jamrizzi/ident-base:major-refactor
 
 MAINTAINER Jam Risser (jamrizzi)
 
@@ -19,13 +19,8 @@ ENV TIME=9999999999
 
 WORKDIR /app/
 
-MAINTAINER Jam Risser (jamrizzi)
-
-RUN locale-gen en_US.UTF-8
-
 ADD ./src/ /app/src/
 ADD ./config/ /app/config/
 RUN chmod -R 700 /app/
 
-ENTRYPOINT ["tini", "--"]
-CMD ["node", "server.js"]
+ENTRYPOINT ["tini", "--", "python", "/app/src/run.py"]

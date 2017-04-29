@@ -21,7 +21,7 @@ init:
 	docker pull $(DOCKER_USER)/ident:$(TAG)
 
 .PHONY: build
-build: build_ident_base build_ident_backup build_ident_restore build_ident
+build: build_ident_backup build_ident_restore build_ident
 .PHONY: ident_base
 build_ident_base:
 	docker build --squash -t $(DOCKER_USER)/ident-base:$(TAG) -f $(CWD)/shared/base/Dockerfile $(CWD)/shared
