@@ -29,18 +29,18 @@ build_ident_base:
 .PHONY: build_ident_backup
 build_ident_backup:
 	cp -r ./shared/config ./ident-backup/config
-	cp -r ./shared/* ./ident-backup/src/pkg/
+	cp -r ./shared/helper.py ./ident-backup/src/pkg/helper.py
 	docker build -t $(DOCKER_USER)/ident-backup:$(TAG) -f $(CWD)/ident-backup/deployment/Dockerfile $(CWD)/ident-backup
 	$(info built ident-backup)
 .PHONY: build_ident_restore
 build_ident_restore:
 	cp -r ./shared/config ./ident-restore/config
-	cp -r ./shared/* ./ident-restore/src/pkg/
+	cp -r ./shared/helper.py ./ident-restore/src/pkg/helper.py
 	docker build -t $(DOCKER_USER)/ident-restore:$(TAG) -f $(CWD)/ident-restore/deployment/Dockerfile $(CWD)/ident-restore
 	$(info built ident-restore)
 build_ident:
 	cp -r ./shared/config ./ident/config
-	cp -r ./shared/* ./ident/src/pkg/
+	cp -r ./shared/helper.py ./ident/src/pkg/helper.py
 	docker build -t $(DOCKER_USER)/ident:$(TAG) -f $(CWD)/ident/deployment/Dockerfile $(CWD)/ident
 	$(info built ident)
 
@@ -82,6 +82,10 @@ pull_ident:
 	docker pull $(DOCKER_USER)/ident:$(TAG)
 	$(info pulled ident)
 
+.PHONY: run_ident
+run_ident:
+	docker run --name some-ident --rm -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG)
+
 .PHONY: env
 env: ident-backup/env ident-restore/env ident/env
 ident-backup/env:
@@ -112,7 +116,7 @@ freeze_ident:
 .PHONY: clean
 clean:
 	@find . -name "*.pyc" -type f -delete
-	@rm -rf ident-backup/src/pkg/config ident-restore/src/pkg/config ident/src/pkg/config
+	@rm -rf ident-backup/config ident-restore/config ident/config
 	@rm -rf ident-backup/src/pkg/helper.py ident-restore/src/pkg/helper.py ident/src/pkg/helper.py
 	@rm -rf ident-backup/env ident-restore/env ident/env
 	@rm -rf **/*.pyc
