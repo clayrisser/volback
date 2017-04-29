@@ -54,7 +54,7 @@ class Borg:
         self.__borg(container, 'mount ::' + backup + ' /mnt/' + container)
         self.mounted = True
 
-    def get_backup_tree(self, container, backup):
+    def get_container_backup_tree(self, container, backup):
         backup = self.__decrypt_backup_name(backup)
         if not self.mounted:
             self.__mount_backup(container, backup)

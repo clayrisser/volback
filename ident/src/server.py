@@ -32,16 +32,16 @@ class ContainersBackups(Resource):
         containers_backups = borg.get_containers_backups()
         return containers_backups
 
-class BackupTree(Resource):
+class ContainerBackupTree(Resource):
     def get(self, container, backup):
-        backup_tree = borg.get_backup_tree(container, backup)
+        backup_tree = borg.get_container_backup_tree(container, backup)
         return backup_tree
 
 api.add_resource(HelloWorld, '/')
 api.add_resource(Containers, '/containers')
 api.add_resource(ContainerBackups, '/container-backups/<container>')
 api.add_resource(ContainersBackups, '/containers-backups')
-api.add_resource(BackupTree, '/backup-tree/<container>/<backup>')
+api.add_resource(ContainerBackupTree, '/container-backup-tree/<container>/<backup>')
 
 if __name__ == '__main__':
     app.run(
