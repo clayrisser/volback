@@ -49,7 +49,8 @@ class Restore:
                         debug=kwargs['debug'],
                         environment=environment,
                         service=service,
-                        storage_volume=kwargs['storage_volume']
+                        storage_volume=kwargs['storage_volume'],
+                        tag=kwargs['tag']
                     )
                     response = package['response']
                     success = package['success']
@@ -58,7 +59,8 @@ class Restore:
                         debug=kwargs['debug'],
                         environment=environment,
                         service=service,
-                        storage_volume=kwargs['storage_volume']
+                        storage_volume=kwargs['storage_volume'],
+                        tag=kwargs['tag']
                     )
                     response = package['response']
                     success = package['success']

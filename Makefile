@@ -84,7 +84,7 @@ pull_ident:
 
 .PHONY: run_ident
 run_ident:
-	docker run --name some-ident --rm -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG)
+	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG)
 
 .PHONY: env
 env: ident-backup/env ident-restore/env ident/env

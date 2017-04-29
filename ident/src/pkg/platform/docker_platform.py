@@ -35,7 +35,7 @@ class DockerPlatform:
         try:
             response = client.containers.run(
                 environment=environment,
-                image='jamrizzi/ident-backup:latest',
+                image='jamrizzi/ident-backup:' + kwargs['tag'],
                 privileged=True,
                 remove=True,
                 volumes=volumes
@@ -79,7 +79,7 @@ class DockerPlatform:
         try:
             response = client.containers.run(
                 environment=environment,
-                image='jamrizzi/ident-restore:latest',
+                image='jamrizzi/ident-restore:' + kwargs['tag'],
                 privileged=True,
                 remove=True,
                 volumes=volumes

@@ -30,7 +30,7 @@ class RancherPlatform:
             command += ' -e ' + env
         for mount in kwargs['service']['mounts']:
             command += ' -v ' + mount['source'] + ':' + mount['destination']
-        command += ' jamrizzi/ident-backup:latest'
+        command += ' jamrizzi/ident-backup:' + kwargs['tag']
         if kwargs['debug']:
             print('>> ' + command)
         try:
@@ -60,7 +60,7 @@ class RancherPlatform:
             command += ' -e ' + env
         for mount in kwargs['service']['mounts']:
             command += ' -v ' + mount['source'] + ':' + mount['destination']
-        command += ' jamrizzi/ident-restore:latest'
+        command += ' jamrizzi/ident-restore:' + kwargs['tag']
         if kwargs['debug']:
             print('>> ' + command)
         try:

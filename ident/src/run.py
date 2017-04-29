@@ -35,9 +35,9 @@ def main():
     )
     if sys.argv[1] == 'server':
         # server = subprocess.Popen(['/usr/bin/supervisord', '-n'], shell=True)
-        server = subprocess.Popen(['echo', 'running the server . . .'], shell=True)
-        signal.signal(signal.SIGINT, partial(signal_handler, server))
-        server.wait()
+        # signal.signal(signal.SIGINT, partial(signal_handler, server))
+        # server.wait()
+        print('server running . . .')
     if sys.argv[1] == 'cron':
         server = subprocess.Popen([
             'go-cron "' + options['cron_schedule'] + '" python /app/src/run.py backup >> /app/cron.log'
@@ -63,7 +63,8 @@ def main():
             storage_access_key=options['storage_access_key'],
             storage_secret_key=options['storage_secret_key'],
             storage_url=options['storage_url'],
-            storage_volume=options['storage_volume']
+            storage_volume=options['storage_volume'],
+            tag=options['tag']
         )
     if sys.argv[1] == 'restore':
         restore.run(
@@ -79,6 +80,7 @@ def main():
             storage_secret_key=options['storage_secret_key'],
             storage_url=options['storage_url'],
             storage_volume=options['storage_volume'],
+            tag=options['tag'],
             time=options['time']
         )
 
@@ -144,7 +146,8 @@ def get_options():
         'storage_secret_key': os.environ['STORAGE_SECRET_KEY'],
         'storage_url': os.environ['STORAGE_URL'],
         'storage_volume': storage_volume,
-        'time': _time
+        'time': _time,
+        'tag': os.environ['TAG']
     }
 
 main()
