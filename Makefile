@@ -112,7 +112,7 @@ freeze_ident:
 .PHONY: clean
 clean:
 	@find . -name "*.pyc" -type f -delete
-	@rm -rf ident-backup/config ident-restore/config ident/config
+	@rm -rf ident-backup/src/pkg/config ident-restore/src/pkg/config ident/src/pkg/config
 	@rm -rf ident-backup/src/pkg/helper.py ident-restore/src/pkg/helper.py ident/src/pkg/helper.py
 	@rm -rf ident-backup/env ident-restore/env ident/env
 	@rm -rf **/*.pyc

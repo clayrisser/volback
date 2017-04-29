@@ -100,11 +100,11 @@ docs
 
 # Sections
 ident-backup/env
-ident-backup/config
+ident-backup/pkg/config
 ident-backup/src/pkg/helper.py
 ident-restore/env
-ident-restore/config
+ident-restore/pkg/config
 ident-restore/src/pkg/helper.py
 ident/env
-ident/config
+ident/pkg/config
 ident/src/pkg/helper.py
