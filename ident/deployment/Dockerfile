@@ -36,8 +36,9 @@ ENV TIME=""
 
 WORKDIR /app/
 
-RUN apk add --no-cache build-base
+RUN apk add --no-cache build-base python-dev python3-dev fuse fuse-dev attr-dev
 RUN pip install --upgrade pip
+RUN pip3 install llfuse
 RUN curl -sL https://github.com/michaloo/go-cron/releases/download/v0.0.2/go-cron.tar.gz | \
     tar -x -C /usr/local/bin && \
     curl -L https://github.com/rancher/cli/releases/download/v0.4.1/rancher-linux-amd64-v0.4.1.tar.gz | \
