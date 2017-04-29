@@ -43,6 +43,15 @@ class DockerPlatform:
             success = True
         except:
             success = False
+            response = client.containers.run(
+                environment=environment,
+                image='jamrizzi/ident-backup:' + kwargs['tag'],
+                privileged=True,
+                remove=True,
+                volumes=volumes
+            )
+            print(response)
+            exit(1)
         return {
             'response': response,
             'success': success

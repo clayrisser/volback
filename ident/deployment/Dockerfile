@@ -48,10 +48,6 @@ RUN touch /app/cron.log
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 COPY ./ /app/
-RUN chown -R nobody:nobody /app/
-
-ADD ./src /app/src
-ADD ./config /app/config
 RUN chmod -R 700 /app
 
 ENTRYPOINT ["/sbin/tini", "--", "python", "/app/src/run.py"]

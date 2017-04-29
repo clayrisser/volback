@@ -22,8 +22,9 @@ ENV STORAGE_ACCESS_KEY=""
 ENV STORAGE_SECRET_KEY=""
 ENV STORAGE_URL=""
 
-ADD ./src/ /app/src/
-ADD ./config/ /app/config/
+COPY ./requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+COPY ./ /app/
 RUN chmod -R 700 /app/
 
 ENTRYPOINT ["tini", "--", "python", "/app/src/run.py"]

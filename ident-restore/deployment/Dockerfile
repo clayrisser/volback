@@ -19,8 +19,9 @@ ENV TIME=9999999999
 
 WORKDIR /app/
 
-ADD ./src/ /app/src/
-ADD ./config/ /app/config/
+COPY ./requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+COPY ./ /app/
 RUN chmod -R 700 /app/
 
 ENTRYPOINT ["tini", "--", "python", "/app/src/run.py"]
