@@ -85,6 +85,15 @@ pull_ident:
 .PHONY: run_ident
 run_ident:
 	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG)
+.PHONY: run_ident_cron
+run_ident_cron:
+	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) cron
+.PHONY: run_ident_backup
+run_ident_backup:
+	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) backup
+.PHONY: run_ident_restore
+run_ident_restore:
+	docker run --name some-ident --rm -e TAG=$(TAG) -v /var/run/docker.sock:/var/run/docker.sock $(DOCKER_USER)/ident:$(TAG) restore
 
 .PHONY: env
 env: ident-backup/env ident-restore/env ident/env

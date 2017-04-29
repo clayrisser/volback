@@ -17,7 +17,8 @@ class Shared:
             if kwargs['rancher_url'] and kwargs['rancher_access_key'] and kwargs['rancher_secret_key']:
                 return 'rancher'
             else:
-                exit('You are missing RANCHER_URL, RANCHER_ACCESS_KEY, or RANCHER_SECRET_KEY')
+                print('You are missing RANCHER_URL, RANCHER_ACCESS_KEY, or RANCHER_SECRET_KEY')
+                exit(1)
         else:
             return 'docker'
 

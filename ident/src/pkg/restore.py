@@ -12,9 +12,11 @@ platform = {
 class Restore:
     def run(self, **kwargs):
         if kwargs['services'] == None or len(kwargs['services']) <= 0:
-            exit('No services to restore')
+            print('No services to restore')
+            exit(0)
         if os.popen('ls /backup').read() == '':
-            exit('Storage repository is empty')
+            print('Storage repository is empty')
+            exit(0)
         environment = {
             'ENCRYPT': 'true' if kwargs['encrypt'] else 'false',
             'PASSPHRASE': kwargs['passphrase'],

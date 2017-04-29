@@ -9,7 +9,8 @@ platform = {
 class Backup:
     def run(self, **kwargs):
         if kwargs['services'] == None or len(kwargs['services']) <= 0:
-            exit('No services to backup')
+            print('No services to backup')
+            exit(0)
         environment = {
             'DAILY': kwargs['keep_daily'],
             'ENCRYPT': 'true' if kwargs['encrypt'] else 'false',
