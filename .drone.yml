@@ -1,0 +1,27 @@
+pipeline:
+  publish:
+    image: plugins/docker
+    username: ${DOCKER_USERNAME}
+    email: ${DOCKER_EMAIL}
+    password: ${DOCKER_PASSWORD}
+    dockerfile: deployment/Dockerfile
+    repo: nuevesolutions/spinchcafe
+    tag: ${DRONE_REPO_BRANCH/master/latest}
+    when:
+      event: push
+      branch:
+        - master
+        - dev
+
+    deploy:
+      image: peloton/drone-rancher
+      url: https://orchastration.spinach.cafe
+      access_key: ${RANCHER_ACCESS_KEY}
+      secret_key: ${RANCHER_SECRET_KEY}
+      service: pro-manager/pro-manager
+      docker_image: promanager/pro-manager:latest
+      confirm: true
+      timeout: 300
+      when:
+        event: push
+        branch: master
