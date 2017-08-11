@@ -1,0 +1,2 @@
+'/user': user_controller.User
+'/users': user_controller.UserList
