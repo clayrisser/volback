@@ -35,7 +35,7 @@ def get_models(app_name):
     sys.path.append(models_dir)
     models_import = imp.load_source('models', models_dir + '/__init__.py')
     for model_name in _.keys(models_import):
-        matches = re.findall(r'.+(?=Model$)', model_name)
+        matches = re.findall(r'^[A-Z].+', model_name)
         if len(matches) > 0:
             models.append(getattr(models_import, model_name))
     return models

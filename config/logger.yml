@@ -1,0 +1,6 @@
+file: ${LOG_FILE: 'api.log'}
+backup_count: ${LOG_BACKUP_COUNT: 1}
+max_bytes: ${LOG_MAX_BYTES: 10000}
+stream_handler: ${LOG_STREAM_HANDLER: true}
+file_handler: ${LOG_FILE_HANDLER: true}
+level: ${LOG_LEVEL: 'error'}

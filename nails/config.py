@@ -26,7 +26,7 @@ def load_config_file(filepath):
             content = env_override(f)
             return yaml.load(content)
         except yaml.YAMLError as err:
-            print(err)
+            sys.stderr.write(err)
 
 def env_override(f):
     lines = []
@@ -40,6 +40,21 @@ def env_override(f):
                 line = line.replace('${' + match + '}', value)
         lines.append(line)
     return ''.join(lines)
+
+def get_config(app_name, prop=None):
+    if not prop:
+        prop = app_name
+        try:
+            return eval('config[\'' + prop.replace('.', '\'][\'') + '\']')
+        except:
+            return None
+    try:
+        return eval('config[\'' + app_name + '\'][\'' + prop.replace('.', '\'][\'') + '\']')
+    except:
+        try:
+            return eval('config[\'' + prop.replace('.', '\'][\'') + '\']')
+        except:
+            return None
 
 config = load_app_config(os.path.realpath(base_dir + '/config/'))
 config['base_dir'] = base_dir
