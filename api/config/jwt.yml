@@ -1,0 +1,4 @@
+secret: ${JWT_SECRET: 'hellodocker'}
+exp: ${JWT_EXP: 604800}
+domain: ${JWT_DOMAIN: ''}
+secure: ${JWT_SECURE: false}

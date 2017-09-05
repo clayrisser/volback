@@ -1,5 +1,6 @@
 from nails import init_app
 
+app = None
 app = init_app(__file__, '/api/v1/')
 
 @app.route('/api/')

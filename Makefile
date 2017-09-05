@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 CWD := $(shell pwd)
-IMAGE := "jamrizzi/volback:latest"
+IMAGE := "jamrizzi/spotawesome-api:latest"
 SOME_CONTAINER := $(shell echo some-$(IMAGE) | sed 's/[^a-zA-Z0-9]//g')
 DOCKERFILE := $(CWD)/Dockerfile
 
@@ -9,7 +9,7 @@ all: clean deps build
 
 .PHONY: start
 start: env
-	@env/bin/python server.py
+	@env/bin/python ./server.py
 
 .PHONY: data
 data:
@@ -54,13 +54,17 @@ essh:
 
 .PHONY: freeze
 freeze:
-	@env/bin/pip freeze > ./requirements.txt
+	@env/bin/pip freeze > ./backend/requirements.txt
 	@echo froze requirements
 
 .PHONY: clean
-clean:
-	@rm -rf ./*.db ./env/
+clean: clean_data
+	-@rm -rf ./env/ ./*.log ./*.log.* ./*.pyc ./*/*.pyc ./*/*/*.pyc &>/dev/null || true
 	@echo cleaned
+.PHONY: clean_data
+clean_data:
+	-@rm ./*.db &> /dev/null || true
+	@echo cleaned data
 
 .PHONY: deps
 deps: docker

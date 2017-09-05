@@ -6,8 +6,15 @@ from passlib.hash import pbkdf2_sha256
 BaseModel = get_base_model(__file__)
 
 class User(BaseModel):
-    email = CharField()
-    password = CharField()
+    first_name = CharField()
+    last_name = CharField(default='')
+    display_name = CharField()
+    username = CharField()
+    email = CharField(default='')
+    avatar = CharField(default='')
+    password = CharField(default='')
+    github = CharField(default='')
+    role = CharField(default='user')
 
     def hash_password(self, password):
         self.password = pbkdf2_sha256.hash(password)
