@@ -1,0 +1,4 @@
+port: ${PORT: 8806}
+host: ${HOST: '0.0.0.0'}
+debug: ${DEBUG: true}
+secret: ${SECRET: 'hellodocker'}

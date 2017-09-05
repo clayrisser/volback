@@ -1,0 +1,6 @@
+'/user/': user_controller.UserInstance
+'/users/': user_controller.UserList
+'/auth/login/': auth_controller.Login
+'/auth/user/': auth_controller.User
+'/auth/provider/<provider>/': auth_controller.Provider
+'/auth/callback/<provider>/': auth_controller.Callback

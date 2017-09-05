@@ -1,0 +1,6 @@
+driver: ${DATABASE_DRIVER: 'sqlite'}
+host: ${DATABASE_HOST: 'localhost'}
+port: ${DATABASE_PORT: 5432}
+user: ${DATABASE_USER: 'postgres'}
+password: ${DATABASE_PASSWORD: ''}
+file: ${DATABASE_FILE: 'api.db'}
