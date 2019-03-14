@@ -27,6 +27,7 @@ func (m *Manager) StartServer() (err error) {
 	router.Handle("/ping", m.handleAPIRequest(http.HandlerFunc(m.ping)))
 	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
 	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume))).Queries("force", "{force}")
+	router.Handle("/restore/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.restoreVolume))).Queries("force", "{force}")
 	router.Handle("/backup/{volumeID}/logs", m.handleAPIRequest(http.HandlerFunc(m.getBackupLogs)))
 	router.Handle("/restic/{volumeID}", m.handleAPIRequest(http.HandlerFunc(m.runRawCommand)))
 	router.Handle("/info", m.handleAPIRequest(http.HandlerFunc(m.info)))
