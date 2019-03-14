@@ -20,3 +20,14 @@
 	pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
 	detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
 	backup_dir = "backups"
+
+	[providers.mongo]
+	backup_dir = "backups"
+	detect_cmd = "[[ -f $volume/mongod.lock ]]"
+	pre_cmd = "mongodump -o $volume/backups"
+  post_cmd = "rm -rf $volume/backups"
+
+	[providers.mongo.restore]
+	backup_dir = "backups"
+	detect_cmd = "[[ -f $volume/mongod.lock ]]"
+	post_cmd = "mongorestore --dir $volume/backups && rm -rf $volume/backups"
