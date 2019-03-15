@@ -9,9 +9,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/camptocamp/bivac/internal/engine"
-	"github.com/camptocamp/bivac/internal/utils"
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/internal/engine"
+	"github.com/codejamninja/bivac/internal/utils"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {
