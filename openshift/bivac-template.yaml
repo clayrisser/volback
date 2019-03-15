@@ -6,11 +6,11 @@
 apiVersion: v1
 kind: Template
 labels:
-  app: bivac
+  app: volback
 metadata:
-  name: bivac
+  name: volback
   annotations:
-    description: "Bivac lets you backup all your containers volumes deployed on Docker Engine or Kubernetes using Restic, Duplicity or RClone."
+    description: "Volback lets you backup all your containers volumes deployed on Docker Engine or Kubernetes using Restic, Duplicity or RClone."
     tags: "backup,duplicity,restic,rclone,volume"
 objects:
 - apiVersion: batch/v1beta1
@@ -31,14 +31,14 @@ objects:
           spec:
             serviceAccountName: ${APP_NAME}
             containers:
-              - name: bivac
-                image: "${BIVAC_IMAGE}"
+              - name: volback
+                image: "${VOLBACK_IMAGE}"
                 imagePullPolicy: Always
                 env:
-                  - name: BIVAC_ORCHESTRATOR
+                  - name: VOLBACK_ORCHESTRATOR
                     value: kubernetes
-                  - name: BIVAC_TARGET_URL
-                    value: ${BIVAC_TARGET_URL}
+                  - name: VOLBACK_TARGET_URL
+                    value: ${VOLBACK_TARGET_URL}
                   - name: AWS_ACCESS_KEY_ID
                     value: ${AWS_ACCESS_KEY_ID}
                   - name: AWS_SECRET_ACCESS_KEY
@@ -142,15 +142,15 @@ objects:
 
 parameters:
 - name: APP_NAME
-  description: Name use for all bivac objects. This name should be unique across project.
-  value: bivac
-- name: BIVAC_IMAGE
-  description: Name of bivac docker image to use, including tag.
-  value: 'camptocamp/bivac:latest'
+  description: Name use for all volback objects. This name should be unique across project.
+  value: volback
+- name: VOLBACK_IMAGE
+  description: Name of volback docker image to use, including tag.
+  value: 'camptocamp/volback:latest'
 - name: SCHEDULE
   description: "Cron format schedule specification. Ex: '0 * * * *' backup every hour."
   value: "0 2 * * *"
-- name: BIVAC_TARGET_URL
+- name: VOLBACK_TARGET_URL
   description: The target URL to push backup to.
 - name: AWS_ACCESS_KEY_ID
   description: The AWS access key ID (optional).
@@ -177,7 +177,7 @@ parameters:
   description: The restic backup password.
 - name: K8S_WORKER_SERVICE_ACCOUNT
   description: Kubernetes service account to use for workers.
-  value: bivac
+  value: volback
 - name: NAMESPACE
   description: Openshift project name (namespace)
 - name: MYSQL_PRE_CMD

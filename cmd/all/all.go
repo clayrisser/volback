@@ -6,15 +6,15 @@
 package all
 
 import (
-	// Run a Bivac agent
+	// Run a Volback agent
 	_ "github.com/codejamninja/volback/cmd/agent"
 	// Backup a volume
 	_ "github.com/codejamninja/volback/cmd/backup"
 	// Restore a volume
 	_ "github.com/codejamninja/volback/cmd/restore"
-	// Get informations regarding the Bivac manager
+	// Get informations regarding the Volback manager
 	_ "github.com/codejamninja/volback/cmd/info"
-	// Run a Bivac manager
+	// Run a Volback manager
 	_ "github.com/codejamninja/volback/cmd/manager"
 	// Run a custom Restic command on a volume's remote repository
 	_ "github.com/codejamninja/volback/cmd/restic"

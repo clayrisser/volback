@@ -63,7 +63,7 @@ func (v *Volume) SetupMetrics() {
 	v.Metrics = &Metrics{}
 
 	v.Metrics.LastBackupDate = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "bivac_lastBackup",
+		Name: "volback_lastBackup",
 		Help: "Date of the last backup",
 		ConstLabels: map[string]string{
 			"volume_id":   v.ID,
@@ -73,7 +73,7 @@ func (v *Volume) SetupMetrics() {
 		},
 	})
 	v.Metrics.LastBackupStatus = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "bivac_backupExitCode",
+		Name: "volback_backupExitCode",
 		Help: "Status of the last backup",
 		ConstLabels: map[string]string{
 			"volume_id":   v.ID,
@@ -83,7 +83,7 @@ func (v *Volume) SetupMetrics() {
 		},
 	})
 	v.Metrics.OldestBackupDate = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "bivac_oldestBackup",
+		Name: "volback_oldestBackup",
 		Help: "Date of the oldest snapshot",
 		ConstLabels: map[string]string{
 			"volume_id":   v.ID,

@@ -1,7 +1,7 @@
 FROM golang:1.11 as builder
 WORKDIR /go/src/github.com/codejamninja/volback
 COPY . .
-RUN make bivac
+RUN make volback
 
 FROM restic/restic:latest as restic
 
@@ -17,9 +17,9 @@ RUN apt-get update && \
     apt-get install -y openssh-client && \
 	rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/ssl /etc/ssl
-COPY --from=builder /go/src/github.com/codejamninja/volback/bivac /bin/
+COPY --from=builder /go/src/github.com/codejamninja/volback/volback /bin/
 COPY --from=builder /go/src/github.com/codejamninja/volback/providers-config.default.toml /
 COPY --from=restic /usr/bin/restic /bin/restic
 COPY --from=rclone /usr/bin/rclone /bin/rclone
-ENTRYPOINT ["/bin/bivac"]
+ENTRYPOINT ["/bin/volback"]
 CMD [""]

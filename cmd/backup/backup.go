@@ -83,11 +83,11 @@ var backupCmd = &cobra.Command{
 }
 
 func init() {
-	backupCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Bivac server.")
-	envs["BIVAC_REMOTE_ADDRESS"] = "remote.address"
+	backupCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Volback server.")
+	envs["VOLBACK_REMOTE_ADDRESS"] = "remote.address"
 
 	backupCmd.Flags().StringVarP(&psk, "server.psk", "", "", "Pre-shared key.")
-	envs["BIVAC_SERVER_PSK"] = "server.psk"
+	envs["VOLBACK_SERVER_PSK"] = "server.psk"
 
 	backupCmd.Flags().BoolVarP(&force, "force", "", false, "Force backup by removing locks.")
 

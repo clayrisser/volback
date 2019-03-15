@@ -40,7 +40,7 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+os.Getenv("BIVAC_SERVER_PSK"))
+		req.Header.Set("Authorization", "Bearer "+os.Getenv("VOLBACK_SERVER_PSK"))
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -86,7 +86,7 @@ func Restore(targetURL, backupPath, hostname string, force bool, logReceiver str
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+os.Getenv("BIVAC_SERVER_PSK"))
+		req.Header.Set("Authorization", "Bearer "+os.Getenv("VOLBACK_SERVER_PSK"))
 
 		client := &http.Client{}
 		resp, err := client.Do(req)

@@ -137,10 +137,10 @@ func createAgentName() string {
 	for i := range b {
 		b[i] = letter[rand.Intn(len(letter))]
 	}
-	return "bivac-agent-" + string(b)
+	return "volback-agent-" + string(b)
 }
 
-// DeployAgent creates a `bivac agent` container
+// DeployAgent creates a `volback agent` container
 func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []string, v *volume.Volume) (success bool, output string, err error) {
 	success = false
 
@@ -363,7 +363,7 @@ func (o *CattleOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error)
 	return
 }
 
-// DetectCattle returns true if the Bivac is running on the orchestrator Cattle
+// DetectCattle returns true if the Volback is running on the orchestrator Cattle
 func DetectCattle() bool {
 	_, err := net.LookupHost("rancher-metadata")
 	if err != nil {

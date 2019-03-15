@@ -25,7 +25,7 @@ type Orchestrators struct {
 	Kubernetes orchestrators.KubernetesConfig
 }
 
-// Manager contains all informations used by the Bivac manager
+// Manager contains all informations used by the Volback manager
 type Manager struct {
 	Orchestrator orchestrators.Orchestrator
 	Volumes      []*volume.Volume
@@ -40,7 +40,7 @@ type Manager struct {
 	backupSlots chan map[string][]*volume.Volume
 }
 
-// Start starts a Bivac manager which handle backups management
+// Start starts a Volback manager which handle backups management
 func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
@@ -171,7 +171,7 @@ func isBackupNeeded(v *volume.Volume) bool {
 	return false
 }
 
-// GetOrchestrator returns an orchestrator interface based on the name you specified or on the orchestrator Bivac is running on
+// GetOrchestrator returns an orchestrator interface based on the name you specified or on the orchestrator Volback is running on
 func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestrator, err error) {
 	if name != "" {
 		log.Debugf("Choosing orchestrator based on configuration...")
@@ -244,7 +244,7 @@ func (m *Manager) RestoreVolume(volumeID string, force bool) (err error) {
 	return
 }
 
-// GetInformations returns informations regarding the Bivac manager
+// GetInformations returns informations regarding the Volback manager
 func (m *Manager) GetInformations() (informations map[string]string) {
 	informations = map[string]string{
 		"version":       m.Version,

@@ -96,11 +96,11 @@ var volumesCmd = &cobra.Command{
 }
 
 func init() {
-	volumesCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Bivac server.")
-	envs["BIVAC_REMOTE_ADDRESS"] = "remote.address"
+	volumesCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Volback server.")
+	envs["VOLBACK_REMOTE_ADDRESS"] = "remote.address"
 
 	volumesCmd.Flags().StringVarP(&psk, "server.psk", "", "", "Pre-shared key.")
-	envs["BIVAC_SERVER_PSK"] = "server.psk"
+	envs["VOLBACK_SERVER_PSK"] = "server.psk"
 
 	cmd.SetValuesFromEnv(envs, volumesCmd.Flags())
 	cmd.RootCmd.AddCommand(volumesCmd)

@@ -22,7 +22,7 @@ var (
 
 var agentCmd = &cobra.Command{
 	Use:   "agent",
-	Short: "Run Bivac agent",
+	Short: "Run Volback agent",
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "backup":
