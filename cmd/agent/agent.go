@@ -23,7 +23,7 @@ var agentCmd = &cobra.Command{
 		case "backup":
 			agent.Backup(targetURL, backupPath, hostname, force, logReceiver)
 		case "restore":
-			agent.Restore(targetURL, backupPath, hostname)
+			agent.Restore(targetURL, backupPath, hostname, force, logReceiver)
 		}
 	},
 }
