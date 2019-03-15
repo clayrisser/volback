@@ -1,102 +1,74 @@
-Bivac : Backup Interface for Volumes Attached to Containers
-===========================================================
+# volback
 
-Website: [https://camptocamp.github.io/bivac](https://camptocamp.github.io/bivac)
+[![GitHub stars](https://img.shields.io/github/stars/codejamninja/volback.svg?style=social&label=Stars)](https://github.com/codejamninja/volback)
 
+> backup and restore docker volumes
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/camptocamp/bivac.svg)](https://hub.docker.com/r/camptocamp/bivac/)
-[![Build Status](https://img.shields.io/travis/camptocamp/bivac/master.svg)](https://travis-ci.org/camptocamp/bivac)
-[![Coverage Status](https://img.shields.io/coveralls/camptocamp/bivac.svg)](https://coveralls.io/r/camptocamp/bivac?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/codejamninja/bivac)](https://goreportcard.com/report/github.com/codejamninja/bivac)
-[![Gitter](https://img.shields.io/gitter/room/camptocamp/bivac.svg)](https://gitter.im/camptocamp/bivac)
-[![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
+Please ★ this repo if you found it useful ★ ★ ★
 
 
-Bivac lets you backup all your containers volumes deployed on Docker Engine, Cattle or Kubernetes using Restic.
+## Features
 
-![Bivac](img/bivac_small.png)
+* Works with Docker Engine
+* Works with Cattle
+* Works with Kubernetes
 
 
-## Installing
+## Installation
 
-```shell
-$ go get github.com/codejamninja/bivac
+```sh
+go get github.com/codejamninja/volback
 ```
+
+
+## Dependencies
+
+* [GoLang](https://golang.org)
+* [Docker](https://www.docker.com)
+
 
 ## Usage
 
-```shell
-Usage:
-  bivac manager [flags]
+[Contribute](https://github.com/codejamninja/volback/blob/master/CONTRIBUTING.md) usage docs
 
-Flags:
-      --cattle.accesskey string                   The Cattle access key. [CATTLE_ACCESS_KEY]
-      --cattle.secretkey string                   The Cattle secret key. [CATTLE_SECRET_KEY]
-      --cattle.url string                         The Cattle URL. [CATTLE_URL]
-      --docker.endpoint string                    Docker endpoint. [BIVAC_DOCKER_ENDPOINT] (default "unix:///var/run/docker.sock")
-  -h, --help                                      help for manager
-      --kubernetes.agent-service-account string   Specify service account for agents. [KUBERNETES_AGENT_SERVICE_ACCOUNT]
-      --kubernetes.all-namespaces                 Backup volumes of all namespaces. [KUBERNETES_ALL_NAMESPACES]
-      --kubernetes.kubeconfig string              Path to your kuberconfig file. [KUBERNETES_KUBECONFIG]
-      --kubernetes.namespace string               Namespace where you want to run Bivac. [KUBERNETES_NAMESPACE]
-      --log.server string                         Manager's API address that will receive logs from agents. [BIVAC_LOG_SERVER]
-  -o, --orchestrator string                       Orchestrator on which Bivac should connect to. [BIVAC_ORCHESTRATOR]
-      --providers.config string                   Configuration file for providers. [BIVAC_PROVIDERS_CONFIG] (default "/providers-config.default.toml")
-      --restic.forget.args string                 Restic forget arguments. [RESTIC_FORGET_ARGS] (default "--keep-daily 15 --prune")
-      --retry.count int                           Retry to backup the volume if something goes wrong with Bivac. [BIVAC_RETRY_COUNT]
-      --server.address string                     Address to bind on. [BIVAC_SERVER_ADDRESS] (default "0.0.0.0:8182")
-      --server.psk string                         Pre-shared key. [BIVAC_SERVER_PSK]
-  -r, --target.url string                         The target URL to push the backups to. [BIVAC_TARGET_URL]
 
-Global Flags:
-  -b, --blacklist string   Do not backup blacklisted volumes. [BIVAC_VOLUMES_BLACKLIST]
-  -v, --verbose            Enable verbose output [BIVAC_VERBOSE]
-  -w, --whitelist string   Only backup whitelisted volumes. [BIVAC_VOLUMES_WHITELIST]
-```
+## Support
 
-## Examples
+Submit an [issue](https://github.com/codejamninja/volback/issues/new)
 
-### Backup all named volumes to S3 using Restic
 
-```shell
-$ RESTIC_PASSWORD=<my_restic_password> AWS_ACCESS_KEY_ID=<my_key_id> AWS_SECRET_ACCESS_KEY=<my_secret_key> \
-  bivac \
-  -o docker \
-  -r s3:s3.amazonaws.com/<my_bucket>/<my_dir> \
-```
+## Screenshots
 
-### Using docker
+[Contribute](https://github.com/codejamninja/volback/blob/master/CONTRIBUTING.md) a screenshot
 
-```shell
-$ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e BIVAC_TARGET_URL=s3:s3.amazonaws.com/<my_bucket>/<my_dir> \
-   -e AWS_ACCESS_KEY_ID=<my_key_id> \
-   -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
-   -e RESTIC_PASSWORD=<my_restic_password> \
-     camptocamp/bivac
-```
 
-## Orchestrators
+## Contributing
 
-Bivac supports running on either Docker Engine (using the Docker API), Kubernetes (using the Kubernetes API) or Rancher Cattle (using the Cattle API).
+Review the [guidelines for contributing](https://github.com/codejamninja/volback/blob/master/CONTRIBUTING.md)
 
-### Docker
 
-Bivac will backup all named volumes by default.
+## License
 
-### Kubernetes
+[MIT License](https://github.com/codejamninja/volback/blob/master/LICENSE)
 
-Bivac will backup all Persistent Volume Claims by default.
+[Jam Risser](https://codejam.ninja) © 2019
 
-### Cattle
 
-Bivac will backup all Volumes by default.
+## Changelog
 
-## Providers
+Review the [changelog](https://github.com/codejamninja/volback/blob/master/CHANGELOG.md)
 
-Bivac detects automatically the kind of data that is stored on a volume and adapts its backup strategy to it. The following providers and associated strategies are currently supported:
 
-* PostgreSQL: Run `pg_dumpall` before backup
-* MySQL: Run `mysqldump` before backup
-* OpenLDAP: Run `slapcat` before backup
-* Default: Backup volume data as is
+## Credits
+
+* [Jam Risser](https://codejam.ninja) - Author
+
+
+## Support on Liberapay
+
+A ridiculous amount of coffee ☕ ☕ ☕ was consumed in the process of building this project.
+
+[Add some fuel](https://liberapay.com/codejamninja/donate) if you'd like to keep me going!
+
+[![Liberapay receiving](https://img.shields.io/liberapay/receives/codejamninja.svg?style=flat-square)](https://liberapay.com/codejamninja/donate)
+[![Liberapay patrons](https://img.shields.io/liberapay/patrons/codejamninja.svg?style=flat-square)](https://liberapay.com/codejamninja/donate)

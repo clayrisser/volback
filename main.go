@@ -1,3 +1,5 @@
+// Modifications copyright (c) 2019 Jam Risser <jam@codejam.ninja>
+
 package main
 
 import (
