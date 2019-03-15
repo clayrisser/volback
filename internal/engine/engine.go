@@ -66,6 +66,28 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 	return utils.ReturnFormattedOutput(r.Output)
 }
 
+// Restore performs the restore of the passed volume
+func (r *Engine) Restore(backupPath, hostname string, force bool) string {
+	var err error
+
+	err = r.restoreVolume(hostname, backupPath)
+	if err != nil {
+		return utils.ReturnFormattedOutput(r.Output)
+	}
+
+	err = r.forget()
+	if err != nil {
+		return utils.ReturnFormattedOutput(r.Output)
+	}
+
+	err = r.retrieveBackupsStats()
+	if err != nil {
+		return utils.ReturnFormattedOutput(r.Output)
+	}
+
+	return utils.ReturnFormattedOutput(r.Output)
+}
+
 func (r *Engine) initializeRepository() (err error) {
 	rc := 0
 
@@ -104,6 +126,20 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["backup"] = utils.OutputFormat{
+		Stdout:   string(output),
+		ExitCode: rc,
+	}
+	err = nil
+	return
+}
+
+func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
+	rc := 0
+	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "restore", backupPath}...)...).CombinedOutput()
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	r.Output["restore"] = utils.OutputFormat{
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
