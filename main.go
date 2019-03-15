@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/camptocamp/bivac/cmd"
-	_ "github.com/camptocamp/bivac/cmd/all"
+	"github.com/codejamninja/bivac/cmd"
+	_ "github.com/codejamninja/bivac/cmd/all"
 )
 
 var exitCode int

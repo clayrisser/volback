@@ -7,7 +7,7 @@ Website: [https://camptocamp.github.io/bivac](https://camptocamp.github.io/bivac
 [![Docker Pulls](https://img.shields.io/docker/pulls/camptocamp/bivac.svg)](https://hub.docker.com/r/camptocamp/bivac/)
 [![Build Status](https://img.shields.io/travis/camptocamp/bivac/master.svg)](https://travis-ci.org/camptocamp/bivac)
 [![Coverage Status](https://img.shields.io/coveralls/camptocamp/bivac.svg)](https://coveralls.io/r/camptocamp/bivac?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/camptocamp/bivac)](https://goreportcard.com/report/github.com/camptocamp/bivac)
+[![Go Report Card](https://goreportcard.com/badge/github.com/codejamninja/bivac)](https://goreportcard.com/report/github.com/codejamninja/bivac)
 [![Gitter](https://img.shields.io/gitter/room/camptocamp/bivac.svg)](https://gitter.im/camptocamp/bivac)
 [![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
 
@@ -20,7 +20,7 @@ Bivac lets you backup all your containers volumes deployed on Docker Engine, Cat
 ## Installing
 
 ```shell
-$ go get github.com/camptocamp/bivac
+$ go get github.com/codejamninja/bivac
 ```
 
 ## Usage

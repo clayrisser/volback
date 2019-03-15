@@ -1,7 +1,7 @@
 package orchestrators
 
 import (
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 // Orchestrator implements a container Orchestrator interface

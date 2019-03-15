@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/jarcoal/httpmock.v1"
 
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 // NewClient

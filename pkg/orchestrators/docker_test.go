@@ -16,8 +16,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"golang.org/x/net/context"
 
-	"github.com/camptocamp/bivac/mocks"
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/mocks"
+	"github.com/codejamninja/bivac/pkg/volume"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -7,8 +7,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/camptocamp/bivac/pkg/orchestrators"
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/pkg/orchestrators"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 // Orchestrators groups the parameters of all supported orchestrators in one structure

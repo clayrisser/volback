@@ -5,7 +5,7 @@
 package mocks
 
 import (
-	volume "github.com/camptocamp/bivac/pkg/volume"
+	volume "github.com/codejamninja/bivac/pkg/volume"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

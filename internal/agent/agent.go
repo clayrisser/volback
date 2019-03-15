@@ -9,8 +9,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/camptocamp/bivac/internal/engine"
-	"github.com/camptocamp/bivac/internal/utils"
+	"github.com/codejamninja/bivac/internal/engine"
+	"github.com/codejamninja/bivac/internal/utils"
 )
 
 // Backup runs Restic commands to backup a volume

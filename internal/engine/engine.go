@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/camptocamp/bivac/internal/utils"
+	"github.com/codejamninja/bivac/internal/utils"
 )
 
 // Engine stores informations to use Restic backup engine

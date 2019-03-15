@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 // Client contains informations needed to connect to a Bivac API

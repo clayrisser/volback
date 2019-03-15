@@ -6,9 +6,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	bivacCmd "github.com/camptocamp/bivac/cmd"
-	"github.com/camptocamp/bivac/internal/manager"
-	"github.com/camptocamp/bivac/pkg/volume"
+	bivacCmd "github.com/codejamninja/bivac/cmd"
+	"github.com/codejamninja/bivac/internal/manager"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 var (

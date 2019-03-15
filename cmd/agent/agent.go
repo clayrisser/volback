@@ -3,8 +3,8 @@ package agent
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/camptocamp/bivac/cmd"
-	"github.com/camptocamp/bivac/internal/agent"
+	"github.com/codejamninja/bivac/cmd"
+	"github.com/codejamninja/bivac/internal/agent"
 )
 
 var (

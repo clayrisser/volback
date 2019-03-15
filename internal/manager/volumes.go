@@ -4,8 +4,8 @@ import (
 	"sort"
 	"unicode/utf8"
 
-	"github.com/camptocamp/bivac/internal/engine"
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/internal/engine"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {

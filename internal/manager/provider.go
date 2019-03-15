@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/camptocamp/bivac/pkg/orchestrators"
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/pkg/orchestrators"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 // Providers stores the list of available providers

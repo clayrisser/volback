@@ -7,8 +7,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/camptocamp/bivac/mocks"
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/bivac/mocks"
+	"github.com/codejamninja/bivac/pkg/volume"
 )
 
 // retrieveVolumes

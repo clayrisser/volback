@@ -6,8 +6,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/camptocamp/bivac/cmd"
-	"github.com/camptocamp/bivac/pkg/client"
+	"github.com/codejamninja/bivac/cmd"
+	"github.com/codejamninja/bivac/pkg/client"
 )
 
 var (
