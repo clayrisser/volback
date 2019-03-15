@@ -5,6 +5,8 @@ import (
 	_ "github.com/codejamninja/bivac/cmd/agent"
 	// Backup a volume
 	_ "github.com/codejamninja/bivac/cmd/backup"
+	// Restore a volume
+	_ "github.com/codejamninja/bivac/cmd/restore"
 	// Get informations regarding the Bivac manager
 	_ "github.com/codejamninja/bivac/cmd/info"
 	// Run a Bivac manager
