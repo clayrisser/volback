@@ -7,6 +7,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/codejamninja/bivac/internal/engine"
 	"github.com/codejamninja/bivac/pkg/orchestrators"
 	"github.com/codejamninja/bivac/pkg/volume"
 )
@@ -211,6 +212,25 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 			err = backupVolume(m, v, force)
 			if err != nil {
 				err = fmt.Errorf("failed to backup volume: %s", err)
+				return
+			}
+		}
+	}
+	return
+}
+
+// RestoreVolume does a restore of a volume
+func (m *Manager) RestoreVolume(volumeID string, force bool) (err error) {
+	for _, v := range m.Volumes {
+		if v.ID == volumeID {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Debug("Restore manually requested.")
+
+			err = restoreVolume(m, v, force)
+			if err != nil {
+				err = fmt.Errorf("failed to restore volume: %s", err)
 				return
 			}
 		}
