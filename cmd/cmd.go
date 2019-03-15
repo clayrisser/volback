@@ -20,7 +20,7 @@ var (
 	whitelist string
 	blacklist string
 
-	// Version is the Bivac version (filled by main.go at build time)
+	// Version is the Volback version (filled by main.go at build time)
 	Version string
 )
 
@@ -29,7 +29,7 @@ var localEnvs = make(map[string]string)
 
 // RootCmd is a global variable which will handle all subcommands
 var RootCmd = &cobra.Command{
-	Use: "bivac",
+	Use: "volback",
 }
 
 func initConfig() {
@@ -42,11 +42,11 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	viper.AutomaticEnv()
 	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
-	localEnvs["BIVAC_VERBOSE"] = "verbose"
+	localEnvs["VOLBACK_VERBOSE"] = "verbose"
 	RootCmd.PersistentFlags().StringVarP(&whitelist, "whitelist", "w", "", "Only backup whitelisted volumes.")
-	localEnvs["BIVAC_VOLUMES_WHITELIST"] = "whitelist"
+	localEnvs["VOLBACK_VOLUMES_WHITELIST"] = "whitelist"
 	RootCmd.PersistentFlags().StringVarP(&blacklist, "blacklist", "b", "", "Do not backup blacklisted volumes.")
-	localEnvs["BIVAC_VOLUMES_BLACKLIST"] = "blacklist"
+	localEnvs["VOLBACK_VOLUMES_BLACKLIST"] = "blacklist"
 
 	SetValuesFromEnv(localEnvs, RootCmd.PersistentFlags())
 	SetValuesFromEnv(persistentEnvs, RootCmd.PersistentFlags())

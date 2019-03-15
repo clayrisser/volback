@@ -24,10 +24,6 @@
 	[providers.mongo]
 	backup_dir = "backups"
 	detect_cmd = "[[ -f $volume/mongod.lock ]]"
+	post_restore_cmd = "mongorestore --dir $volume/backups && rm -rf $volume/backups"
 	pre_cmd = "mongodump -o $volume/backups"
   post_cmd = "rm -rf $volume/backups"
-
-	[providers.mongo.restore]
-	backup_dir = "backups"
-	detect_cmd = "[[ -f $volume/mongod.lock ]]"
-	post_cmd = "mongorestore --dir $volume/backups && rm -rf $volume/backups"

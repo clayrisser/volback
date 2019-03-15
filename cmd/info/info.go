@@ -12,8 +12,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/codejamninja/bivac/cmd"
-	"github.com/codejamninja/bivac/pkg/client"
+	"github.com/codejamninja/volback/cmd"
+	"github.com/codejamninja/volback/pkg/client"
 )
 
 var (
@@ -25,7 +25,7 @@ var envs = make(map[string]string)
 
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Retrive Bivac informations",
+	Short: "Retrive Volback informations",
 	Run: func(cmd *cobra.Command, args []string) {
 		c, err := client.NewClient(remoteAddress, psk)
 		if err != nil {
@@ -49,11 +49,11 @@ var infoCmd = &cobra.Command{
 }
 
 func init() {
-	infoCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Bivac server.")
-	envs["BIVAC_REMOTE_ADDRESS"] = "remote.address"
+	infoCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Volback server.")
+	envs["VOLBACK_REMOTE_ADDRESS"] = "remote.address"
 
 	infoCmd.Flags().StringVarP(&psk, "server.psk", "", "", "Pre-shared key.")
-	envs["BIVAC_SERVER_PSK"] = "server.psk"
+	envs["VOLBACK_SERVER_PSK"] = "server.psk"
 
 	cmd.SetValuesFromEnv(envs, infoCmd.Flags())
 	cmd.RootCmd.AddCommand(infoCmd)

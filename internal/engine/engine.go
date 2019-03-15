@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codejamninja/bivac/internal/utils"
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 // Engine stores informations to use Restic backup engine

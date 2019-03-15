@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/codejamninja/bivac/pkg/orchestrators"
-	"github.com/codejamninja/bivac/pkg/volume"
+	"github.com/codejamninja/volback/pkg/orchestrators"
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 // Providers stores the list of available providers

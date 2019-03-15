@@ -9,7 +9,7 @@ oc create -f bivac-template.yaml
 ```bash
 oc process bivac \
   -p SCHEDULE="0 2 * * *" \
-  -p BIVAC_TARGET_URL=s3:s3.amazonaws.com/<BUCKET NAME> \
+  -p VOLBACK_TARGET_URL=s3:s3.amazonaws.com/<BUCKET NAME> \
   -p AWS_ACCESS_KEY_ID=<AWS ACCESS KEY> \
   -p AWS_SECRET_ACCESS_KEY=<AWS SECRET KEY> \
   -p RESTIC_PASSWORD=<RESTIC PASSWORD> \

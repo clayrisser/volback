@@ -17,7 +17,7 @@ type OutputFormat struct {
 	ExitCode int    `json:"rc"`
 }
 
-// MsgFormat is a format used to communicate with the Bivac API
+// MsgFormat is a format used to communicate with the Volback API
 type MsgFormat struct {
 	Type    string      `json:"type"`
 	Content interface{} `json:"content"`

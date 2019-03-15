@@ -13,8 +13,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/codejamninja/bivac/internal/utils"
-	"github.com/codejamninja/bivac/pkg/volume"
+	"github.com/codejamninja/volback/internal/utils"
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {

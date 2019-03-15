@@ -13,7 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/codejamninja/bivac/pkg/volume"
+	"github.com/codejamninja/volback/pkg/volume"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -102,7 +102,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 	return
 }
 
-// DeployAgent creates a `bivac agent` container
+// DeployAgent creates a `volback agent` container
 func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v *volume.Volume) (success bool, output string, err error) {
 	success = false
 	kvs := []apiv1.Volume{}
@@ -165,7 +165,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 	pod, err := o.client.CoreV1().Pods(o.config.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "bivac-agent-",
+			GenerateName: "volback-agent-",
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:           node,
@@ -174,7 +174,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			ServiceAccountName: o.config.AgentServiceAccount,
 			Containers: []apiv1.Container{
 				{
-					Name:            "bivac-agent",
+					Name:            "volback-agent",
 					Image:           image,
 					Args:            cmd,
 					Env:             environment,
@@ -368,7 +368,7 @@ func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFil
 	return false, "", ""
 }
 
-// DetectKubernetes returns true if Bivac is running on the orchestrator Kubernetes
+// DetectKubernetes returns true if Volback is running on the orchestrator Kubernetes
 func DetectKubernetes() bool {
 	_, err := rest.InClusterConfig()
 	if err != nil {

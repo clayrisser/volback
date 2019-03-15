@@ -20,7 +20,7 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"golang.org/x/net/context"
 
-	"github.com/codejamninja/bivac/pkg/volume"
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 // DockerConfig stores Docker configuration
@@ -94,7 +94,7 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 	return
 }
 
-// DeployAgent creates a `bivac agent` container
+// DeployAgent creates a `volback agent` container
 func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []string, v *volume.Volume) (success bool, output string, err error) {
 	success = false
 	err = o.PullImage(image)
@@ -276,7 +276,7 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume,
 
 // IsNodeAvailable checks if the node is available to run backups on it
 func (o *DockerOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error) {
-	// We can assume that, if Bivac is running then, the Docker daemon is available
+	// We can assume that, if Volback is running then, the Docker daemon is available
 	ok = true
 	return
 }

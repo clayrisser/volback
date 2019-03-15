@@ -14,8 +14,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/codejamninja/bivac/internal/engine"
-	"github.com/codejamninja/bivac/internal/utils"
+	"github.com/codejamninja/volback/internal/engine"
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 // Backup runs Restic commands to backup a volume
@@ -40,7 +40,7 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+os.Getenv("BIVAC_SERVER_PSK"))
+		req.Header.Set("Authorization", "Bearer "+os.Getenv("VOLBACK_SERVER_PSK"))
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -86,7 +86,7 @@ func Restore(targetURL, backupPath, hostname string, force bool, logReceiver str
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+os.Getenv("BIVAC_SERVER_PSK"))
+		req.Header.Set("Authorization", "Bearer "+os.Getenv("VOLBACK_SERVER_PSK"))
 
 		client := &http.Client{}
 		resp, err := client.Do(req)

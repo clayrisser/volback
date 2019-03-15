@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/codejamninja/bivac/cmd"
-	_ "github.com/codejamninja/bivac/cmd/all"
+	"github.com/codejamninja/volback/cmd"
+	_ "github.com/codejamninja/volback/cmd/all"
 )
 
 var exitCode int

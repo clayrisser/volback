@@ -11,8 +11,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/codejamninja/bivac/cmd"
-	"github.com/codejamninja/bivac/pkg/client"
+	"github.com/codejamninja/volback/cmd"
+	"github.com/codejamninja/volback/pkg/client"
 )
 
 var (
@@ -51,11 +51,11 @@ var resticCmd = &cobra.Command{
 }
 
 func init() {
-	resticCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Bivac server.")
-	envs["BIVAC_REMOTE_ADDRESS"] = "remote.address"
+	resticCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Volback server.")
+	envs["VOLBACK_REMOTE_ADDRESS"] = "remote.address"
 
 	resticCmd.Flags().StringVarP(&psk, "server.psk", "", "", "Pre-shared key.")
-	envs["BIVAC_SERVER_PSK"] = "server.psk"
+	envs["VOLBACK_SERVER_PSK"] = "server.psk"
 
 	resticCmd.Flags().StringVarP(&volumeID, "volume", "", "", "Volume ID")
 

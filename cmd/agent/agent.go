@@ -8,8 +8,8 @@ package agent
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/codejamninja/bivac/cmd"
-	"github.com/codejamninja/bivac/internal/agent"
+	"github.com/codejamninja/volback/cmd"
+	"github.com/codejamninja/volback/internal/agent"
 )
 
 var (
@@ -22,7 +22,7 @@ var (
 
 var agentCmd = &cobra.Command{
 	Use:   "agent",
-	Short: "Run Bivac agent",
+	Short: "Run Volback agent",
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "backup":
