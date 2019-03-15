@@ -80,6 +80,25 @@ func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (m *Manager) restoreVolume(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	force, err := strconv.ParseBool(params["force"])
+	if err != nil {
+		force = false
+		err = nil
+	}
+
+	err = m.RestoreVolume(params["volumeName"], force)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal server error"))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"type": "success"}`))
+	return
+}
+
 func (m *Manager) info(w http.ResponseWriter, r *http.Request) {
 	informations := m.GetInformations()
 
