@@ -71,7 +71,7 @@ func Restore(targetURL, backupPath, hostname string, force bool, logReceiver str
 		Output: make(map[string]utils.OutputFormat),
 	}
 
-	output := e.Restore(backupPath, hostname)
+	output := e.Restore(backupPath, hostname, force, logReceiver)
 
 	if logReceiver != "" {
 		data := `{"data":` + output + `}`

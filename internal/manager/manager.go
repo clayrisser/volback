@@ -228,3 +228,20 @@ func (m *Manager) GetInformations() (informations map[string]string) {
 	}
 	return
 }
+
+// RunResticCommand runs a custom Restic command
+func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
+	e := &engine.Engine{
+		DefaultArgs: []string{
+			"--no-cache",
+			"-r",
+			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		},
+		Output: make(map[string]utils.OutputFormat),
+	}
+
+	err = e.RawCommand(cmd)
+
+	output = e.Output["raw"].Stdout
+	return
+}

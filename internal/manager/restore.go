@@ -79,7 +79,7 @@ func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 				"hostname": v.Hostname,
 			}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
 		} else {
-			m.updateBackupLogs(v, agentOutput)
+			m.updateRestoreLogs(v, agentOutput)
 		}
 	} else {
 		if output != "" {
@@ -102,7 +102,7 @@ func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	return
 }
 
-func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat) {
+func (m *Manager) updateRestoreLogs(v *volume.Volume, agentOutput utils.MsgFormat) {
 	if agentOutput.Type != "success" {
 		v.LastBackupStatus = "Failed"
 		v.Metrics.LastBackupStatus.Set(1.0)
@@ -118,7 +118,6 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 		if success {
 			v.LastBackupStatus = "Success"
 			v.Metrics.LastBackupStatus.Set(0.0)
-			m.setOldestBackupDate(v)
 		} else {
 			v.LastBackupStatus = "Failed"
 			v.Metrics.LastBackupStatus.Set(1.0)
@@ -127,41 +126,5 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 
 	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
 	v.Metrics.LastBackupDate.SetToCurrentTime()
-	return
-}
-
-func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
-	// TODO: use regex
-	stdout := strings.Split(v.Logs["snapshots"], "]")[1]
-
-	var snapshots []engine.Snapshot
-
-	err = json.Unmarshal([]byte(stdout), &snapshots)
-	if err != nil {
-		err = fmt.Errorf("failed to unmarshal: %s", err)
-		return
-	}
-
-	if len(snapshots) > 0 {
-		v.Metrics.OldestBackupDate.Set(float64(snapshots[0].Time.Unix()))
-	}
-
-	return
-}
-
-// RunResticCommand runs a custom Restic command
-func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
-	e := &engine.Engine{
-		DefaultArgs: []string{
-			"--no-cache",
-			"-r",
-			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
-		},
-		Output: make(map[string]utils.OutputFormat),
-	}
-
-	err = e.RawCommand(cmd)
-
-	output = e.Output["raw"].Stdout
 	return
 }
