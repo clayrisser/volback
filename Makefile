@@ -1,9 +1,14 @@
+# Volback v2.0.0 (https://camptocamp.github.io/volback)
+# Copyright (c) 2019 Camptocamp
+# Licensed under Apache-2.0 (https://raw.githubusercontent.com/camptocamp/volback/master/LICENSE)
+# Modifications copyright (c) 2019 Jam Risser <jam@codejam.ninja>
+
 DEPS = $(wildcard */*/*/*.go)
 VERSION = $(shell git describe --always --dirty)
 
-all: lint vet test bivac
+all: lint vet test volback
 
-bivac: main.go $(DEPS)
+volback: main.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
 	  go build -a \
 		  -ldflags="-s -X main.version=$(VERSION)" \
@@ -26,7 +31,7 @@ imports: main.go
 	goimports -d $<
 
 clean:
-	rm -f bivac
+	rm -f volback
 
 test:
 	go test -cover -coverprofile=coverage -v ./...

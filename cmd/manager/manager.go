@@ -11,9 +11,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	bivacCmd "github.com/codejamninja/bivac/cmd"
-	"github.com/codejamninja/bivac/internal/manager"
-	"github.com/codejamninja/bivac/pkg/volume"
+	bivacCmd "github.com/codejamninja/volback/cmd"
+	"github.com/codejamninja/volback/internal/manager"
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 var (

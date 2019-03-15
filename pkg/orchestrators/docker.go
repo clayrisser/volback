@@ -20,7 +20,7 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"golang.org/x/net/context"
 
-	"github.com/codejamninja/bivac/pkg/volume"
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 // DockerConfig stores Docker configuration

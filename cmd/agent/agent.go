@@ -8,8 +8,8 @@ package agent
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/codejamninja/bivac/cmd"
-	"github.com/codejamninja/bivac/internal/agent"
+	"github.com/codejamninja/volback/cmd"
+	"github.com/codejamninja/volback/internal/agent"
 )
 
 var (

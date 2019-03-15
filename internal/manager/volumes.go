@@ -9,8 +9,8 @@ import (
 	"sort"
 	"unicode/utf8"
 
-	"github.com/codejamninja/bivac/internal/engine"
-	"github.com/codejamninja/bivac/pkg/volume"
+	"github.com/codejamninja/volback/internal/engine"
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {

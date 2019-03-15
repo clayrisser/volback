@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/codejamninja/bivac/internal/utils"
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 // Server contains informations used by the server part

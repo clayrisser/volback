@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tatsushid/go-prettytable"
 
-	"github.com/codejamninja/bivac/cmd"
-	"github.com/codejamninja/bivac/pkg/client"
+	"github.com/codejamninja/volback/cmd"
+	"github.com/codejamninja/volback/pkg/client"
 )
 
 var (
