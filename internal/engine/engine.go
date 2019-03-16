@@ -7,12 +7,11 @@ package engine
 
 import (
 	"encoding/json"
+	"github.com/codejamninja/volback/internal/utils"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
-
-	"github.com/codejamninja/volback/internal/utils"
 )
 
 // Engine stores informations to use Restic backup engine
@@ -40,62 +39,53 @@ func (*Engine) GetName() string {
 // Backup performs the backup of the passed volume
 func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 	var err error
-
 	err = r.initializeRepository()
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
-
 	if force {
 		err = r.unlockRepository()
 		if err != nil {
 			return utils.ReturnFormattedOutput(r.Output)
 		}
 	}
-
 	err = r.backupVolume(hostname, backupPath)
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
-
 	err = r.forget()
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
-
 	err = r.retrieveBackupsStats()
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
-
 	return utils.ReturnFormattedOutput(r.Output)
 }
 
 // Restore performs the restore of the passed volume
 func (r *Engine) Restore(backupPath, hostname string, force bool) string {
 	var err error
-
+	if force {
+		err = r.unlockRepository()
+		if err != nil {
+			return utils.ReturnFormattedOutput(r.Output)
+		}
+	}
 	err = r.restoreVolume(hostname, backupPath)
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
-
-	err = r.forget()
-	if err != nil {
-		return utils.ReturnFormattedOutput(r.Output)
-	}
-
 	err = r.retrieveBackupsStats()
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
-
 	return utils.ReturnFormattedOutput(r.Output)
 }
 
 func (r *Engine) initializeRepository() (err error) {
 	rc := 0
-
 	// Check if the remote repository exists
 	output, err := exec.Command("restic", append(r.DefaultArgs, "snapshots")...).CombinedOutput()
 	if err != nil {
@@ -109,7 +99,6 @@ func (r *Engine) initializeRepository() (err error) {
 		ExitCode: rc,
 	}
 	err = nil
-
 	rc = 0
 	// Create remote repository
 	output, err = exec.Command("restic", append(r.DefaultArgs, "init")...).CombinedOutput()
@@ -156,7 +145,6 @@ func (r *Engine) forget() (err error) {
 	rc := 0
 	cmd := append(r.DefaultArgs, "forget")
 	cmd = append(cmd, strings.Split(os.Getenv("RESTIC_FORGET_ARGS"), " ")...)
-
 	output, err := exec.Command("restic", cmd...).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
@@ -179,7 +167,6 @@ func (r *Engine) retrieveBackupsStats() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
-
 	return
 }
 
@@ -200,26 +187,20 @@ func (r *Engine) unlockRepository() (err error) {
 // GetBackupDates runs a Restic command locally to retrieve latest snapshot date
 func (r *Engine) GetBackupDates() (latestSnapshotDate, oldestSnapshotDate time.Time, err error) {
 	output, _ := exec.Command("restic", append(r.DefaultArgs, []string{"snapshots"}...)...).CombinedOutput()
-
 	var data []Snapshot
 	err = json.Unmarshal(output, &data)
 	if err != nil {
 		return
 	}
-
 	if len(data) == 0 {
 		return
 	}
-
 	latestSnapshot := data[len(data)-1]
-
 	latestSnapshotDate = latestSnapshot.Time
 	if err != nil {
 		return
 	}
-
 	oldestSnapshot := data[0]
-
 	oldestSnapshotDate = oldestSnapshot.Time
 	if err != nil {
 		return

@@ -6,10 +6,9 @@
 package agent
 
 import (
-	"github.com/spf13/cobra"
-
 	"github.com/codejamninja/volback/cmd"
 	"github.com/codejamninja/volback/internal/agent"
+	"github.com/spf13/cobra"
 )
 
 var (

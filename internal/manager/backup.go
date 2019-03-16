@@ -8,33 +8,27 @@ package manager
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"strings"
-	"time"
-
 	log "github.com/Sirupsen/logrus"
-
 	"github.com/codejamninja/volback/internal/engine"
 	"github.com/codejamninja/volback/internal/utils"
 	"github.com/codejamninja/volback/pkg/volume"
+	"os"
+	"strings"
+	"time"
 )
 
 func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
-
 	v.Mux.Lock()
 	defer v.Mux.Unlock()
-
 	useLogReceiver := false
 	if m.LogServer != "" {
 		useLogReceiver = true
 	}
-
 	p, err := m.Providers.GetProvider(m.Orchestrator, v)
 	if err != nil {
 		err = fmt.Errorf("failed to get provider: %s", err)
 		return
 	}
-
 	if p.BackupPreCmd != "" {
 		err = RunCmd(p, m.Orchestrator, v, p.BackupPreCmd, "precmd")
 		if err != nil {
@@ -44,7 +38,6 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 			}).Warningf("failed to run pre-command: %s", err)
 		}
 	}
-
 	cmd := []string{
 		"agent",
 		"backup",
@@ -55,15 +48,12 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		"--host",
 		m.Orchestrator.GetPath(v),
 	}
-
 	if force {
 		cmd = append(cmd, "--force")
 	}
-
 	if useLogReceiver {
 		cmd = append(cmd, []string{"--log.receiver", m.LogServer + "/backup/" + v.ID + "/logs"}...)
 	}
-
 	_, output, err := m.Orchestrator.DeployAgent(
 		m.AgentImage,
 		cmd,
@@ -74,7 +64,6 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		err = fmt.Errorf("failed to deploy agent: %s", err)
 		return
 	}
-
 	if !useLogReceiver {
 		var agentOutput utils.MsgFormat
 		err = json.Unmarshal([]byte(output), &agentOutput)
@@ -94,7 +83,6 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 			}).Errorf("failed to send output: %s", output)
 		}
 	}
-
 	if p.BackupPostCmd != "" {
 		err = RunCmd(p, m.Orchestrator, v, p.BackupPostCmd, "postcmd")
 		if err != nil {
@@ -129,7 +117,6 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 			v.Metrics.LastBackupStatus.Set(1.0)
 		}
 	}
-
 	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
 	v.Metrics.LastBackupDate.SetToCurrentTime()
 	return
@@ -138,18 +125,14 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 	// TODO: use regex
 	stdout := strings.Split(v.Logs["snapshots"], "]")[1]
-
 	var snapshots []engine.Snapshot
-
 	err = json.Unmarshal([]byte(stdout), &snapshots)
 	if err != nil {
 		err = fmt.Errorf("failed to unmarshal: %s", err)
 		return
 	}
-
 	if len(snapshots) > 0 {
 		v.Metrics.OldestBackupDate.Set(float64(snapshots[0].Time.Unix()))
 	}
-
 	return
 }
