@@ -6,7 +6,16 @@
 DEPS = $(wildcard */*/*/*.go)
 VERSION = $(shell git describe --always --dirty)
 
-all: lint vet test volback
+all: lint vet test build
+build: volback docker
+
+.PHONY: docker
+docker:
+	@docker-compose build
+
+.PHONY: publish
+publish:
+	@docker-compose push
 
 volback: main.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
