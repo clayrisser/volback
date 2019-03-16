@@ -33,8 +33,8 @@ func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		return
 	}
 
-	if p.PreCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.PreCmd, "precmd")
+	if p.RestorePreCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.RestorePreCmd, "precmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
@@ -93,8 +93,8 @@ func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		}
 	}
 
-	if p.PostCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
+	if p.RestorePostCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.RestorePostCmd, "postcmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
