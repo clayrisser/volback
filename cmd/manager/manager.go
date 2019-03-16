@@ -105,7 +105,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
 	envs["VOLBACK_LOG_SERVER"] = "log.server"
 
-	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/volback:2.0.0", "Agent's Docker image.")
+	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "codejamninja/volback:3.0.0", "Agent's Docker image.")
 	envs["VOLBACK_AGENT_IMAGE"] = "agent.image"
 
 	volbackCmd.SetValuesFromEnv(envs, managerCmd.Flags())

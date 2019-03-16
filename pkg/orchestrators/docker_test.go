@@ -166,7 +166,7 @@ func TestDockerDeployAgentSuccess(t *testing.T) {
 
 	fakeCmd := []string{"agent"}
 	fakeEnv := []string{}
-	fakeImage := "camptocamp/volback:fake"
+	fakeImage := "codejamninja/volback:fake"
 	fakeVolume := &volume.Volume{
 		ID:         "foo",
 		Name:       "foo",
@@ -240,7 +240,7 @@ func TestDockerPullImageSuccessNoPull(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockDocker := mocks.NewMockCommonAPIClient(mockCtrl)
 
-	fakeImage := "camptocamp/volback:fake"
+	fakeImage := "codejamninja/volback:fake"
 
 	mockDocker.EXPECT().ImageInspectWithRaw(context.Background(), fakeImage).Return(types.ImageInspect{}, make([]byte, 0), nil).Times(1)
 
@@ -258,7 +258,7 @@ func TestDockerPullImageSuccessPull(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockDocker := mocks.NewMockCommonAPIClient(mockCtrl)
 
-	fakeImage := "camptocamp/volback:fake"
+	fakeImage := "codejamninja/volback:fake"
 
 	mockDocker.EXPECT().ImageInspectWithRaw(context.Background(), fakeImage).Return(types.ImageInspect{}, make([]byte, 0), fmt.Errorf("random error")).Times(1)
 	mockDocker.EXPECT().ImagePull(context.Background(), fakeImage, types.ImagePullOptions{}).Return(ioutil.NopCloser(strings.NewReader("foo")), nil).Times(1)
@@ -277,7 +277,7 @@ func TestDockerPullImageFailToPull(t *testing.T) {
 	defer mockCtrl.Finish()
 	mockDocker := mocks.NewMockCommonAPIClient(mockCtrl)
 
-	fakeImage := "camptocamp/volback:fake"
+	fakeImage := "codejamninja/volback:fake"
 
 	mockDocker.EXPECT().ImageInspectWithRaw(context.Background(), fakeImage).Return(types.ImageInspect{}, make([]byte, 0), fmt.Errorf("random error")).Times(1)
 	mockDocker.EXPECT().ImagePull(context.Background(), fakeImage, types.ImagePullOptions{}).Return(ioutil.NopCloser(strings.NewReader("foo")), fmt.Errorf("error")).Times(1)
