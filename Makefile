@@ -24,16 +24,21 @@ lint:
 	exit $${status:-0}
 
 vet: main.go
-	go vet $<
+	@go vet $<
 
 imports: main.go
-	dep ensure
-	goimports -d $<
+	@dep ensure
+	@goimports -d $<
 
 clean:
-	rm -f volback
+	@rm -f volback
 
 test:
-	go test -cover -coverprofile=coverage -v ./...
+	@go test -cover -coverprofile=coverage -v ./...
+
+link:
+	@rm -rf $$GOPATH/src/github.com/codejamninja/volback
+	@mkdir -p $$GOPATH/src/github.com/codejamninja
+	@ln -s $(shell pwd) $$GOPATH/src/github.com/codejamninja/volback
 
 .PHONY: all imports lint vet clean test
