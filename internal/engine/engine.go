@@ -129,7 +129,18 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 
 func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
 	rc := 0
-	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "restore", backupPath}...)...).CombinedOutput()
+	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "ls", "latest"}...)...).CombinedOutput()
+	type Header struct {
+		Paths []string `json:"paths"`
+	}
+	headerJson := []byte(strings.Split(string(output), "\n")[1])
+	var header Header
+	err = json.Unmarshal(headerJson, &header)
+	if err != nil {
+		return
+	}
+	// origionalBackupPath := header.Paths[0]
+	// output, err := exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "restore", backupPath}...)...).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
