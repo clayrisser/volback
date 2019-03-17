@@ -8,6 +8,7 @@ package engine
 import (
 	"encoding/json"
 	"github.com/codejamninja/volback/internal/utils"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -139,8 +140,15 @@ func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
 	if err != nil {
 		return
 	}
-	// origionalBackupPath := header.Paths[0]
-	// output, err := exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "restore", backupPath}...)...).CombinedOutput()
+	output, err = exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "restore", "latest", "--target", backupPath}...)...).CombinedOutput()
+	origionalBackupPath := backupPath + header.Paths[0]
+	files, err := ioutil.ReadDir(origionalBackupPath)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	for _, f := range files {
+		os.Rename(origionalBackupPath+"/"+f.Name(), backupPath+"/"+f.Name())
+	}
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
