@@ -7,12 +7,10 @@ package restic
 
 import (
 	"fmt"
-
 	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
-
 	"github.com/codejamninja/volback/cmd"
 	"github.com/codejamninja/volback/pkg/client"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -39,13 +37,11 @@ var resticCmd = &cobra.Command{
 			log.Errorf("failed to create new client: %s", err)
 			return
 		}
-
 		output, err := c.RunRawCommand(volumeID, args)
 		if err != nil {
 			log.Errorf("failed to run command: %s", err)
 			return
 		}
-
 		fmt.Println(output)
 	},
 }
@@ -53,12 +49,9 @@ var resticCmd = &cobra.Command{
 func init() {
 	resticCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Volback server.")
 	envs["VOLBACK_REMOTE_ADDRESS"] = "remote.address"
-
 	resticCmd.Flags().StringVarP(&psk, "server.psk", "", "", "Pre-shared key.")
 	envs["VOLBACK_SERVER_PSK"] = "server.psk"
-
 	resticCmd.Flags().StringVarP(&volumeID, "volume", "", "", "Volume ID")
-
 	cmd.SetValuesFromEnv(envs, resticCmd.Flags())
 	cmd.RootCmd.AddCommand(resticCmd)
 }
