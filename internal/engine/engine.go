@@ -88,7 +88,10 @@ func (r *Engine) Restore(backupPath, hostname string, force bool) string {
 func (r *Engine) initializeRepository() (err error) {
 	rc := 0
 	// Check if the remote repository exists
-	output, err := exec.Command("restic", append(r.DefaultArgs, "snapshots")...).CombinedOutput()
+	output, err := exec.Command(
+		"restic",
+		append(r.DefaultArgs, "snapshots")...,
+	).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -102,7 +105,10 @@ func (r *Engine) initializeRepository() (err error) {
 	err = nil
 	rc = 0
 	// Create remote repository
-	output, err = exec.Command("restic", append(r.DefaultArgs, "init")...).CombinedOutput()
+	output, err = exec.Command(
+		"restic",
+		append(r.DefaultArgs, "init")...,
+	).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -116,7 +122,15 @@ func (r *Engine) initializeRepository() (err error) {
 
 func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 	rc := 0
-	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "backup", backupPath}...)...).CombinedOutput()
+	output, err := exec.Command(
+		"restic",
+		append(r.DefaultArgs, []string{
+			"--host",
+			hostname,
+			"backup",
+			backupPath,
+		}...)...,
+	).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -130,7 +144,13 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 
 func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
 	rc := 0
-	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "ls", "latest"}...)...).CombinedOutput()
+	output, err := exec.Command(
+		"restic",
+		append(
+			r.DefaultArgs,
+			[]string{"--host", hostname, "ls", "latest"}...,
+		)...,
+	).CombinedOutput()
 	type Header struct {
 		Paths []string `json:"paths"`
 	}
@@ -140,14 +160,30 @@ func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
 	if err != nil {
 		return
 	}
-	output, err = exec.Command("restic", append(r.DefaultArgs, []string{"--host", hostname, "restore", "latest", "--target", backupPath}...)...).CombinedOutput()
+	output, err = exec.Command(
+		"restic",
+		append(
+			r.DefaultArgs,
+			[]string{
+				"--host",
+				hostname,
+				"restore",
+				"latest",
+				"--target",
+				backupPath,
+			}...,
+		)...,
+	).CombinedOutput()
 	origionalBackupPath := backupPath + header.Paths[0]
 	files, err := ioutil.ReadDir(origionalBackupPath)
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
 	for _, f := range files {
-		os.Rename(origionalBackupPath+"/"+f.Name(), backupPath+"/"+f.Name())
+		os.Rename(
+			origionalBackupPath+"/"+f.Name(),
+			backupPath+"/"+f.Name(),
+		)
 	}
 	if err != nil {
 		rc = utils.HandleExitCode(err)
@@ -163,7 +199,10 @@ func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
 func (r *Engine) forget() (err error) {
 	rc := 0
 	cmd := append(r.DefaultArgs, "forget")
-	cmd = append(cmd, strings.Split(os.Getenv("RESTIC_FORGET_ARGS"), " ")...)
+	cmd = append(
+		cmd,
+		strings.Split(os.Getenv("RESTIC_FORGET_ARGS"), " ")...,
+	)
 	output, err := exec.Command("restic", cmd...).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
@@ -178,7 +217,10 @@ func (r *Engine) forget() (err error) {
 
 func (r *Engine) retrieveBackupsStats() (err error) {
 	rc := 0
-	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"snapshots"}...)...).CombinedOutput()
+	output, err := exec.Command(
+		"restic",
+		append(r.DefaultArgs, []string{"snapshots"}...)...,
+	).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -191,7 +233,10 @@ func (r *Engine) retrieveBackupsStats() (err error) {
 
 func (r *Engine) unlockRepository() (err error) {
 	rc := 0
-	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"unlock", "--remove-all"}...)...).CombinedOutput()
+	output, err := exec.Command(
+		"restic",
+		append(r.DefaultArgs, []string{"unlock", "--remove-all"}...)...,
+	).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -204,8 +249,15 @@ func (r *Engine) unlockRepository() (err error) {
 }
 
 // GetBackupDates runs a Restic command locally to retrieve latest snapshot date
-func (r *Engine) GetBackupDates() (latestSnapshotDate, oldestSnapshotDate time.Time, err error) {
-	output, _ := exec.Command("restic", append(r.DefaultArgs, []string{"snapshots"}...)...).CombinedOutput()
+func (r *Engine) GetBackupDates() (
+	latestSnapshotDate,
+	oldestSnapshotDate time.Time,
+	err error,
+) {
+	output, _ := exec.Command(
+		"restic",
+		append(r.DefaultArgs, []string{"snapshots"}...)...,
+	).CombinedOutput()
 	var data []Snapshot
 	err = json.Unmarshal(output, &data)
 	if err != nil {
@@ -230,7 +282,10 @@ func (r *Engine) GetBackupDates() (latestSnapshotDate, oldestSnapshotDate time.T
 // RawCommand runs a custom Restic command locally
 func (r *Engine) RawCommand(cmd []string) (err error) {
 	rc := 0
-	output, err := exec.Command("restic", append(r.DefaultArgs, cmd...)...).CombinedOutput()
+	output, err := exec.Command(
+		"restic",
+		append(r.DefaultArgs, cmd...)...,
+	).CombinedOutput()
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
