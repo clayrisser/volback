@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	remoteAddress string
-	psk           string
 	force         bool
+	psk           string
+	remoteAddress string
+	snapshotName  string
 )
 
 var envs = make(map[string]string)
@@ -34,7 +35,7 @@ var restoreCmd = &cobra.Command{
 		}
 		for _, a := range args {
 			fmt.Printf("Restoring `%s'...\n", a)
-			err = c.RestoreVolume(a, force)
+			err = c.RestoreVolume(a, force, snapshotName)
 			if err != nil {
 				log.Errorf("failed to restore volume: %s", err)
 				return
@@ -48,23 +49,37 @@ var restoreCmd = &cobra.Command{
 		for _, a := range args {
 			for _, v := range volumes {
 				if v.ID == a {
-					tbl, err := prettytable.NewTable([]prettytable.Column{
-						{},
-						{},
-					}...)
+					tbl, err := prettytable.NewTable(
+						[]prettytable.Column{
+							{},
+							{},
+						}...,
+					)
 					if err != nil {
 						log.WithFields(log.Fields{
 							"volume":   v.Name,
 							"hostname": v.Hostname,
-						}).Errorf("failed to format output: %s", err)
+						}).Errorf(
+							"failed to format output: %s",
+							err,
+						)
 						return
 					}
 					tbl.Separator = "\t"
 					fmt.Printf("ID: %s\n", v.ID)
 					fmt.Printf("Name: %s\n", v.Name)
-					fmt.Printf("Mountpoint: %s\n", v.Mountpoint)
-					fmt.Printf("Backup date: %s\n", v.LastBackupDate)
-					fmt.Printf("Backup status: %s\n", v.LastBackupStatus)
+					fmt.Printf(
+						"Mountpoint: %s\n",
+						v.Mountpoint,
+					)
+					fmt.Printf(
+						"Backup date: %s\n",
+						v.LastBackupDate,
+					)
+					fmt.Printf(
+						"Backup status: %s\n",
+						v.LastBackupStatus,
+					)
 					fmt.Printf("Logs:\n")
 					for stepKey, stepValue := range v.Logs {
 						tbl.AddRow(stepKey, stepValue)
@@ -77,11 +92,36 @@ var restoreCmd = &cobra.Command{
 }
 
 func init() {
-	restoreCmd.Flags().StringVarP(&remoteAddress, "remote.address", "", "http://127.0.0.1:8182", "Address of the remote Volback server.")
+	restoreCmd.Flags().StringVarP(
+		&remoteAddress,
+		"remote.address",
+		"",
+		"http://127.0.0.1:8182",
+		"Address of the remote Volback server.",
+	)
 	envs["VOLBACK_REMOTE_ADDRESS"] = "remote.address"
-	restoreCmd.Flags().StringVarP(&psk, "server.psk", "", "", "Pre-shared key.")
+	restoreCmd.Flags().StringVarP(
+		&psk,
+		"server.psk",
+		"",
+		"",
+		"Pre-shared key.",
+	)
 	envs["VOLBACK_SERVER_PSK"] = "server.psk"
-	restoreCmd.Flags().BoolVarP(&force, "force", "", false, "Force restore by removing locks.")
+	restoreCmd.Flags().BoolVarP(
+		&force,
+		"force",
+		"",
+		false,
+		"Force restore by removing locks.",
+	)
+	restoreCmd.Flags().StringVarP(
+		&snapshotName,
+		"snapshot",
+		"s",
+		"latest",
+		"Name of snapshot to restore",
+	)
 	cmd.SetValuesFromEnv(envs, restoreCmd.Flags())
 	cmd.RootCmd.AddCommand(restoreCmd)
 }

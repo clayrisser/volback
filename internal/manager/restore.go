@@ -15,7 +15,12 @@ import (
 	"time"
 )
 
-func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {
+func restoreVolume(
+	m *Manager,
+	v *volume.Volume,
+	force bool,
+	snapshotName string,
+) (err error) {
 	v.Mux.Lock()
 	defer v.Mux.Unlock()
 	useLogReceiver := false
@@ -43,6 +48,8 @@ func restoreVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		v.Mountpoint + "/" + v.BackupDir,
 		"-r",
 		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		"-s",
+		snapshotName,
 		"--host",
 		m.Orchestrator.GetPath(v),
 	}

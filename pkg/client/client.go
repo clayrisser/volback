@@ -9,11 +9,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/codejamninja/volback/pkg/volume"
 	"io/ioutil"
 	"net/http"
 	"strconv"
-
-	"github.com/codejamninja/volback/pkg/volume"
 )
 
 // Client contains informations needed to connect to a Volback API
@@ -63,10 +62,27 @@ func (c *Client) BackupVolume(volumeName string, force bool) (err error) {
 }
 
 // RestoreVolume requests a restore of a volume
-func (c *Client) RestoreVolume(volumeName string, force bool) (err error) {
-	err = c.newRequest(nil, "POST", fmt.Sprintf("/restore/%s?force=%s", volumeName, strconv.FormatBool(force)), "")
+func (c *Client) RestoreVolume(
+	volumeName string,
+	force bool,
+	snapshotName string,
+) (err error) {
+	err = c.newRequest(
+		nil,
+		"POST",
+		fmt.Sprintf(
+			"/restore/%s/%s?force=%s",
+			volumeName,
+			snapshotName,
+			strconv.FormatBool(force),
+		),
+		"",
+	)
 	if err != nil {
-		err = fmt.Errorf("failed to connect to the remote Volback instance: %s", err)
+		err = fmt.Errorf(
+			"failed to connect to the remote Volback instance: %s",
+			err,
+		)
 		return
 	}
 	return

@@ -59,7 +59,14 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 }
 
 // Restore runs Restic commands to restore backed up data to a new volume
-func Restore(targetURL, backupPath, hostname string, force bool, logReceiver string) {
+func Restore(
+	targetURL,
+	backupPath,
+	hostname string,
+	force bool,
+	logReceiver string,
+	snapshotName string,
+) {
 	e := &engine.Engine{
 		DefaultArgs: []string{
 			"--no-cache",
@@ -69,16 +76,23 @@ func Restore(targetURL, backupPath, hostname string, force bool, logReceiver str
 		},
 		Output: make(map[string]utils.OutputFormat),
 	}
-	output := e.Restore(backupPath, hostname, force)
+	output := e.Restore(backupPath, hostname, force, snapshotName)
 	if logReceiver != "" {
 		data := `{"data":` + output + `}`
-		req, err := http.NewRequest("POST", logReceiver, bytes.NewBuffer([]byte(data)))
+		req, err := http.NewRequest(
+			"POST",
+			logReceiver,
+			bytes.NewBuffer([]byte(data)),
+		)
 		if err != nil {
 			log.Errorf("failed to build new request: %s\n", err)
 			return
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+os.Getenv("VOLBACK_SERVER_PSK"))
+		req.Header.Set(
+			"Authorization",
+			"Bearer "+os.Getenv("VOLBACK_SERVER_PSK"),
+		)
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {

@@ -25,15 +25,46 @@ type Server struct {
 // StartServer starts the API server
 func (m *Manager) StartServer() (err error) {
 	router := mux.NewRouter().StrictSlash(true)
-	router.Handle("/backup/{volumeID}/logs", m.handleAPIRequest(http.HandlerFunc(m.getBackupLogs)))
-	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume))).Queries("force", "{force}")
-	router.Handle("/info", m.handleAPIRequest(http.HandlerFunc(m.info)))
-	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
-	router.Handle("/ping", m.handleAPIRequest(http.HandlerFunc(m.ping)))
-	router.Handle("/restic/{volumeID}", m.handleAPIRequest(http.HandlerFunc(m.runRawCommand)))
-	router.Handle("/restore/{volumeID}/logs", m.handleAPIRequest(http.HandlerFunc(m.getRestoreLogs)))
-	router.Handle("/restore/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.restoreVolume))).Queries("force", "{force}")
-	router.Handle("/volumes", m.handleAPIRequest(http.HandlerFunc(m.getVolumes)))
+	router.Handle(
+		"/backup/{volumeID}/logs",
+		m.handleAPIRequest(http.HandlerFunc(m.getBackupLogs)),
+	)
+	router.Handle(
+		"/backup/{volumeName}",
+		m.handleAPIRequest(http.HandlerFunc(m.backupVolume)),
+	).Queries("force", "{force}")
+	router.Handle(
+		"/info",
+		m.handleAPIRequest(http.HandlerFunc(m.info)),
+	)
+	router.Handle(
+		"/metrics",
+		promhttp.Handler(),
+	).Methods("GET")
+	router.Handle(
+		"/ping",
+		m.handleAPIRequest(http.HandlerFunc(m.ping)),
+	)
+	router.Handle(
+		"/restic/{volumeID}",
+		m.handleAPIRequest(http.HandlerFunc(m.runRawCommand)),
+	)
+	router.Handle(
+		"/restore/{volumeID}/logs",
+		m.handleAPIRequest(http.HandlerFunc(m.getRestoreLogs)),
+	)
+	router.Handle(
+		"/restore/{volumeName}",
+		m.handleAPIRequest(http.HandlerFunc(m.restoreVolume)),
+	).Queries("force", "{force}")
+	router.Handle(
+		"/restore/{volumeName}/{snapshotName}",
+		m.handleAPIRequest(http.HandlerFunc(m.restoreVolume)),
+	).Queries("force", "{force}")
+	router.Handle(
+		"/volumes",
+		m.handleAPIRequest(http.HandlerFunc(m.getVolumes)),
+	)
 	log.Infof("Listening on %s", m.Server.Address)
 	log.Fatal(http.ListenAndServe(m.Server.Address, router))
 	return
@@ -88,7 +119,11 @@ func (m *Manager) restoreVolume(w http.ResponseWriter, r *http.Request) {
 		force = false
 		err = nil
 	}
-	err = m.RestoreVolume(params["volumeName"], force)
+	snapshotName := "latest"
+	if _, ok := params["snapshotName"]; ok {
+		snapshotName = params["snapshotName"]
+	}
+	err = m.RestoreVolume(params["volumeName"], force, snapshotName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - Internal server error"))

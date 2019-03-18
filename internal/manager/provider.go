@@ -7,11 +7,10 @@ package manager
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/BurntSushi/toml"
 	"github.com/codejamninja/volback/pkg/orchestrators"
 	"github.com/codejamninja/volback/pkg/volume"
+	"strings"
 )
 
 // Providers stores the list of available providers

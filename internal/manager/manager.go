@@ -7,15 +7,13 @@ package manager
 
 import (
 	"fmt"
-	"sync"
-	"time"
-
 	log "github.com/Sirupsen/logrus"
-
 	"github.com/codejamninja/volback/internal/engine"
 	"github.com/codejamninja/volback/internal/utils"
 	"github.com/codejamninja/volback/pkg/orchestrators"
 	"github.com/codejamninja/volback/pkg/volume"
+	"sync"
+	"time"
 )
 
 // Orchestrators groups the parameters of all supported orchestrators in one structure
@@ -226,17 +224,23 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 }
 
 // RestoreVolume does a restore of a volume
-func (m *Manager) RestoreVolume(volumeID string, force bool) (err error) {
+func (m *Manager) RestoreVolume(
+	volumeID string,
+	force bool,
+	snapshotName string,
+) (err error) {
 	for _, v := range m.Volumes {
 		if v.ID == volumeID {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
 				"hostname": v.Hostname,
 			}).Debug("Restore manually requested.")
-
-			err = restoreVolume(m, v, force)
+			err = restoreVolume(m, v, force, snapshotName)
 			if err != nil {
-				err = fmt.Errorf("failed to restore volume: %s", err)
+				err = fmt.Errorf(
+					"failed to restore volume: %s",
+					err,
+				)
 				return
 			}
 		}

@@ -66,7 +66,7 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 }
 
 // Restore performs the restore of the passed volume
-func (r *Engine) Restore(backupPath, hostname string, force bool) string {
+func (r *Engine) Restore(backupPath, hostname string, force bool, snapshotName string) string {
 	var err error
 	if force {
 		err = r.unlockRepository()
@@ -74,7 +74,7 @@ func (r *Engine) Restore(backupPath, hostname string, force bool) string {
 			return utils.ReturnFormattedOutput(r.Output)
 		}
 	}
-	err = r.restoreVolume(hostname, backupPath)
+	err = r.restoreVolume(hostname, backupPath, snapshotName)
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
@@ -142,7 +142,11 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 	return
 }
 
-func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
+func (r *Engine) restoreVolume(
+	hostname,
+	backupPath string,
+	snapshotName string,
+) (err error) {
 	rc := 0
 	output, err := exec.Command(
 		"restic",
@@ -168,7 +172,7 @@ func (r *Engine) restoreVolume(hostname, backupPath string) (err error) {
 				"--host",
 				hostname,
 				"restore",
-				"latest",
+				snapshotName,
 				"--target",
 				backupPath,
 			}...,
