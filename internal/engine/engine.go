@@ -8,9 +8,11 @@ package engine
 import (
 	"encoding/json"
 	"github.com/codejamninja/volback/internal/utils"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -66,7 +68,12 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 }
 
 // Restore performs the restore of the passed volume
-func (r *Engine) Restore(backupPath, hostname string, force bool, snapshotName string) string {
+func (r *Engine) Restore(
+	backupPath,
+	hostname string,
+	force bool,
+	snapshotName string,
+) string {
 	var err error
 	if force {
 		err = r.unlockRepository()
@@ -152,7 +159,7 @@ func (r *Engine) restoreVolume(
 		"restic",
 		append(
 			r.DefaultArgs,
-			[]string{"--host", hostname, "ls", "latest"}...,
+			[]string{"--host", hostname, "ls", snapshotName}...,
 		)...,
 	).CombinedOutput()
 	type Header struct {
@@ -178,17 +185,18 @@ func (r *Engine) restoreVolume(
 			}...,
 		)...,
 	).CombinedOutput()
-	origionalBackupPath := backupPath + header.Paths[0]
-	files, err := ioutil.ReadDir(origionalBackupPath)
+	origionalBackupPath := header.Paths[0]
+	files, err := ioutil.ReadDir(backupPath + origionalBackupPath)
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
 	for _, f := range files {
 		os.Rename(
-			origionalBackupPath+"/"+f.Name(),
+			backupPath+origionalBackupPath+"/"+f.Name(),
 			backupPath+"/"+f.Name(),
 		)
 	}
+	err = r.removeEmptyDir(backupPath, origionalBackupPath)
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -198,6 +206,43 @@ func (r *Engine) restoreVolume(
 	}
 	err = nil
 	return
+}
+
+func (r *Engine) removeEmptyDir(parentPath string, cleanPath string) (err error) {
+	match := ""
+	re := regexp.MustCompile(`((\\\/)|[^\/])+$`)
+	if len(re.FindStringIndex(cleanPath)) > 0 {
+		match = re.FindString(cleanPath)
+	}
+	fullCleanPath := parentPath + cleanPath
+	fileInfo, err := os.Stat(fullCleanPath)
+	if err != nil {
+		return err
+	}
+	if !fileInfo.IsDir() {
+		return nil
+	}
+	f, err := os.Open(fullCleanPath)
+	if err != nil {
+		return err
+	}
+	_, err = f.Readdir(1)
+	if err != io.EOF {
+		return nil
+	}
+	f.Close()
+	err = os.Remove(fullCleanPath)
+	if err != nil {
+		return err
+	}
+	cleanPath = cleanPath[0 : len(cleanPath)-len(match)-1]
+	if len(cleanPath) > 0 {
+		err = r.removeEmptyDir(parentPath, cleanPath)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *Engine) forget() (err error) {
