@@ -10,12 +10,15 @@ import (
 	"github.com/codejamninja/volback/internal/utils"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
 	"time"
 )
+
+var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // Engine stores informations to use Restic backup engine
 type Engine struct {
@@ -155,6 +158,109 @@ func (r *Engine) restoreVolume(
 	snapshotName string,
 ) (err error) {
 	rc := 0
+	origionalBackupPath := r.getOrigionalBackupPath(
+		hostname,
+		backupPath,
+		snapshotName,
+	)
+	workingPath, err := r.createRandomFolder(backupPath)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	output, err := exec.Command(
+		"restic",
+		append(
+			r.DefaultArgs,
+			[]string{
+				"--host",
+				hostname,
+				"restore",
+				snapshotName,
+				"--target",
+				workingPath,
+			}...,
+		)...,
+	).CombinedOutput()
+	restoreDumpPath := workingPath + origionalBackupPath
+	files, err := ioutil.ReadDir(restoreDumpPath)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	collisionPath := ""
+	for _, f := range files {
+		restorePath := backupPath + "/" + f.Name()
+		if restorePath == workingPath {
+			// tmpRandomBackupPath, err :=
+			// 	r.createRandomFolder(randomBackupPath)
+			// if err != nil {
+			// 	rc = utils.HandleExitCode(err)
+			// }
+			// restorePath = tmpRandomBackupPath + "/" + f.Name()
+			// randomBackupPathCollision = restorePath
+		} else {
+			if _, err := os.Stat(restorePath); !os.IsNotExist(err) {
+				err = os.RemoveAll(restorePath)
+				if err != nil {
+					rc = utils.HandleExitCode(err)
+				}
+			}
+		}
+		os.Rename(
+			restoreDumpPath+"/"+f.Name(),
+			restorePath,
+		)
+	}
+	err = r.removeEmptyDir(backupPath, restoreDumpPath)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	if len(collisionPath) > 0 {
+		// tmpBackupPath, err :=
+		// 	r.createRandomFolder(backupPath)
+		// if err != nil {
+		// 	rc = utils.HandleExitCode(err)
+		// }
+		// collisionPath := tmpBackupPath + "/collision"
+		// os.Rename(
+		// 	randomBackupPathCollision,
+		// 	collisionPath,
+		// )
+		// err = os.MkdirAll(randomBackupPathCollision, 0700)
+		// if err != nil {
+		// 	rc = utils.HandleExitCode(err)
+		// }
+		// err = r.removeEmptyDir(
+		// 	backupPath,
+		// 	randomBackupPathCollision[len(backupPath):],
+		// )
+		// if err != nil {
+		// 	rc = utils.HandleExitCode(err)
+		// }
+		// os.Rename(
+		// 	collisionPath,
+		// 	randomBackupPath,
+		// )
+		// err = r.removeEmptyDir(
+		// 	backupPath,
+		// 	collisionPath[len(backupPath):],
+		// )
+		// if err != nil {
+		// 	rc = utils.HandleExitCode(err)
+		// }
+	}
+	r.Output["restore"] = utils.OutputFormat{
+		Stdout:   string(output),
+		ExitCode: rc,
+	}
+	err = nil
+	return
+}
+
+func (r *Engine) getOrigionalBackupPath(
+	hostname,
+	backupPath string,
+	snapshotName string,
+) string {
 	output, err := exec.Command(
 		"restic",
 		append(
@@ -169,46 +275,37 @@ func (r *Engine) restoreVolume(
 	var header Header
 	err = json.Unmarshal(headerJson, &header)
 	if err != nil {
-		return
+		return "/"
 	}
-	output, err = exec.Command(
-		"restic",
-		append(
-			r.DefaultArgs,
-			[]string{
-				"--host",
-				hostname,
-				"restore",
-				snapshotName,
-				"--target",
-				backupPath,
-			}...,
-		)...,
-	).CombinedOutput()
-	origionalBackupPath := header.Paths[0]
-	files, err := ioutil.ReadDir(backupPath + origionalBackupPath)
-	if err != nil {
-		rc = utils.HandleExitCode(err)
-	}
-	for _, f := range files {
-		os.Rename(
-			backupPath+origionalBackupPath+"/"+f.Name(),
-			backupPath+"/"+f.Name(),
-		)
-	}
-	err = r.removeEmptyDir(backupPath, origionalBackupPath)
-	if err != nil {
-		rc = utils.HandleExitCode(err)
-	}
-	r.Output["restore"] = utils.OutputFormat{
-		Stdout:   string(output),
-		ExitCode: rc,
-	}
-	err = nil
-	return
+	return header.Paths[0]
 }
 
-func (r *Engine) removeEmptyDir(parentPath string, cleanPath string) (err error) {
+func (r *Engine) createRandomFolder(parentPath string) (string, error) {
+	const charset = "abcdefghijklmnopqrstuvwxyz" +
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	folderName := make([]byte, 16)
+	for i := range folderName {
+		folderName[i] = charset[seededRand.Intn(len(charset))]
+	}
+	randomFolderPath := parentPath + "/" + string(folderName)
+	if _, err := os.Stat(randomFolderPath); !os.IsNotExist(err) {
+		randomFolderPath, err = r.createRandomFolder(parentPath)
+		if err != nil {
+			return "", err
+		}
+	}
+	err := os.MkdirAll(randomFolderPath, 0700)
+	if err != nil {
+		return "", err
+	}
+	return randomFolderPath, nil
+}
+
+func (r *Engine) removeEmptyDir(parentPath string, cleanPath string) error {
+	if len(cleanPath) >= len(parentPath) &&
+		parentPath == cleanPath[:len(parentPath)] {
+		cleanPath = cleanPath[len(parentPath):]
+	}
 	match := ""
 	re := regexp.MustCompile(`((\\\/)|[^\/])+$`)
 	if len(re.FindStringIndex(cleanPath)) > 0 {
