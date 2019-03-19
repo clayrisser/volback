@@ -8,17 +8,12 @@ package engine
 import (
 	"encoding/json"
 	"github.com/codejamninja/volback/internal/utils"
-	"io"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 )
-
-var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // Engine stores informations to use Restic backup engine
 type Engine struct {
@@ -163,7 +158,11 @@ func (r *Engine) restoreVolume(
 		backupPath,
 		snapshotName,
 	)
-	workingPath, err := r.createRandomFolder(backupPath)
+	workingPath, err := utils.GetRandomFolder(backupPath)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	err = os.MkdirAll(workingPath, 0700)
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -197,20 +196,20 @@ func (r *Engine) restoreVolume(
 			// }
 			// restorePath = tmpRandomBackupPath + "/" + f.Name()
 			// randomBackupPathCollision = restorePath
-		} else {
-			if _, err := os.Stat(restorePath); !os.IsNotExist(err) {
-				err = os.RemoveAll(restorePath)
-				if err != nil {
-					rc = utils.HandleExitCode(err)
-				}
-			}
 		}
-		os.Rename(
+		err = utils.MergeDirectories(
 			restoreDumpPath+"/"+f.Name(),
 			restorePath,
 		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.RemoveAll(restoreDumpPath + "/" + f.Name())
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
 	}
-	err = r.removeEmptyDir(backupPath, restoreDumpPath)
+	err = utils.RemoveEmptyDir(backupPath, restoreDumpPath)
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -278,68 +277,6 @@ func (r *Engine) getOrigionalBackupPath(
 		return "/"
 	}
 	return header.Paths[0]
-}
-
-func (r *Engine) createRandomFolder(parentPath string) (string, error) {
-	const charset = "abcdefghijklmnopqrstuvwxyz" +
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	folderName := make([]byte, 16)
-	for i := range folderName {
-		folderName[i] = charset[seededRand.Intn(len(charset))]
-	}
-	randomFolderPath := parentPath + "/" + string(folderName)
-	if _, err := os.Stat(randomFolderPath); !os.IsNotExist(err) {
-		randomFolderPath, err = r.createRandomFolder(parentPath)
-		if err != nil {
-			return "", err
-		}
-	}
-	err := os.MkdirAll(randomFolderPath, 0700)
-	if err != nil {
-		return "", err
-	}
-	return randomFolderPath, nil
-}
-
-func (r *Engine) removeEmptyDir(parentPath string, cleanPath string) error {
-	if len(cleanPath) >= len(parentPath) &&
-		parentPath == cleanPath[:len(parentPath)] {
-		cleanPath = cleanPath[len(parentPath):]
-	}
-	match := ""
-	re := regexp.MustCompile(`((\\\/)|[^\/])+$`)
-	if len(re.FindStringIndex(cleanPath)) > 0 {
-		match = re.FindString(cleanPath)
-	}
-	fullCleanPath := parentPath + cleanPath
-	fileInfo, err := os.Stat(fullCleanPath)
-	if err != nil {
-		return err
-	}
-	if !fileInfo.IsDir() {
-		return nil
-	}
-	f, err := os.Open(fullCleanPath)
-	if err != nil {
-		return err
-	}
-	_, err = f.Readdir(1)
-	if err != io.EOF {
-		return nil
-	}
-	f.Close()
-	err = os.Remove(fullCleanPath)
-	if err != nil {
-		return err
-	}
-	cleanPath = cleanPath[0 : len(cleanPath)-len(match)-1]
-	if len(cleanPath) > 0 {
-		err = r.removeEmptyDir(parentPath, cleanPath)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (r *Engine) forget() (err error) {
