@@ -159,6 +159,7 @@ func (r *Engine) restoreVolume(
 		snapshotName,
 	)
 	workingPath, err := utils.GetRandomFilePath(backupPath)
+	workingPath = strings.ReplaceAll(workingPath, "//", "/")
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}

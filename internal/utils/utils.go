@@ -96,43 +96,43 @@ func GetRandomFilePath(parentPath string) (string, error) {
 	return randomFilePath, nil
 }
 
-func MergePaths(sourceDir string, targetDir string) error {
-	sourceFInfo, err := os.Stat(sourceDir)
+func MergePaths(rootSourcePath string, rootTargetDir string) error {
+	rootSourceFInfo, err := os.Stat(rootSourcePath)
 	if err != nil {
 		return err
 	}
-	if !sourceFInfo.IsDir() {
-		err = CopyFile(sourceDir, targetDir)
+	if !rootSourceFInfo.IsDir() {
+		err = CopyFile(rootSourcePath, rootTargetDir)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
-	targetFInfo, err := os.Stat(targetDir)
+	rootTargetFInfo, err := os.Stat(rootTargetDir)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
 	} else {
-		if !targetFInfo.IsDir() {
-			err = os.Remove(targetDir)
+		if !rootTargetFInfo.IsDir() {
+			err = os.Remove(rootTargetDir)
 			if err != nil {
 				return err
 			}
 		}
 	}
 	err = filepath.Walk(
-		sourceDir,
+		rootSourcePath,
 		func(
 			sourcePath string,
 			sourceFInfo os.FileInfo,
 			err error,
 		) error {
-			sharedPath := sourcePath[len(sourceDir):]
+			sharedPath := sourcePath[len(rootSourcePath):]
 			if err != nil {
 				return err
 			}
-			targetPath := strings.ReplaceAll(targetDir+"/"+sharedPath, "//", "/")
+			targetPath := strings.ReplaceAll(rootTargetDir+"/"+sharedPath, "//", "/")
 			if sourceFInfo.IsDir() {
 				targetFInfo, err := os.Stat(targetPath)
 				if err != nil {
