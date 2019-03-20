@@ -188,22 +188,24 @@ func (r *Engine) restoreVolume(
 	collisionName := ""
 	for _, f := range files {
 		fileName := f.Name()
-		restoreSubPath := backupPath + "/" + fileName
+		restoreSubPath := strings.ReplaceAll(backupPath+"/"+fileName, "//", "/")
 		if restoreSubPath == workingPath {
-			collisionName, err := utils.GetRandomFileName(workingPath)
+			collisionName, err = utils.GetRandomFileName(workingPath)
 			if err != nil {
 				rc = utils.HandleExitCode(err)
 			}
-			restoreSubPath = workingPath + "/" + collisionName
+			restoreSubPath = strings.ReplaceAll(workingPath+"/"+collisionName, "//", "/")
 		}
-		err = utils.MergeDirectories(
-			restoreDumpPath+"/"+fileName,
+		err = utils.MergePaths(
+			strings.ReplaceAll(restoreDumpPath+"/"+fileName, "//", "/"),
 			restoreSubPath,
 		)
 		if err != nil {
 			rc = utils.HandleExitCode(err)
 		}
-		err = os.RemoveAll(restoreDumpPath + "/" + fileName)
+		err = os.RemoveAll(
+			strings.ReplaceAll(restoreDumpPath+"/"+fileName, "//", "/"),
+		)
 		if err != nil {
 			rc = utils.HandleExitCode(err)
 		}
@@ -221,13 +223,18 @@ func (r *Engine) restoreVolume(
 			rc = utils.HandleExitCode(err)
 		}
 		err = os.Rename(
-			tmpWorkingPath+"/"+collisionName,
+			strings.ReplaceAll(tmpWorkingPath+"/"+collisionName, "//", "/"),
 			workingPath,
 		)
 		if err != nil {
 			rc = utils.HandleExitCode(err)
 		}
 		err = os.RemoveAll(tmpWorkingPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+	} else {
+		err = os.RemoveAll(workingPath)
 		if err != nil {
 			rc = utils.HandleExitCode(err)
 		}

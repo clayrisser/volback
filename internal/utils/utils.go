@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -75,7 +76,7 @@ func GetRandomString(length int) string {
 
 func GetRandomFileName(parentPath string) (string, error) {
 	randomFileName := GetRandomString(16)
-	randomFilePath := parentPath + "/" + randomFileName
+	randomFilePath := strings.ReplaceAll(parentPath+"/"+randomFileName, "//", "/")
 	_, err := os.Stat(randomFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -91,11 +92,11 @@ func GetRandomFilePath(parentPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	randomFilePath := parentPath + "/" + randomFileName
+	randomFilePath := strings.ReplaceAll(parentPath+"/"+randomFileName, "//", "/")
 	return randomFilePath, nil
 }
 
-func MergeDirectories(sourceDir string, targetDir string) error {
+func MergePaths(sourceDir string, targetDir string) error {
 	err := filepath.Walk(
 		sourceDir,
 		func(
@@ -107,7 +108,7 @@ func MergeDirectories(sourceDir string, targetDir string) error {
 			if err != nil {
 				return err
 			}
-			targetPath := targetDir + sharedPath
+			targetPath := strings.ReplaceAll(targetDir+"/"+sharedPath, "//", "/")
 			if sourceFInfo.IsDir() {
 				targetFInfo, err := os.Stat(targetPath)
 				if err != nil {
