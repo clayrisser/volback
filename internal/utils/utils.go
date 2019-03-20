@@ -7,13 +7,11 @@ package utils
 
 import (
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"syscall"
 	"time"
 )
@@ -65,48 +63,6 @@ func HandleExitCode(err error) int {
 	return 0
 }
 
-// Recursively removes empty directory
-func RemoveEmptyDir(parentPath string, cleanPath string) error {
-	if len(cleanPath) >= len(parentPath) &&
-		parentPath == cleanPath[:len(parentPath)] {
-		cleanPath = cleanPath[len(parentPath):]
-	}
-	match := ""
-	re := regexp.MustCompile(`((\\\/)|[^\/])+$`)
-	if len(re.FindStringIndex(cleanPath)) > 0 {
-		match = re.FindString(cleanPath)
-	}
-	fullCleanPath := parentPath + cleanPath
-	fileInfo, err := os.Stat(fullCleanPath)
-	if err != nil {
-		return err
-	}
-	if !fileInfo.IsDir() {
-		return nil
-	}
-	f, err := os.Open(fullCleanPath)
-	if err != nil {
-		return err
-	}
-	_, err = f.Readdir(1)
-	if err != io.EOF {
-		return nil
-	}
-	f.Close()
-	err = os.Remove(fullCleanPath)
-	if err != nil {
-		return err
-	}
-	cleanPath = cleanPath[0 : len(cleanPath)-len(match)-1]
-	if len(cleanPath) > 0 {
-		err = RemoveEmptyDir(parentPath, cleanPath)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func GetRandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz" +
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -117,16 +73,26 @@ func GetRandomString(length int) string {
 	return string(stringByte)
 }
 
-func GetRandomFolder(parentPath string) (string, error) {
-	folderName := GetRandomString(16)
-	randomFolderPath := parentPath + "/" + string(folderName)
-	if _, err := os.Stat(randomFolderPath); !os.IsNotExist(err) {
-		randomFolderPath, err = GetRandomFolder(parentPath)
-		if err != nil {
-			return "", err
+func GetRandomFileName(parentPath string) (string, error) {
+	randomFileName := GetRandomString(16)
+	randomFilePath := parentPath + "/" + randomFileName
+	_, err := os.Stat(randomFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return randomFileName, nil
 		}
+		return "", err
 	}
-	return randomFolderPath, nil
+	return GetRandomFileName(parentPath)
+}
+
+func GetRandomFilePath(parentPath string) (string, error) {
+	randomFileName, err := GetRandomFileName(parentPath)
+	if err != nil {
+		return "", err
+	}
+	randomFilePath := parentPath + "/" + randomFileName
+	return randomFilePath, nil
 }
 
 func MergeDirectories(sourceDir string, targetDir string) error {

@@ -158,7 +158,7 @@ func (r *Engine) restoreVolume(
 		backupPath,
 		snapshotName,
 	)
-	workingPath, err := utils.GetRandomFolder(backupPath)
+	workingPath, err := utils.GetRandomFilePath(backupPath)
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
@@ -185,67 +185,52 @@ func (r *Engine) restoreVolume(
 	if err != nil {
 		rc = utils.HandleExitCode(err)
 	}
-	collisionPath := ""
+	collisionName := ""
 	for _, f := range files {
-		restorePath := backupPath + "/" + f.Name()
-		if restorePath == workingPath {
-			// tmpRandomBackupPath, err :=
-			// 	r.createRandomFolder(randomBackupPath)
-			// if err != nil {
-			// 	rc = utils.HandleExitCode(err)
-			// }
-			// restorePath = tmpRandomBackupPath + "/" + f.Name()
-			// randomBackupPathCollision = restorePath
+		fileName := f.Name()
+		restoreSubPath := backupPath + "/" + fileName
+		if restoreSubPath == workingPath {
+			collisionName, err := utils.GetRandomFileName(workingPath)
+			if err != nil {
+				rc = utils.HandleExitCode(err)
+			}
+			restoreSubPath = workingPath + "/" + collisionName
 		}
 		err = utils.MergeDirectories(
-			restoreDumpPath+"/"+f.Name(),
-			restorePath,
+			restoreDumpPath+"/"+fileName,
+			restoreSubPath,
 		)
 		if err != nil {
 			rc = utils.HandleExitCode(err)
 		}
-		err = os.RemoveAll(restoreDumpPath + "/" + f.Name())
+		err = os.RemoveAll(restoreDumpPath + "/" + fileName)
 		if err != nil {
 			rc = utils.HandleExitCode(err)
 		}
 	}
-	err = utils.RemoveEmptyDir(backupPath, restoreDumpPath)
-	if err != nil {
-		rc = utils.HandleExitCode(err)
-	}
-	if len(collisionPath) > 0 {
-		// tmpBackupPath, err :=
-		// 	r.createRandomFolder(backupPath)
-		// if err != nil {
-		// 	rc = utils.HandleExitCode(err)
-		// }
-		// collisionPath := tmpBackupPath + "/collision"
-		// os.Rename(
-		// 	randomBackupPathCollision,
-		// 	collisionPath,
-		// )
-		// err = os.MkdirAll(randomBackupPathCollision, 0700)
-		// if err != nil {
-		// 	rc = utils.HandleExitCode(err)
-		// }
-		// err = r.removeEmptyDir(
-		// 	backupPath,
-		// 	randomBackupPathCollision[len(backupPath):],
-		// )
-		// if err != nil {
-		// 	rc = utils.HandleExitCode(err)
-		// }
-		// os.Rename(
-		// 	collisionPath,
-		// 	randomBackupPath,
-		// )
-		// err = r.removeEmptyDir(
-		// 	backupPath,
-		// 	collisionPath[len(backupPath):],
-		// )
-		// if err != nil {
-		// 	rc = utils.HandleExitCode(err)
-		// }
+	if len(collisionName) > 0 {
+		tmpWorkingPath, err := utils.GetRandomFilePath(backupPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.Rename(
+			workingPath,
+			tmpWorkingPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.Rename(
+			tmpWorkingPath+"/"+collisionName,
+			workingPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.RemoveAll(tmpWorkingPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
 	}
 	r.Output["restore"] = utils.OutputFormat{
 		Stdout:   string(output),
