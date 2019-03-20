@@ -97,7 +97,31 @@ func GetRandomFilePath(parentPath string) (string, error) {
 }
 
 func MergePaths(sourceDir string, targetDir string) error {
-	err := filepath.Walk(
+	sourceFInfo, err := os.Stat(sourceDir)
+	if err != nil {
+		return err
+	}
+	if !sourceFInfo.IsDir() {
+		err = CopyFile(sourceDir, targetDir)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	targetFInfo, err := os.Stat(targetDir)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else {
+		if !targetFInfo.IsDir() {
+			err = os.Remove(targetDir)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	err = filepath.Walk(
 		sourceDir,
 		func(
 			sourcePath string,
