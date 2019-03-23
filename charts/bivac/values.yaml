@@ -1,6 +1,6 @@
 images:
   bivac:
-    repository: camptocamp/bivac
+    repository: codejamninja/bivac
     tag: 2.0.0
     pullPolicy: IfNotPresent
 

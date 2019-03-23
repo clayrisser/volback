@@ -4,7 +4,7 @@ questions:
 
 # Images
   - variable: images.bivac.repository
-    default: camptocamp/bivac
+    default: codejamninja/bivac
     description: ''
     type: string
     required: true
