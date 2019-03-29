@@ -2,4 +2,7 @@
 hugo/public
 *.out
 coverage
+<<<<<<< HEAD
 /bivac
+=======
+>>>>>>> feature/rancher-2-helm-chart
