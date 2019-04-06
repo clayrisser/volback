@@ -47,6 +47,16 @@ spec:
                 configMapKeyRef:
                   name: {{ template "volback.fullname" . }}
                   key: refresh_time
+            - name: VOLBACK_WHITELIST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "volback.fullname" . }}
+                  key: whitelist
+            - name: VOLBACK_BLACKLIST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "volback.fullname" . }}
+                  key: blacklist
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:

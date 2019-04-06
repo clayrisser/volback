@@ -70,3 +70,17 @@ questions:
     required: true
     label: 'refresh time'
     group: Config
+  - variable: config.whitelist
+    default: ''
+    description: whitelist
+    type: string
+    required: false
+    label: whitelist
+    group: Config
+  - variable: config.blacklist
+    default: ''
+    description: blacklist
+    type: string
+    required: false
+    label: blacklist
+    group: Config

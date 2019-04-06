@@ -7,11 +7,13 @@ images:
 config:
   awsAccessKey: ''
   awsSecretKey: ''
+  blacklist: ''
   forgetArgs: '--keep-last 3'
   refreshTime: 10
   resticPassword: 'volback'
   serverPsk: 'volback'
   targetUrl: ''
+  whitelist: ''
 
 service:
   type: NodePort
