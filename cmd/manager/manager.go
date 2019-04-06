@@ -104,10 +104,10 @@ func init() {
 	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
 	envs["BIVAC_REFRESH_TIME"] = "refresh.time"
 
-	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "camptocamp/bivac:2.0.0", "Whitelist volumes.")
+	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
 	envs["BIVAC_WHITELIST"] = "whitelist"
 
-	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "camptocamp/bivac:2.0.0", "Blacklist volumes.")
+	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["BIVAC_BLACKLIST"] = "blacklist"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
