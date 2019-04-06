@@ -25,12 +25,13 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	providersFile string
-	targetURL     string
-	retryCount    int
-	logServer     string
-	agentImage    string
-	refreshTime   int
+	providersFile    string
+	targetURL        string
+	retryCount       int
+	logServer        string
+	agentImage       string
+	whitelistVolumes string
+	blacklistVolumes string
 )
 var envs = make(map[string]string)
 
@@ -110,6 +111,12 @@ func init() {
 	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
 	envs["VOLBACK_REFRESH_TIME"] = "refresh.time"
 
-	volbackCmd.SetValuesFromEnv(envs, managerCmd.Flags())
-	volbackCmd.RootCmd.AddCommand(managerCmd)
+	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "camptocamp/volback:2.0.0", "Whitelist volumes.")
+	envs["VOLBACK_WHITELIST"] = "whitelist"
+
+	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "camptocamp/volback:2.0.0", "Blacklist volumes.")
+	envs["VOLBACK_BLACKLIST"] = "blacklist"
+
+	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
+	bivacCmd.RootCmd.AddCommand(managerCmd)
 }
