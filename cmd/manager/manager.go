@@ -39,10 +39,6 @@ var managerCmd = &cobra.Command{
 	Use:   "manager",
 	Short: "Start Volback backup manager",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Global variables
-		whitelistVolumes, _ := cmd.Flags().GetString("whitelist")
-		blacklistVolumes, _ := cmd.Flags().GetString("blacklist")
-
 		volumesFilters := volume.Filters{
 			Whitelist: strings.Split(whitelistVolumes, ","),
 			Blacklist: strings.Split(blacklistVolumes, ","),
@@ -111,12 +107,12 @@ func init() {
 	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
 	envs["VOLBACK_REFRESH_TIME"] = "refresh.time"
 
-	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "camptocamp/volback:2.0.0", "Whitelist volumes.")
+	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
 	envs["VOLBACK_WHITELIST"] = "whitelist"
 
-	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "camptocamp/volback:2.0.0", "Blacklist volumes.")
+	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["VOLBACK_BLACKLIST"] = "blacklist"
 
-	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
-	bivacCmd.RootCmd.AddCommand(managerCmd)
+	volbackCmd.SetValuesFromEnv(envs, managerCmd.Flags())
+	volbackCmd.RootCmd.AddCommand(managerCmd)
 }
