@@ -8,6 +8,12 @@ package orchestrators
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"sort"
+	"strings"
+	"time"
+	"unicode/utf8"
+
 	"github.com/codejamninja/volback/pkg/volume"
 	"github.com/jinzhu/copier"
 	apiv1 "k8s.io/api/core/v1"
@@ -17,11 +23,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/remotecommand"
-	"os"
-	"sort"
-	"strings"
-	"time"
-	"unicode/utf8"
 )
 
 // KubernetesConfig stores Kubernetes configuration
@@ -162,10 +163,14 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 	pod, err := o.client.CoreV1().Pods(o.config.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
+<<<<<<< HEAD
 			GenerateName: "volback-agent-",
+=======
+			GenerateName: "bivac-agent-",
 			Labels: map[string]string{
 				"generatedFromPod": os.Getenv("HOSTNAME"),
 			},
+>>>>>>> bivac/master
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:           node,
