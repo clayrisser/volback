@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/codejamninja/volback/pkg/volume"
+	"github.com/jinzhu/copier"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -81,22 +82,30 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 		for _, pvc := range pvcs.Items {
 			v := &volume.Volume{
 				ID:        string(pvc.UID),
+				Logs:      make(map[string]string),
 				Name:      pvc.Name,
 				Namespace: namespace,
-				Logs:      make(map[string]string),
+				RepoName:  pvc.Name,
+				SubPath:   "",
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
-			if len(containers) > 0 {
-				v.HostBind = containers[0].HostID
-				v.Hostname = containers[0].HostID
-				v.Mountpoint = containers[0].Path
-			}
+			containerMap := make(map[string]bool)
 
-			if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
-				continue
+			for i := 0; i < len(containers); i++ {
+				container := containers[i]
+				if _, ok := containerMap[container.Volume.ID]; !ok {
+					v = containers[i].Volume
+					v.HostBind = containers[i].HostID
+					v.Hostname = containers[i].HostID
+					v.Mountpoint = containers[i].Path
+					if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
+						continue
+					}
+					volumes = append(volumes, v)
+				}
+				containerMap[container.Volume.ID] = true
 			}
-			volumes = append(volumes, v)
 		}
 	}
 	return
@@ -150,18 +159,6 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	}
 
 	kvms = append(kvms, kvm)
-
-	// Get current namespace
-	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
-		&clientcmd.ConfigOverrides{},
-	)
-	namespace, _, err := kubeconfig.Namespace()
-	if err != nil {
-		err = fmt.Errorf("failed to get namespace: %s", err)
-		return
-	}
-	o.setNamespace(namespace)
 
 	pod, err := o.client.CoreV1().Pods(o.config.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -230,6 +227,18 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	buf.ReadFrom(readCloser)
 	output = buf.String()
 
+	// Get current namespace
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	namespace, _, err := kubeconfig.Namespace()
+	if err != nil {
+		err = fmt.Errorf("failed to get namespace: %s", err)
+		return
+	}
+	o.setNamespace(namespace)
+
 	return
 }
 
@@ -253,6 +262,8 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 	}
 
 	mapVolClaim := make(map[string]string)
+	containerMap := make(map[string]*volume.MountedVolume)
+	subpathMap := make(map[string]bool)
 
 	for _, pod := range pods.Items {
 		for _, volume := range pod.Spec.Volumes {
@@ -265,17 +276,41 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 			for _, volumeMount := range container.VolumeMounts {
 				if c, ok := mapVolClaim[volumeMount.Name]; ok {
 					if c == v.Name {
-						mv := &volume.MountedVolume{
-							PodID:       pod.Name,
-							ContainerID: container.Name,
-							HostID:      pod.Spec.NodeName,
-							Volume:      v,
-							Path:        volumeMount.MountPath,
+						clonedV := &volume.Volume{}
+						copier.Copy(&clonedV, &v)
+						splitVolumeID := strings.Split(clonedV.ID, ":")
+						if len(splitVolumeID) > 1 {
+							clonedV.SubPath = "/" + splitVolumeID[1]
+						} else if len(clonedV.SubPath) <= 0 && len(volumeMount.SubPath) > 0 {
+							clonedV.ID = v.ID + ":" + volumeMount.SubPath
+							clonedV.SubPath = "/" + volumeMount.SubPath
 						}
-						containers = append(containers, mv)
+						if len(clonedV.SubPath) > 0 {
+							subpathMap[splitVolumeID[0]] = true
+							clonedV.RepoName = v.Name + strings.ReplaceAll(clonedV.SubPath, "/", "_")
+						}
+						if ("/" + volumeMount.SubPath) == clonedV.SubPath {
+							mv := &volume.MountedVolume{
+								ContainerID: container.Name,
+								HostID:      pod.Spec.NodeName,
+								Path:        volumeMount.MountPath,
+								PodID:       pod.Name,
+								Volume:      clonedV,
+							}
+							containerMap[mv.ContainerID+mv.Volume.ID] = mv
+						}
 					}
 				}
 			}
+		}
+	}
+	for _, container := range containerMap {
+		if _, ok := subpathMap[strings.Split(container.Volume.ID, ":")[0]]; ok {
+			if _, ok := containerMap[strings.Split(container.ContainerID+container.Volume.ID, ":")[0]]; !ok {
+				containers = append(containers, container)
+			}
+		} else {
+			containers = append(containers, container)
 		}
 	}
 	return

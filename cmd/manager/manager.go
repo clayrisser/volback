@@ -6,14 +6,12 @@
 package manager
 
 import (
-	"strings"
-
 	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
-
 	volbackCmd "github.com/codejamninja/volback/cmd"
 	"github.com/codejamninja/volback/internal/manager"
 	"github.com/codejamninja/volback/pkg/volume"
+	"github.com/spf13/cobra"
+	"strings"
 )
 
 var (
@@ -32,6 +30,7 @@ var (
 	retryCount    int
 	logServer     string
 	agentImage    string
+	refreshTime   int
 )
 var envs = make(map[string]string)
 
@@ -54,7 +53,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(volbackCmd.Version, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
+		err = manager.Start(volbackCmd.Version, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, refreshTime)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -107,6 +106,9 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "codejamninja/volback:3.0.0", "Agent's Docker image.")
 	envs["VOLBACK_AGENT_IMAGE"] = "agent.image"
+
+	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
+	envs["VOLBACK_REFRESH_TIME"] = "refresh.time"
 
 	volbackCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	volbackCmd.RootCmd.AddCommand(managerCmd)

@@ -7,13 +7,11 @@ package info
 
 import (
 	"fmt"
-	"strings"
-
 	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
-
 	"github.com/codejamninja/volback/cmd"
 	"github.com/codejamninja/volback/pkg/client"
+	"github.com/spf13/cobra"
+	"strings"
 )
 
 var (

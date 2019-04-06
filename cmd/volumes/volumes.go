@@ -7,13 +7,11 @@ package volumes
 
 import (
 	"fmt"
-
 	log "github.com/Sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/tatsushid/go-prettytable"
-
 	"github.com/codejamninja/volback/cmd"
 	"github.com/codejamninja/volback/pkg/client"
+	"github.com/spf13/cobra"
+	"github.com/tatsushid/go-prettytable"
 )
 
 var (
