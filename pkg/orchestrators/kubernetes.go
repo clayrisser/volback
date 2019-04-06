@@ -3,6 +3,7 @@ package orchestrators
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -158,6 +159,9 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	pod, err := o.client.CoreV1().Pods(o.config.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
+			Labels: map[string]string{
+				"generatedFromPod": os.Getenv("HOSTNAME"),
+			},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:           node,

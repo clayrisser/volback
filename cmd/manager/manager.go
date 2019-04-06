@@ -22,12 +22,13 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	providersFile string
-	targetURL     string
-	retryCount    int
-	logServer     string
-	agentImage    string
-	refreshTime   int
+	providersFile    string
+	targetURL        string
+	retryCount       int
+	logServer        string
+	agentImage       string
+	whitelistVolumes string
+	blacklistVolumes string
 )
 var envs = make(map[string]string)
 
@@ -35,10 +36,6 @@ var managerCmd = &cobra.Command{
 	Use:   "manager",
 	Short: "Start Bivac backup manager",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Global variables
-		whitelistVolumes, _ := cmd.Flags().GetString("whitelist")
-		blacklistVolumes, _ := cmd.Flags().GetString("blacklist")
-
 		volumesFilters := volume.Filters{
 			Whitelist: strings.Split(whitelistVolumes, ","),
 			Blacklist: strings.Split(blacklistVolumes, ","),
@@ -106,6 +103,12 @@ func init() {
 
 	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
 	envs["BIVAC_REFRESH_TIME"] = "refresh.time"
+
+	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "camptocamp/bivac:2.0.0", "Whitelist volumes.")
+	envs["BIVAC_WHITELIST"] = "whitelist"
+
+	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "camptocamp/bivac:2.0.0", "Blacklist volumes.")
+	envs["BIVAC_BLACKLIST"] = "blacklist"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)
