@@ -115,7 +115,7 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 				Name:       "toto",
 				Mountpoint: "/toto",
 				Labels: map[string]string{
-					"bivac.ignore": "true",
+					"volback.ignore": "true",
 				},
 			},
 		},
@@ -137,7 +137,7 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 		Name:       "toto",
 		Mountpoint: "/toto",
 		Labels: map[string]string{
-			"bivac.ignore": "true",
+			"volback.ignore": "true",
 		},
 	}, nil).Times(1)
 
@@ -365,7 +365,7 @@ func TestDockerBlacklistedVolume(t *testing.T) {
 			givenVolume: &volume.Volume{
 				Name: "toto",
 				Labels: map[string]string{
-					"bivac.ignore": "true",
+					"volback.ignore": "true",
 				},
 			},
 			givenFilters: volume.Filters{},

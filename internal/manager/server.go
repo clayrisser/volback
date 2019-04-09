@@ -213,9 +213,9 @@ func (m *Manager) ping(w http.ResponseWriter, r *http.Request) {
 
 func setupMetrics(buildInfo utils.BuildInfo) {
 	buildInfoMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: "bivac",
+		Namespace: "volback",
 		Name:      "build_info",
-		Help:      "Bivac build informations",
+		Help:      "Volback build informations",
 	}, []string{"version", "commit_sha", "build_date", "golang_version"})
 	buildInfoMetric.WithLabelValues(buildInfo.Version, buildInfo.CommitSha1, buildInfo.Date, buildInfo.Runtime).Set(1)
 	prometheus.MustRegister(buildInfoMetric)

@@ -15,21 +15,14 @@ build: volback docker
 docker:
 	@docker-compose build
 
-<<<<<<< HEAD
 .PHONY: publish
 publish:
 	@docker-compose push
 
 volback: main.go $(DEPS)
-	CGO_ENABLED=0 GOOS=linux \
-	  go build -a \
-		  -ldflags="-s -X main.version=$(VERSION)" \
-=======
-bivac: main.go $(DEPS)
 	GO111MODULE=on CGO_ENABLED=0 GOOS=linux \
 	  go build -mod=vendor -a \
 		  -ldflags="-s -X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.commitSha1=$(COMMIT_SHA1)" \
->>>>>>> codejamninja/master
 	    -installsuffix cgo -o $@ $<
 	strip $@
 
@@ -44,13 +37,10 @@ lint:
 vet: main.go
 	@go vet $<
 
-<<<<<<< HEAD
 imports: main.go
 	@dep ensure
 	@goimports -d $<
 
-=======
->>>>>>> codejamninja/master
 clean:
 	@rm -f volback
 

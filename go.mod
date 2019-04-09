@@ -1,4 +1,4 @@
-module github.com/camptocamp/bivac
+module github.com/codejamninja/volback
 
 require (
 	cloud.google.com/go v0.36.0 // indirect

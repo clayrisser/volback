@@ -297,7 +297,7 @@ func (o *DockerOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error)
 	return
 }
 
-// RetrieveOrphanAgents returns the list of orphan Bivac agents
+// RetrieveOrphanAgents returns the list of orphan Volback agents
 func (o *DockerOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
 	c, err := o.client.ContainerList(context.Background(), types.ContainerListOptions{})
 	if err != nil {
@@ -306,7 +306,7 @@ func (o *DockerOrchestrator) RetrieveOrphanAgents() (containers map[string]strin
 	}
 
 	for _, container := range c {
-		if !strings.HasPrefix(container.ID, "bivac-agent-") {
+		if !strings.HasPrefix(container.ID, "volback-agent-") {
 			continue
 		}
 
@@ -382,7 +382,7 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters
 	}
 
 	// Check labels
-	if ignored, ok := vol.Labels["bivac.ignore"]; ok && ignored == "true" {
+	if ignored, ok := vol.Labels["volback.ignore"]; ok && ignored == "true" {
 		return true, "ignored", "volume config"
 	}
 
@@ -415,7 +415,7 @@ func (o *DockerOrchestrator) getAdditionalVolumes() (mounts []mount.Mount, err e
 	managerContainer, err := o.client.ContainerInspect(context.Background(), managerHostname)
 	if err != nil {
 		if strings.Contains(err.Error(), "No such container") {
-			// We assume Bivac is running outside the orchestrator
+			// We assume Volback is running outside the orchestrator
 			err = nil
 		} else {
 			err = fmt.Errorf("failed to inspect container: %s", err)

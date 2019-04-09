@@ -79,7 +79,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 		}
 
 		for _, pvc := range pvcs.Items {
-			if backupString, ok := pvc.Annotations["bivac.backup"]; ok {
+			if backupString, ok := pvc.Annotations["volback.backup"]; ok {
 				if volumeFilters.WhitelistAnnotation {
 					if strings.ToLower(backupString) != "true" {
 						continue
@@ -406,7 +406,7 @@ func (o *KubernetesOrchestrator) IsNodeAvailable(hostID string) (ok bool, err er
 	return
 }
 
-// RetrieveOrphanAgents returns the list of orphan Bivac agents
+// RetrieveOrphanAgents returns the list of orphan Volback agents
 func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
 	containers = make(map[string]string)
 	namespaces, err := o.getNamespaces()
@@ -423,7 +423,7 @@ func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]s
 		}
 
 		for _, pod := range pods.Items {
-			if !strings.HasPrefix(pod.Name, "bivac-agent-") {
+			if !strings.HasPrefix(pod.Name, "volback-agent-") {
 				continue
 			}
 			for _, volume := range pod.Spec.Volumes {
@@ -496,7 +496,7 @@ func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFil
 	}
 
 	// Check labels
-	if ignored, ok := vol.Labels["bivac.ignore"]; ok && ignored == "true" {
+	if ignored, ok := vol.Labels["volback.ignore"]; ok && ignored == "true" {
 		return true, "ignored", "volume config"
 	}
 
