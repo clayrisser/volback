@@ -13,7 +13,6 @@ import (
 	"github.com/codejamninja/volback/internal/utils"
 	"github.com/codejamninja/volback/pkg/volume"
 	"os"
-	"strings"
 	"regexp"
 	"time"
 )
@@ -92,8 +91,8 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		}
 	}
 
-	if p.PostCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
+	if p.BackupPostCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.BackupPostCmd, "postcmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
@@ -138,8 +137,8 @@ func (m *Manager) attachOrphanAgent(containerID string, v *volume.Volume) {
 			m.updateBackupLogs(v, agentOutput)
 		}
 	}
-	if p.PostCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
+	if p.BackupPostCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.BackupPostCmd, "postcmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
@@ -197,22 +196,5 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 		v.Metrics.OldestBackupDate.Set(float64(snapshots[0].Time.Unix()))
 	}
 
-	return
-}
-
-// RunResticCommand runs a custom Restic command
-func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
-	e := &engine.Engine{
-		DefaultArgs: []string{
-			"--no-cache",
-			"-r",
-			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
-		},
-		Output: make(map[string]utils.OutputFormat),
-	}
-
-	err = e.RawCommand(cmd)
-
-	output = e.Output["raw"].Stdout
 	return
 }

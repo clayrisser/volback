@@ -13,7 +13,6 @@ import (
 	"github.com/codejamninja/volback/internal/utils"
 	"github.com/codejamninja/volback/pkg/orchestrators"
 	"github.com/codejamninja/volback/pkg/volume"
-	"sync"
 	"time"
 )
 

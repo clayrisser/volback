@@ -8,9 +8,9 @@ package main
 import (
 	"runtime"
 
-	"github.com/camptocamp/volback/cmd"
-	_ "github.com/camptocamp/volback/cmd/all"
-	"github.com/camptocamp/volback/internal/utils"
+	"github.com/codejamninja/volback/cmd"
+	_ "github.com/codejamninja/volback/cmd/all"
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 var (
