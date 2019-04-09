@@ -14,3 +14,4 @@ data:
   refresh_time: {{ .Values.config.refreshTime | quote }}
   target_url: {{ .Values.config.targetUrl | quote }}
   whitelist: {{ .Values.config.whitelist | quote }}
+  whitelist_annotation: {{ .Values.config.whitelistAnnotation | quote }}

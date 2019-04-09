@@ -57,6 +57,11 @@ spec:
                 configMapKeyRef:
                   name: {{ template "volback.fullname" . }}
                   key: blacklist
+            - name: VOLBACK_WHITELIST_ANNOTATION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "volback.fullname" . }}
+                  key: whitelist_annotation
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:

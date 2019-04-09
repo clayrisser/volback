@@ -8,12 +8,13 @@ config:
   awsAccessKey: ''
   awsSecretKey: ''
   blacklist: ''
-  forgetArgs: '--keep-last 3'
+  forgetArgs: '--group-by host --keep-daily 3 --prune'
   refreshTime: 10
   resticPassword: 'volback'
   serverPsk: 'volback'
   targetUrl: ''
   whitelist: ''
+  whitelistAnnotation: true
 
 service:
   type: NodePort
