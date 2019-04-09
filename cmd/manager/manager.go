@@ -22,12 +22,13 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	agentImage    string
+	agentImage       string
 	blacklistVolumes string
-	logServer     string
+	logServer        string
 	providersFile    string
-	retryCount    int
-	targetURL     string
+	refreshTime      int
+	retryCount       int
+	targetURL        string
 	whitelistVolumes string
 )
 var envs = make(map[string]string)

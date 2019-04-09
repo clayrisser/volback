@@ -3,7 +3,6 @@ package manager
 import (
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
