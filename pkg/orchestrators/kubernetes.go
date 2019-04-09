@@ -79,6 +79,17 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 		}
 
 		for _, pvc := range pvcs.Items {
+			if backupString, ok := pvc.Annotations["bivac.backup"]; ok {
+				if volumeFilters.WhitelistAnnotation {
+					if strings.ToLower(backupString) != "true" {
+						continue
+					}
+				} else {
+					if strings.ToLower(backupString) == "false" {
+						continue
+					}
+				}
+			}
 			v := &volume.Volume{
 				ID:        string(pvc.UID),
 				Labels:    pvc.Labels,

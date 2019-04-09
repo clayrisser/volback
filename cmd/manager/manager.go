@@ -25,14 +25,15 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	agentImage       string
-	blacklistVolumes string
-	logServer        string
-	providersFile    string
-	refreshTime      int
-	retryCount       int
-	targetURL        string
-	whitelistVolumes string
+	agentImage          string
+	blacklistVolumes    string
+	logServer           string
+	providersFile       string
+	refreshTime         int
+	retryCount          int
+	targetURL           string
+	whitelistAnnotation bool
+	whitelistVolumes    string
 )
 var envs = make(map[string]string)
 
@@ -41,8 +42,9 @@ var managerCmd = &cobra.Command{
 	Short: "Start Volback backup manager",
 	Run: func(cmd *cobra.Command, args []string) {
 		volumesFilters := volume.Filters{
-			Whitelist: strings.Split(whitelistVolumes, ","),
-			Blacklist: strings.Split(blacklistVolumes, ","),
+			Blacklist:           strings.Split(blacklistVolumes, ","),
+			Whitelist:           strings.Split(whitelistVolumes, ","),
+			WhitelistAnnotation: whitelistAnnotation,
 		}
 
 		o, err := manager.GetOrchestrator(orchestrator, Orchestrators)
@@ -113,6 +115,9 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["VOLBACK_BLACKLIST"] = "blacklist"
+
+	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
+	envs["VOLBACK_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
 	volbackCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	volbackCmd.RootCmd.AddCommand(managerCmd)
