@@ -1,10 +1,12 @@
-# Volback v2.0.0 (https://camptocamp.github.io/volback)
+# Bivac v2.0.0 (https://camptocamp.github.io/bivac)
 # Copyright (c) 2019 Camptocamp
 # Licensed under Apache-2.0 (https://raw.githubusercontent.com/camptocamp/bivac/master/LICENSE)
 # Modifications copyright (c) 2019 Jam Risser <jam@codejam.ninja>
 
 DEPS = $(wildcard */*/*/*.go)
 VERSION = $(shell git describe --always --dirty)
+COMMIT_SHA1 = $(shell git rev-parse HEAD)
+BUILD_DATE = $(shell date +%Y-%m-%d)
 
 all: lint vet test build
 build: volback docker
@@ -18,14 +20,14 @@ publish:
 	@docker-compose push
 
 volback: main.go $(DEPS)
-	CGO_ENABLED=0 GOOS=linux \
-	  go build -a \
-		  -ldflags="-s -X main.version=$(VERSION)" \
+	GO111MODULE=on CGO_ENABLED=0 GOOS=linux \
+	  go build -mod=vendor -a \
+		  -ldflags="-s -X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.commitSha1=$(COMMIT_SHA1)" \
 	    -installsuffix cgo -o $@ $<
 	strip $@
 
 lint:
-	@go get -v golang.org/x/lint/golint
+	@go get -u -v golang.org/x/lint/golint
 	@for file in $$(go list ./... | grep -v '_workspace/' | grep -v 'vendor'); do \
 		export output="$$(golint $${file} | grep -v 'type name will be used as docker.DockerInfo')"; \
 		[ -n "$${output}" ] && echo "$${output}" && export status=1; \
@@ -33,21 +35,15 @@ lint:
 	exit $${status:-0}
 
 vet: main.go
-	@go vet $<
-
-imports: main.go
-	@dep ensure
-	@goimports -d $<
+	go vet $<
 
 clean:
-	@rm -f volback
+	rm -f volback
 
 test:
-	@go test -cover -coverprofile=coverage -v ./...
+	go test -cover -coverprofile=coverage -v ./...
 
-link:
-	@rm -rf $$GOPATH/src/github.com/codejamninja/volback
-	@mkdir -p $$GOPATH/src/github.com/codejamninja
-	@ln -s $(shell pwd) $$GOPATH/src/github.com/codejamninja/volback
+vendor:
+	go mod vendor
 
-.PHONY: all imports lint vet clean test
+.PHONY: all vendor lint vet clean test

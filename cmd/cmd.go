@@ -7,11 +7,12 @@ package cmd
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	"github.com/codejamninja/volback/internal/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"os"
+	log "github.com/Sirupsen/logrus"
 )
 
 var (
@@ -19,8 +20,8 @@ var (
 	whitelist string
 	blacklist string
 
-	// Version is the Volback version (filled by main.go at build time)
-	Version string
+	// BuildInfo contains the Volback build informations (filled by main.go at build time)
+	BuildInfo utils.BuildInfo
 )
 
 var persistentEnvs = make(map[string]string)
@@ -52,8 +53,8 @@ func init() {
 }
 
 // Execute is the main thread, required by Cobra
-func Execute(version string) {
-	Version = version
+func Execute(buildInfo utils.BuildInfo) {
+	BuildInfo = buildInfo
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

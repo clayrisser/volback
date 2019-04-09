@@ -7,6 +7,9 @@ package volumes
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/codejamninja/volback/cmd"
 	"github.com/codejamninja/volback/pkg/client"
@@ -45,6 +48,7 @@ var volumesCmd = &cobra.Command{
 				{Header: "Mountpoint"},
 				{Header: "LastBackupDate"},
 				{Header: "LastBackupStatus"},
+				{Header: "Backing up"},
 			}...)
 			if err != nil {
 				log.Errorf("failed to format output: %s", err)
@@ -53,7 +57,7 @@ var volumesCmd = &cobra.Command{
 			tbl.Separator = "\t"
 
 			for _, v := range volumes {
-				tbl.AddRow(v.ID, v.Name, v.Hostname, v.Mountpoint, v.LastBackupDate, v.LastBackupStatus)
+				tbl.AddRow(v.ID, v.Name, v.Hostname, v.Mountpoint, v.LastBackupDate, v.LastBackupStatus, strconv.FormatBool(v.BackingUp))
 			}
 
 			tbl.Print()
@@ -64,6 +68,7 @@ var volumesCmd = &cobra.Command{
 			for _, v := range volumes {
 				if v.ID == a {
 					tbl, err := prettytable.NewTable([]prettytable.Column{
+						{},
 						{},
 						{},
 					}...)
@@ -83,9 +88,10 @@ var volumesCmd = &cobra.Command{
 					fmt.Printf("Backup date: %s\n", v.LastBackupDate)
 					fmt.Printf("Backup status: %s\n", v.LastBackupStatus)
 					fmt.Printf("Logs:\n")
-					for stepKey, stepValue := range v.Logs {
-						tbl.AddRow(stepKey, stepValue)
-					}
+					tbl.AddRow("", "testInit", strings.Replace(v.Logs["testInit"], "\n", "\n\t\t\t", -1))
+					tbl.AddRow("", "init", strings.Replace(v.Logs["init"], "\n", "\n\t\t\t", -1))
+					tbl.AddRow("", "backup", strings.Replace(v.Logs["backup"], "\n", "\n\t\t\t", -1))
+					tbl.AddRow("", "forget", strings.Replace(v.Logs["forget"], "\n", "\n\t\t\t", -1))
 					tbl.Print()
 				}
 			}

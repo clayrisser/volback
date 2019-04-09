@@ -14,10 +14,14 @@ import (
 	"github.com/codejamninja/volback/pkg/volume"
 	"os"
 	"strings"
+	"regexp"
 	"time"
 )
 
 func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
+
+	v.BackingUp = true
+	defer func() { v.BackingUp = false }()
 
 	v.Mux.Lock()
 	defer v.Mux.Unlock()
@@ -27,11 +31,14 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		useLogReceiver = true
 	}
 
+	v.LastBackupStartDate = time.Now().Format("2006-01-02 15:04:05")
+
 	p, err := m.Providers.GetProvider(m.Orchestrator, v)
 	if err != nil {
 		err = fmt.Errorf("failed to get provider: %s", err)
 		return
 	}
+
 	if p.BackupPreCmd != "" {
 		err = RunCmd(p, m.Orchestrator, v, p.BackupPreCmd, "precmd")
 		if err != nil {
@@ -83,16 +90,56 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		} else {
 			m.updateBackupLogs(v, agentOutput)
 		}
-	} else {
-		if output != "" {
+	}
+
+	if p.PostCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
+		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
 				"hostname": v.Hostname,
-			}).Errorf("failed to send output: %s", output)
+			}).Warningf("failed to run post-command: %s", err)
 		}
 	}
-	if p.BackupPostCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.BackupPostCmd, "postcmd")
+	return
+}
+
+func (m *Manager) attachOrphanAgent(containerID string, v *volume.Volume) {
+	defer func() { v.BackingUp = false }()
+
+	p, err := m.Providers.GetProvider(m.Orchestrator, v)
+	if err != nil {
+		err = fmt.Errorf("failed to get provider: %s", err)
+		return
+	}
+	useLogReceiver := false
+	if m.LogServer != "" {
+		useLogReceiver = true
+	}
+
+	_, output, err := m.Orchestrator.AttachOrphanAgent(containerID, v.Namespace)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volume":   v.Name,
+			"hostname": v.Hostname,
+		}).Errorf("failed to attach orphan agent: %s", err)
+		return
+	}
+
+	if !useLogReceiver {
+		var agentOutput utils.MsgFormat
+		err = json.Unmarshal([]byte(output), &agentOutput)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+		} else {
+			m.updateBackupLogs(v, agentOutput)
+		}
+	}
+	if p.PostCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
@@ -119,7 +166,10 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 		if success {
 			v.LastBackupStatus = "Success"
 			v.Metrics.LastBackupStatus.Set(0.0)
-			m.setOldestBackupDate(v)
+			err := m.setOldestBackupDate(v)
+			if err != nil {
+				log.Errorf("failed to set oldest backup date: %s", err)
+			}
 		} else {
 			v.LastBackupStatus = "Failed"
 			v.Metrics.LastBackupStatus.Set(1.0)
@@ -132,8 +182,8 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 }
 
 func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
-	// TODO: use regex
-	stdout := strings.Split(v.Logs["snapshots"], "]")[1]
+	r, err := regexp.Compile(`\S{3} (.*)`)
+	stdout := r.FindStringSubmatch(v.Logs["snapshots"])[1]
 
 	var snapshots []engine.Snapshot
 
@@ -147,5 +197,22 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 		v.Metrics.OldestBackupDate.Set(float64(snapshots[0].Time.Unix()))
 	}
 
+	return
+}
+
+// RunResticCommand runs a custom Restic command
+func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
+	e := &engine.Engine{
+		DefaultArgs: []string{
+			"--no-cache",
+			"-r",
+			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
+		},
+		Output: make(map[string]utils.OutputFormat),
+	}
+
+	err = e.RawCommand(cmd)
+
+	output = e.Output["raw"].Stdout
 	return
 }
