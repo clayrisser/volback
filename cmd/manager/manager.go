@@ -22,14 +22,15 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	agentImage       string
-	blacklistVolumes string
-	logServer        string
-	providersFile    string
-	refreshTime      int
-	retryCount       int
-	targetURL        string
-	whitelistVolumes string
+	agentImage          string
+	blacklistVolumes    string
+	logServer           string
+	providersFile       string
+	refreshTime         int
+	retryCount          int
+	targetURL           string
+	whitelistAnnotation bool
+	whitelistVolumes    string
 )
 var envs = make(map[string]string)
 
@@ -38,8 +39,9 @@ var managerCmd = &cobra.Command{
 	Short: "Start Bivac backup manager",
 	Run: func(cmd *cobra.Command, args []string) {
 		volumesFilters := volume.Filters{
-			Whitelist: strings.Split(whitelistVolumes, ","),
-			Blacklist: strings.Split(blacklistVolumes, ","),
+			Blacklist:           strings.Split(blacklistVolumes, ","),
+			Whitelist:           strings.Split(whitelistVolumes, ","),
+			WhitelistAnnotation: whitelistAnnotation,
 		}
 
 		o, err := manager.GetOrchestrator(orchestrator, Orchestrators)
@@ -110,6 +112,9 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["BIVAC_BLACKLIST"] = "blacklist"
+
+	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
+	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)
