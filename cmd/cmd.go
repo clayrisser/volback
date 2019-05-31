@@ -7,12 +7,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/codejamninja/volback/internal/utils"
+	"os"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"os"
-	log "github.com/Sirupsen/logrus"
+
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 var (

@@ -8,12 +8,14 @@ package agent
 import (
 	"bytes"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/codejamninja/volback/internal/engine"
-	"github.com/codejamninja/volback/internal/utils"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	log "github.com/Sirupsen/logrus"
+
+	"github.com/codejamninja/volback/internal/engine"
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 // Backup runs Restic commands to backup a volume
@@ -27,7 +29,9 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 		},
 		Output: make(map[string]utils.OutputFormat),
 	}
+
 	output := e.Backup(backupPath, hostname, force)
+
 	if logReceiver != "" {
 		data := `{"data":` + output + `}`
 		req, err := http.NewRequest("POST", logReceiver, bytes.NewBuffer([]byte(data)))
@@ -37,6 +41,7 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 		}
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer "+os.Getenv("VOLBACK_SERVER_PSK"))
+
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
@@ -44,6 +49,7 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 			return
 		}
 		defer resp.Body.Close()
+
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Errorf("failed to read body: %s\n", err)

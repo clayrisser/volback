@@ -14,9 +14,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/camptocamp/bivac/internal/engine"
-	"github.com/camptocamp/bivac/internal/utils"
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/volback/internal/engine"
+	"github.com/codejamninja/volback/internal/utils"
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {

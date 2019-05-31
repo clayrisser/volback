@@ -14,7 +14,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/codejamninja/volback/pkg/volume"
 	"github.com/jinzhu/copier"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,7 +80,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 		}
 
 		for _, pvc := range pvcs.Items {
-			if backupString, ok := pvc.Annotations["bivac.backup"]; ok {
+			if backupString, ok := pvc.Annotations["volback.backup"]; ok {
 				if volumeFilters.WhitelistAnnotation {
 					if strings.ToLower(backupString) != "true" {
 						continue
@@ -123,7 +123,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 	return
 }
 
-// DeployAgent creates a `bivac agent` container
+// DeployAgent creates a `volback agent` container
 func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v *volume.Volume) (success bool, output string, err error) {
 	success = false
 	kvs := []apiv1.Volume{}
@@ -207,7 +207,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "bivac-agent-",
+			GenerateName: "volback-agent-",
 			Labels: map[string]string{
 				"generatedFromPod": os.Getenv("HOSTNAME"),
 			},
@@ -219,7 +219,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			ServiceAccountName: o.config.AgentServiceAccount,
 			Containers: []apiv1.Container{
 				{
-					Name:            "bivac-agent",
+					Name:            "volback-agent",
 					Image:           image,
 					Args:            cmd,
 					Env:             environment,
@@ -411,7 +411,7 @@ func (o *KubernetesOrchestrator) IsNodeAvailable(hostID string) (ok bool, err er
 	return
 }
 
-// RetrieveOrphanAgents returns the list of orphan Bivac agents
+// RetrieveOrphanAgents returns the list of orphan Volback agents
 func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
 	containers = make(map[string]string)
 	namespaces, err := o.getNamespaces()
@@ -428,7 +428,7 @@ func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]s
 		}
 
 		for _, pod := range pods.Items {
-			if !strings.HasPrefix(pod.Name, "bivac-agent-") {
+			if !strings.HasPrefix(pod.Name, "volback-agent-") {
 				continue
 			}
 			for _, volume := range pod.Spec.Volumes {
@@ -501,7 +501,7 @@ func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFil
 	}
 
 	// Check labels
-	if ignored, ok := vol.Labels["bivac.ignore"]; ok && ignored == "true" {
+	if ignored, ok := vol.Labels["volback.ignore"]; ok && ignored == "true" {
 		return true, "ignored", "volume config"
 	}
 
@@ -525,7 +525,7 @@ func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFil
 	return false, "", ""
 }
 
-// DetectKubernetes returns true if Bivac is running on the orchestrator Kubernetes
+// DetectKubernetes returns true if Volback is running on the orchestrator Kubernetes
 func DetectKubernetes() bool {
 	_, err := rest.InClusterConfig()
 	if err != nil {

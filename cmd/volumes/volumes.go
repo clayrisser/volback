@@ -11,10 +11,11 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/codejamninja/volback/cmd"
-	"github.com/codejamninja/volback/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/tatsushid/go-prettytable"
+
+	"github.com/codejamninja/volback/cmd"
+	"github.com/codejamninja/volback/pkg/client"
 )
 
 var (

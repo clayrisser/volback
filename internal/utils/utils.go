@@ -19,7 +19,7 @@ import (
 
 var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-// BuildInfo contains Bivac build informations
+// BuildInfo contains Volback build informations
 type BuildInfo struct {
 	Version    string
 	Date       string

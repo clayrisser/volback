@@ -2,7 +2,7 @@
 hugo/public
 *.out
 coverage
-./bivac
+./volback
 *~
-/bivac
+/volback
 /vendor

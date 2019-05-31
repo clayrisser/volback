@@ -9,10 +9,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/codejamninja/volback/pkg/volume"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/codejamninja/volback/pkg/volume"
 )
 
 // Client contains informations needed to connect to a Volback API

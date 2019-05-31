@@ -45,7 +45,7 @@ func restoreVolume(
 		"agent",
 		"restore",
 		"-p",
-		v.Mountpoint + v.SubPath + "/" + v.BackupDir,
+		v.Mountpoint + "/" + v.BackupDir,
 		"-r",
 		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
 		"-s",

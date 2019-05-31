@@ -7,13 +7,14 @@ package engine
 
 import (
 	"encoding/json"
-	"github.com/codejamninja/volback/internal/utils"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 // Engine stores informations to use Restic backup engine

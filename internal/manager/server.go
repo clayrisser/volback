@@ -8,13 +8,15 @@ package manager
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/codejamninja/volback/internal/utils"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
-	"strconv"
+
+	"github.com/codejamninja/volback/internal/utils"
 )
 
 // Server contains informations used by the server part
@@ -75,6 +77,7 @@ func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 		force = false
 		err = nil
 	}
+
 	err = m.BackupVolume(params["volumeName"], force)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -127,31 +130,7 @@ func (m *Manager) getBackupLogs(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		Data utils.MsgFormat
 	}
-	params := mux.Vars(r)
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&data)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Internal server error: " + err.Error()))
-		return
-	}
-	for _, v := range m.Volumes {
-		if v.ID == params["volumeID"] {
-			m.updateBackupLogs(v, data.Data)
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"type": "success"}`))
-			return
-		}
-	}
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("404 - Volume not found"))
-	return
-}
 
-func (m *Manager) getRestoreLogs(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		Data utils.MsgFormat
-	}
 	params := mux.Vars(r)
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&data)

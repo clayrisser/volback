@@ -7,10 +7,11 @@ package manager
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/BurntSushi/toml"
 	"github.com/codejamninja/volback/pkg/orchestrators"
 	"github.com/codejamninja/volback/pkg/volume"
-	"strings"
 )
 
 // Providers stores the list of available providers
@@ -20,11 +21,11 @@ type Providers struct {
 
 // Provider stores data for one provider
 type Provider struct {
-	BackupDir      string `toml:"backup_dir"`
-	BackupPostCmd  string `toml:"backup_post_cmd"`
-	BackupPreCmd   string `toml:"backup_pre_cmd"`
-	DetectionCmd   string `toml:"detect_cmd"`
 	Name           string `toml:"-"`
+	PreCmd         string `toml:"pre_cmd"`
+	PostCmd        string `toml:"post_cmd"`
+	DetectionCmd   string `toml:"detect_cmd"`
+	BackupDir      string `toml:"backup_dir"`
 	RestorePostCmd string `toml:"restore_post_cmd"`
 	RestorePreCmd  string `toml:"restore_pre_cmd"`
 }
@@ -45,11 +46,11 @@ func LoadProviders(path string) (providers Providers, err error) {
 
 	for key, value := range c.Providers {
 		provider := Provider{
-			BackupDir:      value.BackupDir,
-			BackupPostCmd:  value.BackupPostCmd,
-			BackupPreCmd:   value.BackupPreCmd,
-			DetectionCmd:   value.DetectionCmd,
 			Name:           key,
+			PreCmd:         value.PreCmd,
+			PostCmd:        value.PostCmd,
+			DetectionCmd:   value.DetectionCmd,
+			BackupDir:      value.BackupDir,
 			RestorePostCmd: value.RestorePostCmd,
 			RestorePreCmd:  value.RestorePreCmd,
 		}
