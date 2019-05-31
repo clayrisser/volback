@@ -4,5 +4,8 @@ hugo/public
 coverage
 ./bivac
 *~
+<<<<<<< HEAD
 /bivac
+=======
 /vendor
+>>>>>>> feature/remove-vendor
