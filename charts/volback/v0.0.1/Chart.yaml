@@ -1,0 +1,22 @@
+name: volback
+home: https://github.com/codejamninja/volback
+icon: https://raw.githubusercontent.com/camptocamp/bivac/master/img/bivac_small.png
+version: 0.0.1
+appVersion: latest
+description: 'backup interface for volumes attached to containers'
+keywords:
+  - volback
+  - backup
+  - docker
+  - volume
+  - kubernetes
+  - persist
+  - restore
+  - dedup
+  - deduplication
+  - restic
+sources:
+  - https://github.com/codejamninja/volback
+maintainers:
+  - name: 'Jam Risser'
+    email: jam@codejam.ninja
