@@ -6,12 +6,14 @@
 package manager
 
 import (
-	log "github.com/Sirupsen/logrus"
-	volbackCmd "github.com/codejamninja/volback/cmd"
-	"github.com/codejamninja/volback/internal/manager"
-	"github.com/codejamninja/volback/pkg/volume"
-	"github.com/spf13/cobra"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/spf13/cobra"
+
+	bivacCmd "github.com/camptocamp/bivac/cmd"
+	"github.com/camptocamp/bivac/internal/manager"
+	"github.com/camptocamp/bivac/pkg/volume"
 )
 
 var (
@@ -25,21 +27,20 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	agentImage          string
-	blacklistVolumes    string
-	logServer           string
 	providersFile       string
-	refreshTime         int
-	retryCount          int
 	targetURL           string
-	whitelistAnnotation bool
+	retryCount          int
+	logServer           string
+	agentImage          string
 	whitelistVolumes    string
+	blacklistVolumes    string
+	whitelistAnnotation bool
 )
 var envs = make(map[string]string)
 
 var managerCmd = &cobra.Command{
 	Use:   "manager",
-	Short: "Start Volback backup manager",
+	Short: "Start Bivac backup manager",
 	Run: func(cmd *cobra.Command, args []string) {
 		volumesFilters := volume.Filters{
 			Blacklist:           strings.Split(blacklistVolumes, ","),
@@ -53,7 +54,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(volbackCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, refreshTime)
+		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -63,15 +64,15 @@ var managerCmd = &cobra.Command{
 
 func init() {
 	managerCmd.Flags().StringVarP(&server.Address, "server.address", "", "0.0.0.0:8182", "Address to bind on.")
-	envs["VOLBACK_SERVER_ADDRESS"] = "server.address"
+	envs["BIVAC_SERVER_ADDRESS"] = "server.address"
 	managerCmd.Flags().StringVarP(&server.PSK, "server.psk", "", "", "Pre-shared key.")
-	envs["VOLBACK_SERVER_PSK"] = "server.psk"
+	envs["BIVAC_SERVER_PSK"] = "server.psk"
 
-	managerCmd.Flags().StringVarP(&orchestrator, "orchestrator", "o", "", "Orchestrator on which Volback should connect to.")
-	envs["VOLBACK_ORCHESTRATOR"] = "orchestrator"
+	managerCmd.Flags().StringVarP(&orchestrator, "orchestrator", "o", "", "Orchestrator on which Bivac should connect to.")
+	envs["BIVAC_ORCHESTRATOR"] = "orchestrator"
 
 	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Endpoint, "docker.endpoint", "", "unix:///var/run/docker.sock", "Docker endpoint.")
-	envs["VOLBACK_DOCKER_ENDPOINT"] = "docker.endpoint"
+	envs["BIVAC_DOCKER_ENDPOINT"] = "docker.endpoint"
 
 	managerCmd.Flags().StringVarP(&Orchestrators.Cattle.URL, "cattle.url", "", "", "The Cattle URL.")
 	envs["CATTLE_URL"] = "cattle.url"
@@ -80,7 +81,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&Orchestrators.Cattle.SecretKey, "cattle.secretkey", "", "", "The Cattle secret key.")
 	envs["CATTLE_SECRET_KEY"] = "cattle.secretkey"
 
-	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.Namespace, "kubernetes.namespace", "", "", "Namespace where you want to run Volback.")
+	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.Namespace, "kubernetes.namespace", "", "", "Namespace where you want to run Bivac.")
 	envs["KUBERNETES_NAMESPACE"] = "kubernetes.namespace"
 	managerCmd.Flags().BoolVarP(&Orchestrators.Kubernetes.AllNamespaces, "kubernetes.all-namespaces", "", false, "Backup volumes of all namespaces.")
 	envs["KUBERNETES_ALL_NAMESPACES"] = "kubernetes.all-namespaces"
@@ -93,32 +94,29 @@ func init() {
 	envs["RESTIC_FORGET_ARGS"] = "restic.forget.args"
 
 	managerCmd.Flags().StringVarP(&providersFile, "providers.config", "", "/providers-config.default.toml", "Configuration file for providers.")
-	envs["VOLBACK_PROVIDERS_CONFIG"] = "providers.config"
+	envs["BIVAC_PROVIDERS_CONFIG"] = "providers.config"
 
 	managerCmd.Flags().StringVarP(&targetURL, "target.url", "r", "", "The target URL to push the backups to.")
-	envs["VOLBACK_TARGET_URL"] = "target.url"
+	envs["BIVAC_TARGET_URL"] = "target.url"
 
-	managerCmd.Flags().IntVarP(&retryCount, "retry.count", "", 0, "Retry to backup the volume if something goes wrong with Volback.")
-	envs["VOLBACK_RETRY_COUNT"] = "retry.count"
+	managerCmd.Flags().IntVarP(&retryCount, "retry.count", "", 0, "Retry to backup the volume if something goes wrong with Bivac.")
+	envs["BIVAC_RETRY_COUNT"] = "retry.count"
 
 	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
-	envs["VOLBACK_LOG_SERVER"] = "log.server"
+	envs["BIVAC_LOG_SERVER"] = "log.server"
 
-	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "codejamninja/volback:3.0.0", "Agent's Docker image.")
-	envs["VOLBACK_AGENT_IMAGE"] = "agent.image"
-
-	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
-	envs["VOLBACK_REFRESH_TIME"] = "refresh.time"
+	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.0", "Agent's Docker image.")
+	envs["BIVAC_AGENT_IMAGE"] = "agent.image"
 
 	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
-	envs["VOLBACK_WHITELIST"] = "whitelist"
+	envs["BIVAC_WHITELIST"] = "whitelist"
 
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
-	envs["VOLBACK_BLACKLIST"] = "blacklist"
+	envs["BIVAC_BLACKLIST"] = "blacklist"
 
 	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
-	envs["VOLBACK_WHITELIST_ANNOTATION"] = "whitelist.annotations"
+	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
-	volbackCmd.SetValuesFromEnv(envs, managerCmd.Flags())
-	volbackCmd.RootCmd.AddCommand(managerCmd)
+	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
+	bivacCmd.RootCmd.AddCommand(managerCmd)
 }

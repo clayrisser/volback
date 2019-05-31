@@ -7,13 +7,14 @@ package manager
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/codejamninja/volback/internal/engine"
 	"strings"
-	"github.com/codejamninja/volback/internal/utils"
-	"github.com/codejamninja/volback/pkg/orchestrators"
-	"github.com/codejamninja/volback/pkg/volume"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+
+	"github.com/camptocamp/bivac/internal/utils"
+	"github.com/camptocamp/bivac/pkg/orchestrators"
+	"github.com/camptocamp/bivac/pkg/volume"
 )
 
 // Orchestrators groups the parameters of all supported orchestrators in one structure
@@ -23,7 +24,7 @@ type Orchestrators struct {
 	Kubernetes orchestrators.KubernetesConfig
 }
 
-// Manager contains all informations used by the Volback manager
+// Manager contains all informations used by the Bivac manager
 type Manager struct {
 	Orchestrator orchestrators.Orchestrator
 	Volumes      []*volume.Volume
@@ -38,8 +39,8 @@ type Manager struct {
 	backupSlots chan *volume.Volume
 }
 
-// Start starts a Volback manager which handle backups management
-	func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int, refreshTime int) (err error) {
+// Start starts a Bivac manager which handle backups management
+func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -89,8 +90,7 @@ type Manager struct {
 
 				m.backupSlots <- v
 			}
-
-			time.Sleep(time.Duration(refreshTime) * time.Minute)
+			time.Sleep(10 * time.Minute)
 		}
 	}(m, volumeFilters)
 
@@ -110,7 +110,7 @@ type Manager struct {
 			default:
 				continue
 			}
-			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok {
+			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok && v.HostBind != "unbound" {
 				log.WithFields(log.Fields{
 					"node": v.HostBind,
 				}).Warning("Node unavailable.")
@@ -207,7 +207,7 @@ func isBackupNeeded(v *volume.Volume) bool {
 	return false
 }
 
-// GetOrchestrator returns an orchestrator interface based on the name you specified or on the orchestrator Volback is running on
+// GetOrchestrator returns an orchestrator interface based on the name you specified or on the orchestrator Bivac is running on
 func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestrator, err error) {
 	if name != "" {
 		log.Debugf("Choosing orchestrator based on configuration...")
@@ -285,7 +285,7 @@ func (m *Manager) RestoreVolume(
 	return
 }
 
-// GetInformations returns informations regarding the Volback manager
+// GetInformations returns informations regarding the Bivac manager
 func (m *Manager) GetInformations() (informations map[string]string) {
 	informations = map[string]string{
 		"version":        m.BuildInfo.Version,
@@ -296,22 +296,5 @@ func (m *Manager) GetInformations() (informations map[string]string) {
 		"address":        m.Server.Address,
 		"volumes_count":  fmt.Sprintf("%d", len(m.Volumes)),
 	}
-	return
-}
-
-// RunResticCommand runs a custom Restic command
-func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
-	e := &engine.Engine{
-		DefaultArgs: []string{
-			"--no-cache",
-			"-r",
-			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
-		},
-		Output: make(map[string]utils.OutputFormat),
-	}
-
-	err = e.RawCommand(cmd)
-
-	output = e.Output["raw"].Stdout
 	return
 }

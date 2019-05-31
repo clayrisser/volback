@@ -82,6 +82,8 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 			Hostname:   fakeHostname,
 			Logs:       make(map[string]string),
 			BackingUp:  false,
+			RepoName:   "bar",
+			SubPath:    "",
 		},
 	}
 
@@ -149,6 +151,8 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 			HostBind:   fakeHostname,
 			Hostname:   fakeHostname,
 			Logs:       make(map[string]string),
+			RepoName:   "foo",
+			SubPath:    "",
 		},
 		&volume.Volume{
 			ID:         "bar",
@@ -157,6 +161,8 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 			HostBind:   fakeHostname,
 			Hostname:   fakeHostname,
 			Logs:       make(map[string]string),
+			RepoName:   "bar",
+			SubPath:    "",
 		},
 	}
 
