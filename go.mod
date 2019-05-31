@@ -1,14 +1,35 @@
-module github.com/camptocamp/bivac
+module github.com/codejamninja/volback
 
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Sirupsen/logrus v1.0.6
-	github.com/codejamninja/volback v0.0.0-20190531035400-3af709696ed1
+	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v0.0.0-20190121204153-8d7889e51013
+	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/docker/go-units v0.4.0 // indirect
+	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
+	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/golang/mock v1.2.0
+	github.com/google/btree v1.0.0 // indirect
+	github.com/google/gofuzz v1.0.0 // indirect
+	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/gorilla/mux v1.6.2
+	github.com/gorilla/websocket v1.4.0 // indirect
+	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
+	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3
+	github.com/json-iterator/go v1.1.6 // indirect
+	github.com/mattn/go-runewidth v0.0.4 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/client_model v0.0.0-20190115171406-56726106282f // indirect
+	github.com/prometheus/common v0.1.0 // indirect
+	github.com/prometheus/procfs v0.0.0-20190117184657-bf6a532e95b1 // indirect
 	github.com/rancher/go-rancher v0.0.0-20190109212254-cbc1b0a3f68d
 	github.com/rancher/go-rancher-metadata v0.0.0-20170929155856-d2103caca587
 	github.com/spf13/cobra v0.0.3
@@ -16,11 +37,22 @@ require (
 	github.com/spf13/viper v1.3.1
 	github.com/stretchr/testify v1.3.0
 	github.com/tatsushid/go-prettytable v0.0.0-20141013043238-ed2d14c29939
+	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5 // indirect
+	golang.org/x/lint v0.0.0-20190409202823-959b441ac422 // indirect
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+	golang.org/x/oauth2 v0.0.0-20190523182746-aaccbc9213b0 // indirect
+	golang.org/x/sys v0.0.0-20190530182044-ad28b68e88f1 // indirect
+	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
+	golang.org/x/tools v0.0.0-20190530215528-75312fb06703 // indirect
+	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/jarcoal/httpmock.v1 v1.0.0-20181117152235-275e9df93516
 	k8s.io/api v0.0.0-20190126160303-ccdd560a045f
 	k8s.io/apimachinery v0.0.0-20190126155707-0e6dcdd1b5ce
 	k8s.io/client-go v0.0.0-20190126161006-6134db91200e
+	k8s.io/klog v0.3.2 // indirect
+	k8s.io/utils v0.0.0-20190529001817-6999998975a7 // indirect
+	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190217132422-c093c1e08b60
