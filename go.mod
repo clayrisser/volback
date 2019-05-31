@@ -2,6 +2,7 @@ module github.com/codejamninja/volback
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/Microsoft/go-winio v0.4.12 // indirect
 	github.com/Sirupsen/logrus v1.0.6
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v0.0.0-20190121204153-8d7889e51013
@@ -13,10 +14,12 @@ require (
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/gofuzz v1.0.0 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
+	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
 	github.com/gorilla/websocket v1.4.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/copier v0.0.0-20180308034124-7e38e58719c3
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
