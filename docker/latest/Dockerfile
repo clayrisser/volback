@@ -5,7 +5,7 @@
 
 FROM golang:1.11 as builder
 WORKDIR /go/src/github.com/codejamninja/volback
-COPY . .
+COPY ./ .
 RUN make volback
 
 FROM restic/restic:latest as restic

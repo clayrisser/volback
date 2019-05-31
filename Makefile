@@ -14,9 +14,13 @@ all: lint vet test volback
 publish:
 	@docker-compose push
 
-.PHONY: docker
-docker:
-	@docker-compose build
+.PHONY: build
+build: volback
+	@cd docker && make build
+
+.PHONY: push
+push: build
+	@cd docker && make push
 
 volback: main.go $(DEPS)
 	GO111MODULE=on CGO_ENABLED=0 GOOS=linux \
