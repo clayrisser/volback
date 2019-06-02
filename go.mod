@@ -44,10 +44,10 @@ require (
 	golang.org/x/lint v0.0.0-20190409202823-959b441ac422 // indirect
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 	golang.org/x/oauth2 v0.0.0-20190523182746-aaccbc9213b0 // indirect
-	golang.org/x/sys v0.0.0-20190531175056-4c3a928424d2 // indirect
+	golang.org/x/sys v0.0.0-20190602015325-4c4f7f33c9ed // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
-	golang.org/x/tools v0.0.0-20190531223538-26e35f15edef // indirect
+	golang.org/x/tools v0.0.0-20190601110225-0abef6e9ecb8 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/jarcoal/httpmock.v1 v1.0.0-20181117152235-275e9df93516
 	k8s.io/api v0.0.0-20190126160303-ccdd560a045f
