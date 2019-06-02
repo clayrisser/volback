@@ -26,5 +26,7 @@ COPY --from=builder /go/src/github.com/codejamninja/volback/volback /bin/
 COPY --from=builder /go/src/github.com/codejamninja/volback/providers-config.default.toml /
 COPY --from=restic /usr/bin/restic /bin/restic
 COPY --from=rclone /usr/bin/rclone /bin/rclone
+ENV VOLBACK_PARALLEL_COUNT=2 \
+  VOLBACK_REFRESH_TIME=10
 ENTRYPOINT ["/bin/volback"]
 CMD [""]

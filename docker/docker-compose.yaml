@@ -3,3 +3,6 @@ version: '3'
 services:
   volback:
     image: codejamninja/volback:latest
+    environment:
+      VOLBACK_PARALLEL_COUNT: '2'
+      VOLBACK_REFRESH_TIME: '10'
