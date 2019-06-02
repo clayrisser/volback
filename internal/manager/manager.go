@@ -40,7 +40,7 @@ type Manager struct {
 }
 
 // Start starts a Volback manager which handle backups management
-func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int, refreshTime int) (err error) {
+func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int, refreshTime int, parallelCount int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -90,12 +90,13 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 
 				m.backupSlots <- v
 			}
+
 			time.Sleep(time.Duration(refreshTime) * time.Minute)
 		}
 	}(m, volumeFilters)
 
 	// Manage backups
-	go func(m *Manager) {
+	go func(m *Manager, parallelCount int) {
 		slots := make(map[string](chan bool))
 
 		log.Infof("Starting backup manager...")
@@ -103,7 +104,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 		for {
 			v := <-m.backupSlots
 			if _, ok := slots[v.HostBind]; !ok {
-				slots[v.HostBind] = make(chan bool, 2)
+				slots[v.HostBind] = make(chan bool, parallelCount)
 			}
 			select {
 			case slots[v.HostBind] <- true:
@@ -164,7 +165,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 				}
 			}(v)
 		}
-	}(m)
+	}(m, parallelCount)
 
 	// Manage API server
 	m.StartServer()
