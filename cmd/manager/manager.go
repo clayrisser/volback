@@ -35,7 +35,7 @@ var (
 	whitelistVolumes    string
 	blacklistVolumes    string
 	whitelistAnnotation bool
-	refreshTime   int
+	refreshTime         int
 	parallelCount       int
 )
 var envs = make(map[string]string)
@@ -107,7 +107,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
 	envs["VOLBACK_LOG_SERVER"] = "log.server"
 
-	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "codejamninja/volback:2.0", "Agent's Docker image.")
+	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "codejamninja/volback:3.0.0", "Agent's Docker image.")
 	envs["VOLBACK_AGENT_IMAGE"] = "agent.image"
 
 	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
