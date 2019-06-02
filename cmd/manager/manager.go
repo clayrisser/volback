@@ -31,6 +31,7 @@ var (
 	blacklistVolumes    string
 	whitelistAnnotation bool
 	refreshTime   int
+	parallelCount       int
 )
 var envs = make(map[string]string)
 
@@ -50,7 +51,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, refreshTime)
+		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, refreshTime, parallelCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -115,6 +116,9 @@ func init() {
 
 	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
 	envs["BIVAC_REFRESH_TIME"] = "refresh.time"
+
+	managerCmd.Flags().IntVarP(&parallelCount, "parallel.count", "", 2, "The count of agents to run in parallel")
+	envs["VOLBACK_PARALLEL_COUNT"] = "parallel.count"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)
