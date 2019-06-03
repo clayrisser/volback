@@ -2,7 +2,6 @@
 hugo/public
 *.out
 coverage
-./volback
 *~
 /volback
 /vendor

@@ -112,9 +112,11 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
 	envs["VOLBACK_WHITELIST"] = "whitelist"
+	envs["VOLBACK_VOLULMES_WHITELIST"] = "whitelist"
 
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["VOLBACK_BLACKLIST"] = "blacklist"
+	envs["VOLBACK_VOLUMES_BLACKLIST"] = "blacklist"
 
 	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
 	envs["VOLBACK_WHITELIST_ANNOTATION"] = "whitelist.annotations"
